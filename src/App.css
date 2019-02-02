@@ -1,0 +1,687 @@
+html {
+  overflow: hidden;
+  background-color: #0c0b1b;
+}
+
+#container {
+  height: 100%; 
+  position: fixed;
+}
+
+#divDropZone {
+  height: 100%; 
+  position: fixed;
+  display:none;
+  z-index: 1;
+  background-color: #181f87;
+  opacity: 0.5;
+}
+
+.drop-active {
+  background-color: #2671ea !important;
+  opacity: 0.5 !important;
+}
+
+.track-row {
+  box-sizing: border-box;
+  height: 40px;
+  display:inline-block;
+  border-color:#181f87;
+  width:100%;
+}
+
+.trackSelected {
+  border-color: #2671ea !important;
+}
+
+.btnSelected {
+  border: 4px solid #2671ea;
+  background-color:white;
+}
+
+.btn-mix {
+  height:100%;
+  width:20%;
+  z-index:10;
+}
+
+.track-rowmix {
+  position: relative;
+  z-index: 10;
+}
+
+.track-rowmix-right{
+  position:absolute;
+  display:inline-block;
+  width:50%;
+  height:100%;
+  z-index: 10;
+}
+
+.track-rowmix-left{
+  float:left;
+  width:50%;
+  height:40px;
+  z-index: 10;
+}
+
+.canvasMeterL {
+  width:100%;
+  height:5px;
+  position:relative;
+  top:-8px;
+}
+
+.canvasMeterR {
+  width:100%;
+  height:5px;
+  position:relative;
+  top:-18px;
+}
+
+.trackMixSlider { 
+  width:100%;
+  top:-26px;
+  position:relative;
+}
+
+.progressLine {
+  height:100%;
+  background-color: white;
+  width:2px;
+  left:0;
+  top:-2px;
+  position: absolute;
+  z-index: 5;
+}
+
+.divBody {
+  position: absolute;
+}
+
+#gridContainer {
+  -ms-touch-action: none;
+  touch-action: none;
+  background-color:#0c0b1b;
+  transition: width .25s linear;
+}
+
+#gridParent {
+  position:fixed;
+  z-index:1;
+  top:40px;
+}
+
+#divGridTimeline {
+  width:100%;
+  height:14px;
+  top:40px;
+  background-color:#0c0b1b;
+  z-index:15;
+  overflow: hidden;
+}
+
+/* prevent last # from wrapping */
+#divGridTimeline > label:last-child {
+  width: auto !important;
+}
+
+.lblTimeline {
+  float:left;
+  font-size: 14px;
+  top:1px;
+  position:relative;
+  color:#2671ea;
+  font-weight:bold;
+}
+
+#waveform {
+  height:calc(100% - 26px); 
+  width:100%;
+  background-color:#0c0b1b;
+}
+
+wave {
+ height:100% !important; 
+}
+
+.divTransportControls {
+  height:40px;
+  width:100%;
+  display:flex;
+  position:relative;
+  justify-content:center;
+}
+
+.divFooterSettings {
+  height:40px;
+  /*width:100%;*/
+  display:flex;
+  position:relative;
+}
+
+#btnToggleTempoSlider {
+  height: 28px;
+  float: right; 
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  width: 46px;
+  background-color: white !important;
+  border-radius: 4px;
+}
+
+#tempoSlider {
+  top: 6px;
+  width: calc(100% - 20px);
+  position: absolute;
+  margin-left: 8px;
+}
+
+#lblTempo {
+  color: white;
+  position: absolute;
+  width: 0px;
+  left: 48%;
+  bottom: 26px
+}
+
+#btnFS {
+  background-color:transparent;
+  border: 0px none;
+  float: left;
+}
+
+.btnScene {
+  height:100%;
+}
+
+#divLoopTile { 
+  height:40px;
+  background-color: rgba(25, 147, 122, 0.25);
+  border-left: 10px solid #19937a;
+  border-right: 10px solid #19937a;
+  border-top: 4px solid #19937a;
+  border-bottom: 4px solid #19937a;
+  position: absolute;
+  top: 0px;
+  touch-action: none;
+  -ms-touch-action: none;
+  box-sizing: border-box;
+  /*pointer-events: none;*/
+}
+
+#divFooter {
+  position: fixed;
+  bottom: 0;
+  height: 40px;
+  width: 100%;
+  background-color: black;
+  z-index:3;
+}
+
+.canvasTrack {
+  width:100%;
+  height:40px;
+  border: 1px solid #19937a;
+}
+
+.svgdiv {
+  visibility: hidden;
+}
+
+#divZoom {
+  height:40px;
+  width:80px;
+  background-color:rgba(12, 11, 27, 0.7);
+  position:absolute;
+  right:5px;
+  top:-44px;
+  text-align:center;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+#divToggleMode {
+  background-color:rgba(12, 11, 27, 0.7);
+  position:absolute;
+  left:0;
+  top:-42px;
+  text-align:center;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.btnUIZoom {
+  height:40px;
+  width:40px;
+  margin:0 auto;
+  background-color:rgba(0,0,0,0) !important;
+  border:none;
+}
+
+.btnToolRowNav {
+  width: 20%;
+  height:40px;
+}
+
+.btnToolRowNavSelected {
+  background-color:white;
+  border: 4px solid #2671ea;
+}
+
+#divToolRow {
+  width:100%;
+  background-color:#12121e;
+  z-index:2;
+  box-sizing: border-box;
+  position:relative;
+  height:200px;
+}
+
+#divToolRowNav {
+  z-index:2;
+  height:40px;
+  position: relative;
+}
+
+.divToolRowEditorContainer { 
+  width:100%;
+  height:100%;
+  overflow-x:hidden;
+  overflow-y:scroll;
+}
+
+/* remove parent node 'all' from filebrowser tree */
+.divToolBrowseBody > ul:first-child > li:first-child > div:first-of-type  {
+  display: none !important;
+}
+
+/* remove padding in browse main ul */
+.divToolBrowseBody > ul > li > div > ul {
+  padding-left: 0px !important;
+}
+
+/* lower padding for child ul elements in browse */
+.divToolBrowseBody > ul > li > div > ul ul {
+  padding-left: 7px !important;
+}
+
+
+.divToolSongBody > ul > li > div > ul {
+  padding-left: 7px !important;
+}
+
+.divToolSongBody > ul > li > div > ul ul {
+  padding-left: 13px !important;
+}
+
+
+.noUi-connect {
+  background-color: #181f87 !important;
+}
+
+.noUi-target {
+  margin-left: 20px !important;
+  margin-right: 50px !important;
+}
+
+.noUi-tooltip {
+  padding-top: 1px !important;
+  padding-right: 5px !important;
+  padding-bottom: 1px !important;
+  padding-left: 5px !important;
+}
+
+.noUi-handle {
+  outline: 0 !important;
+}
+
+#samplezoom {
+  width:100%;
+  height:26px;
+  z-index:4;
+  background-color:#0c0b1b;
+}
+
+#divToolRowContainer {
+  position:fixed;
+  bottom:40px;
+  z-index: 2;
+  background-color:#0c0b1b;
+}
+
+#divToolRowHandle {
+  width:100%;
+  height:6px;
+  top:-6px;
+  position:absolute;
+  touch-action: none;
+  -ms-touch-action: none;
+}
+
+#divToolRowHandleThumb {
+  width: 50px;
+  height: 40px;
+  border-top-left-radius: 14px;
+  border-top-right-radius: 14px;
+  bottom: 34px;
+  position: relative;
+  margin: auto;
+}
+
+.divToolRowHandleBG {
+  background-color: #19937a;
+}
+
+#divHeaderTimeline { 
+  height:40px;
+  width:100%;
+}
+
+#divHeaderSettings { 
+  height:40px;
+  width:100%;
+  display:none;
+}
+
+#divHeader {
+  position: fixed;
+  top: 0;
+  height: 40px;
+  background-color: black;
+  z-index:2;
+}
+
+#divGridButtonViewBG {
+  height:100%;
+  width:100%;
+  background-color:transparent;
+  position:relative; 
+  top:100px; 
+  left:0;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+}
+
+.divGridButton {
+  height:100px;
+  width:100px;
+  background-color: transparent;
+  touch-action: none;
+  -ms-touch-action: none;
+  float:left;
+  border-radius:2px;
+  border:1px solid #19937a;
+  margin: 6px;
+  display: flex;
+}
+
+.divGridButton svg{
+  position:absolute;
+  left:0;
+}
+
+.divGridButtonSelected {
+  height:100px;
+  width:100px;
+  background-color: transparent;
+  touch-action: none;
+  -ms-touch-action: none;
+  float:left;
+  border-radius:2px;
+  border:1px solid #2671ea;
+  margin: 6px;
+  display: flex;
+}
+
+.divGridButtonSelected svg{
+  position:absolute;
+  left:0;
+}
+
+.canvasGridButton {
+  width:100%;
+  height:100%;
+}
+
+#divEditViewBG {
+  width:100%;
+  background-color:transparent;
+  position:fixed; 
+  top:150px;
+  bottom:80px;
+  left:0;
+}
+
+.canvasEditViewObj {
+  height:100%;
+  width:100%;
+  background-color:transparent;
+  position: absolute;
+  z-Index:3;
+  touch-action: none;
+  -ms-touch-action: none;
+}
+
+.divEditViewObj {
+  height:10%;
+  width:7%;
+  top:30%;
+  left:45%;
+  background-color:#0c0b1b;
+  position: absolute;
+  z-Index:3;
+  touch-action: none;
+  -ms-touch-action: none;
+  border: 1px solid #19937a;
+}
+
+.divEditViewObjSelected {
+  height:10%;
+  width:7%;
+  top:30%;
+  left:45%;
+  background-color:#0c0b1b;
+  position: absolute;
+  z-Index:3;
+  touch-action: none;
+  -ms-touch-action: none;
+  border: 2px solid #2671ea;
+}
+
+.labelEditViewObj {
+  position: absolute;
+  color: white;
+  font-size: 10px;
+  left: 1px;
+  overflow: hidden;
+}
+
+.btnEditViewDelete {
+  position:absolute; 
+  top:30%; 
+  left:45%; 
+  z-index:3; 
+  width:26px; 
+  height:26px;
+}
+
+html {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+
+.wavesurfer-handle-start {
+  bottom:0 !important;
+  height:20px !important;
+  width:18px !important;
+  max-width:18px !important;
+  background-color:#19937a!important;
+  top: auto !important;
+  left: -18px !important;
+}
+
+.wavesurfer-handle-end {
+  top: auto !important;
+  height:20px !important;
+  width:18px !important;
+  max-width:18px !important;
+  background-color:#19937a !important;
+}
+
+.wavesurfer-region {
+  background-color: rgba(19,62,131,0.5) !important;
+  z-index: 9 !important;
+}
+
+.wavesurfer-region-selected {
+  background-color: rgba(19,62,255,0.5) !important;
+  z-index: 10 !important;
+}
+
+.material-icons {
+  /* font-size: 36px !important; */
+  color:white !important;
+}
+
+.i-hdr {
+  font-size: 12px !important;
+  color: black !important;
+  margin-top: 2px !important;
+}
+
+.i-36 {
+  font-size: 36px !important;
+}
+
+.i-28 {
+  font-size: 28px !important;
+}
+
+.i-72 {
+  font-size: 72px !important;
+}
+
+
+.colorRed {
+  color: red !important;
+}
+
+/*   mm quick fix for all */
+label {
+  color:white;
+}
+
+/* remove blue outline on button click */
+button:focus {outline:0;}
+
+
+/* The Modal (background) */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 997; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.7); /* Black w/ opacity */
+}
+
+/* Modal Content/Box */
+.modal-content {
+  background-color: #fefefe;
+  margin: 2px auto; 
+  border: 1px solid #888;
+  width: 96%; 
+  max-width:500px;
+  height:98%;
+  z-index:998;
+  position:relative;
+}
+
+/* The Close Button */
+.close {
+  color: red;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  margin-right:14px;
+  z-index: 999;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+input {
+  font-size:22px;
+}
+
+/* search iframe container that enables touch scroll on ios safari */
+.iframeContainerIOS {
+  height:100%;
+  width:100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.iframeContainer {
+  height:100%;
+  width:100%;
+}
+
+#sliderToolChorus {
+  top: 6px;
+  width: calc(100% - 36px);
+  margin-left: 18px !important;
+}
+
+#sliderToolChorus .noUi-tooltip {
+   z-Index:1;
+   bottom:3px;
+}
+
+.divSynthKey {
+  height:100%;
+  /*width:8.333%;*/
+  box-sizing: border-box;
+  border: 1px solid gray;
+  display:inline-block;
+}
+
+#divHeaderSectionContainer {
+  position: absolute;
+  width: 100%;
+  height: 31px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+}
+
+#imgBGLogo {
+  position:absolute;
+  width:50%;
+  margin:auto;
+  top:-65px;
+  bottom:40px;
+  left:0;
+  right:0;
+  opacity:0.15;
+  pointer-events: none;
+}

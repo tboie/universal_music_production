@@ -1,0 +1,4330 @@
+//Copyright 2018-2019 Timothy Boie
+
+import { types, getParent, destroy, getMembers, applySnapshot, getSnapshot } from "mobx-state-tree";
+import Tone from 'tone';
+import idb from 'idb';
+import interact from 'interactjs';
+import fileTree from '../data/filetree.js';
+import { Note as TonalNote } from "tonal";
+import { store } from "../data/store.js";
+//import { UndoManager } from "mst-middlewares";
+import * as cloneDeep from 'lodash/cloneDeep';
+import { setToneObjs } from '../ui/utils.js';
+
+/*******************************************
+TODO: move to separate files. 
+lots of circular dependencies here.  see MST types.late();
+********************************************/
+
+export const randomId = () => Math.random().toString(36).substr(2, 5);
+
+export let ToneObjs = {
+    instruments: [],
+    effects: [],
+    components: [],
+    sources: [],
+    parts: [],
+    custom: []
+}
+
+const Region = types.model("Region", {
+    id: types.identifier, //wavesurfer region id
+    url: types.maybe(types.string), //aka filename
+    start: types.maybe(types.number),
+    end: types.maybe(types.number)
+}).views(self => ({
+    getRegions() {
+        return { start: self.start, end: self.end }
+    },
+    getSample(){
+        return getParent(self, 2);
+    }
+})).actions(self => ({
+    setRegions(start, end) {
+        self.start = start;
+        self.end = end;
+    },
+    delete() {
+        destroy(self);
+    },
+    afterCreate() {
+
+    },
+    beforeDestroy() {
+
+    }
+}));
+
+
+const Sample = types.model("Sample", {
+    id: types.identifier,
+    url: types.maybe(types.string),
+    length: types.maybe(types.number),
+    duration: types.maybe(types.number),
+    regions: types.optional(types.array(Region), [])
+}).views(self => ({
+    getRegion(id) {
+        return self.regions.find(r => r.id === id);
+    }
+})).actions(self => {
+    function addRegion(id, url, start, end) {
+        self.regions.push({ id: id, url: url, start: start, end: end })
+    }
+    function delRegion(id) {
+        destroy(self.getRegion(id));
+    }
+    function afterAttach(){} 
+    function afterCreate(){}
+    function beforeDestroy(){}
+
+    return { addRegion, delRegion, beforeDestroy, afterAttach, afterCreate }
+});
+
+
+const Track = types.model("Track", {
+    id: types.identifier,
+    type: types.union(types.literal("audio"), types.literal("instrument"), types.literal("master")),
+    mute: types.optional(types.boolean, false),
+    solo: types.optional(types.boolean, false),
+    sample: types.maybe(types.reference(Sample)),
+    region: types.maybe(types.reference(Region)),
+    group: types.maybe(types.union(types.literal("A"), types.literal("B"), types.literal("C"), types.literal("D"), types.literal("M"))),
+    resolution: types.optional(types.number, 16),
+}).views(self => ({
+    returnRegion(){
+        let r = self.region;
+        if(r)
+            r = self.region.getRegions();
+
+        return r;
+    },
+    getPlaybackRate(){
+        if(self.type === "audio"){
+          let player = store.instruments.getPlayerByTrack(self.id);
+          if(player)
+            return player.playbackRate;
+          else
+            return 1;
+        }
+        else
+          return 1;
+    }
+})).actions(self => {
+    function toggleMute() {
+        self.mute = !self.mute;
+    }
+    function toggleSolo() {
+        self.solo = !self.solo;
+
+        let tracks = store.getTracksByGroup(self.group);
+        let bGroupHasSoloTrack = tracks.some(t => { return t.solo; })
+
+        if(bGroupHasSoloTrack){
+            tracks.forEach(t => {
+                if(t.type !== "master"){
+                    if(!t.mute && !t.solo){
+                        t.toggleMute();
+                    }
+                    else if(t.mute && t.solo){
+                        t.toggleMute();
+                    }
+                }
+            })
+        } else{
+            tracks.forEach(t => {
+                if(t.type !== "master"){
+                    if(t.mute){
+                        t.toggleMute();
+                    }
+                }
+            })
+        }
+    }
+    function setResolution(res){
+        self.resolution = res;
+        store.getPatternsByTrack(self.id).forEach(p => {
+            if(p.resolution !== res){
+                p.setResolution(res);
+            }
+        })
+    }
+    function afterCreate(){}
+    function afterAttach(){}
+
+    return { afterCreate, afterAttach, setResolution, toggleMute, toggleSolo }
+});
+
+const UIObj = types.model("UIObj", {
+    x: types.maybe(types.number),
+    y: types.maybe(types.number)
+    //  title, color?
+}).views(self => ({
+
+})).actions(self => ({
+    setCoords(x, y) {
+        self.x = x;
+        self.y = y;
+    }
+}))
+
+const Connection = types.model("Connection", {
+    id: types.identifier,
+    track: types.reference(Track),
+    src: types.maybe(types.string), // STRINGS not references
+    dest: types.maybe(types.string), // STRINGS not references
+    srcType: types.maybe(types.string), //component, instrument, etc..
+    destType: types.maybe(types.string),
+    numOut: types.optional(types.number, 0),
+    numIn: types.optional(types.number, 0)
+}).actions(self => ({
+    addConnection(offline) {
+        let objSrc, objDest;
+
+        if(self.src.split('_')[0] === 'tinysynth' && self.srcType !== 'component')
+            self.srcType = 'component';
+        
+        let arraySrc = ToneObjs[self.srcType + "s"];
+        let arrayDest = ToneObjs[self.destType + "s"];
+
+        if(offline){
+            arraySrc = offline[self.srcType + "s"];
+            arrayDest = offline[self.destType + "s"];
+        }
+
+        if (self.src !== "master" && self.dest !== "master") {
+            objSrc = arraySrc.find(i => i.id === self.src).obj;
+            objDest = arrayDest.find(i => i.id === self.dest).obj;
+            objSrc.connect(objDest, self.numOut, self.numIn);
+        }
+        else if(self.dest === "master") {
+            objSrc = arraySrc.find(i => i.id === self.src).obj;
+            objSrc.connect(Tone.Master, self.numOut, self.numIn);
+        }
+        else if(self.src === "master"){
+            objDest = arrayDest.find(i => i.id === self.dest).obj;
+            Tone.Master.connect(objDest, self.numOut, self.numIn);
+        }
+    },
+    afterAttach() {
+        self.addConnection();
+    },
+    beforeDestroy() {
+        let objSrc, objDest;
+        let arraySrc = ToneObjs[self.srcType + "s"];
+        let arrayDest = ToneObjs[self.destType + "s"];
+
+        if (self.src !== "master" && self.dest !== "master") {
+            objSrc = arraySrc.find(i => i.id === self.src).obj;
+            objDest = arrayDest.find(i => i.id === self.dest).obj;
+            objSrc.disconnect(objDest, self.numOut, self.numIn);
+        }
+        else if(self.dest === "master") {
+            objSrc = arraySrc.find(i => i.id === self.src).obj;
+            objSrc.disconnect(Tone.Master, self.numOut, self.numIn);
+        }
+        else if(self.src === "master"){
+            objDest = arrayDest.find(i => i.id === self.dest).obj;
+            Tone.Master.disconnect(objDest, self.numOut, self.numIn);
+        }
+    }
+}));
+
+
+const Filter = types.model("Filter", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+
+    type: types.optional(types.enumeration("filter", ["lowpass", "highpass", "bandpass", "lowshelf", "highshelf", "notch", "allpass", "peaking"]), "lowpass"),
+    frequency: types.optional(types.union(types.number, types.string), 350),
+    rolloff: types.optional(types.number, -12),
+    Q: types.optional(types.number, 1),
+    gain: types.optional(types.number, 0),
+
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.components.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.components.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate(){
+    },
+    afterAttach() {
+        if (!self.ui && self.track !== undefined)
+            self.ui = UIObj.create();
+
+        if (self.track !== undefined)
+            getParent(self, 2).addToneObj("Filter", self);
+    },
+    beforeDestroy() {
+        if (self.track !== undefined)
+            getParent(self, 2).delToneObj(self.id);
+    }
+}));
+
+const AutoFilter = types.model("AutoFilter", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+    wet: types.optional(types.number, 1),
+
+    frequency: types.optional(types.union(types.number, types.string), "8n"),
+    type: types.optional(types.enumeration("wave", ["sine", "triangle", "sawtooth", "square", "custom"]), "sine"),
+    depth: types.optional(types.number, 1),
+    baseFrequency: types.optional(types.union(types.number, types.string), 200),
+    octaves: types.optional(types.number, 2.6),
+    filter: Filter,
+
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    setPropVal(prop, val, signal, child) {
+        if(child){
+            self[child][prop] = val;
+            if (signal)
+                ToneObjs.effects.find(o => o.id === self.id).obj[child][prop].value = val;
+            else
+                ToneObjs.effects.find(o => o.id === self.id).obj[child][prop] = val;
+        }
+        else{
+            self[prop] = val;
+            if (signal)
+                ToneObjs.effects.find(o => o.id === self.id).obj[prop].value = val;
+            else
+                ToneObjs.effects.find(o => o.id === self.id).obj[prop] = val;
+        }
+    },
+    afterCreate() {
+        if (!self.ui)
+            self.ui = UIObj.create();
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj("AutoFilter", self);
+        ToneObjs.effects.find(o => o.id === self.id).obj.start("0:0:0");
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id);
+    }
+}));
+
+const AutoPanner = types.model("AutoPanner", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+    wet: types.optional(types.number, 1),
+
+    frequency: types.optional(types.union(types.number, types.string), "8n"),
+    type: types.optional(types.enumeration("wave", ["sine", "triangle", "sawtooth", "square"]), "sine"),
+    depth: types.optional(types.number, 1),
+
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.effects.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.effects.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate() {
+        if (!self.ui)
+            self.ui = UIObj.create();
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj("AutoPanner", self)
+        ToneObjs.effects.find(o => o.id === self.id).obj.start("0:0:0");
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id);
+    }
+}));
+
+const AutoWah = types.model("AutoWah", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+    wet: types.optional(types.number, 1),
+
+    baseFrequency: types.optional(types.union(types.number, types.string), 100),
+    octaves: types.optional(types.number, 6),
+    sensitivity: types.optional(types.number, 0),
+    Q: types.optional(types.number, 2),
+    gain: types.optional(types.number, 2),
+    //follower: Follower
+
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.effects.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.effects.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate() {
+        if (!self.ui)
+            self.ui = UIObj.create();
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj("AutoWah", self);
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id);
+    }
+}));
+
+const BitCrusher = types.model("BitCrusher", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+    wet: types.optional(types.number, 1),
+
+    bits: types.optional(types.number, 4),
+
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.effects.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.effects.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate() {
+        if (!self.ui)
+            self.ui = UIObj.create();
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj("BitCrusher", self);
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id);
+    }
+}));
+
+
+const Chebyshev = types.model("Chebyshev", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+    wet: types.optional(types.number, 1),
+
+    order: types.optional(types.number, 1),
+    oversample: types.optional(types.enumeration("oversample", ["none", "2x", "4x"]), "none"),
+
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.effects.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.effects.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate() {
+        if (!self.ui)
+            self.ui = UIObj.create();
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj("Chebyshev", self)
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id);
+    }
+}));
+
+const Chorus = types.model("Chorus", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+    wet: types.optional(types.number, 1),
+
+    frequency: types.optional(types.union(types.number, types.string), 1.5),
+    delayTime: types.optional(types.number, 3.5),
+    depth: types.optional(types.number, 0.7),
+    type: types.optional(types.enumeration("wave", ["sine", "triangle", "sawtooth", "square"]), "sine"),
+    spread: types.optional(types.number, 180),
+
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.effects.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.effects.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate() {
+        if (!self.ui)
+            self.ui = UIObj.create();
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj("Chorus", self)
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id);
+    }
+}));
+
+const Convolver = types.model("Convolver", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+    wet: types.optional(types.number, 1),
+
+    url: types.optional(types.string, ""), //TODO: deal with sample?
+
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.effects.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.effects.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate() {
+        if (!self.ui)
+            self.ui = UIObj.create();
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj("Convolver", self)
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id);
+    }
+}));
+
+const Distortion = types.model("Distortion", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+    wet: types.optional(types.number, 1),
+
+    distortion: types.optional(types.number, 0.8),
+    oversample: types.optional(types.enumeration("oversample", ["none", "2x", "4x"]), "none"),
+
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.effects.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.effects.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate() {
+        if (!self.ui)
+            self.ui = UIObj.create();
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj("Distortion", self)
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id);
+    }
+}));
+
+const FeedbackDelay = types.model("FeedbackDelay", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+    wet: types.optional(types.number, 1),
+
+    delayTime: types.optional(types.string, "8n"),
+    maxDelay: types.optional(types.number, 1), //can't be changed, see Tone.Delay docs
+    feedback: types.optional(types.number, 0.5),
+
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.effects.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.effects.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate() {
+        if (!self.ui)
+            self.ui = UIObj.create();
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj("FeedbackDelay", self)
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id);
+    }
+}));
+
+const Freeverb = types.model("Freeverb", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+    wet: types.optional(types.number, 1),
+
+    roomSize: types.optional(types.number, 0.7),
+    dampening: types.optional(types.number, 3000),
+
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.effects.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.effects.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate() {
+        if (!self.ui)
+            self.ui = UIObj.create();
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj("Freeverb", self)
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id);
+    }
+}));
+
+const JCReverb = types.model("JCReverb", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+    wet: types.optional(types.number, 1),
+
+    roomSize: types.optional(types.number, 0.5),
+
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.effects.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.effects.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate() {
+        if (!self.ui)
+            self.ui = UIObj.create();
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj("JCReverb", self)
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id);
+    }
+}));
+
+const MidSideEffect = types.model("MidSideEffect", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+    wet: types.optional(types.number, 1),
+
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.effects.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.effects.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate() {
+        if (!self.ui)
+            self.ui = UIObj.create();
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj("MidSideEffect", self)
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id);
+    }
+}));
+
+const Phaser = types.model("Phaser", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+    wet: types.optional(types.number, 1),
+
+    frequency: types.optional(types.union(types.number, types.string), 0.5),
+    octaves: types.optional(types.number, 3),
+    stages: types.optional(types.number, 10),
+    Q: types.optional(types.number, 10),
+    baseFrequency: types.optional(types.union(types.number, types.string), 350),
+
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.effects.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.effects.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate() {
+        if (!self.ui)
+            self.ui = UIObj.create();
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj("Phaser", self)
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id);
+    }
+}));
+
+const PingPongDelay = types.model("PingPongDelay", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+    wet: types.optional(types.number, 1),
+
+    delayTime: types.optional(types.string, "8n"),
+    maxDelayTime: types.optional(types.string, "1"),
+    feedback: types.optional(types.number, 0.5),
+
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.effects.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.effects.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate() {
+        if (!self.ui)
+            self.ui = UIObj.create();
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj("PingPongDelay", self)
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id);
+    }
+}));
+
+const PitchShift = types.model("PitchShift", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+    wet: types.optional(types.number, 1),
+
+    pitch: types.optional(types.number, 0),
+    //The window size corresponds roughly to the sample length in a looping sampler. 
+    //Smaller values are desirable for a less noticeable delay time of the pitch shifted signal, 
+    //  but larger values will result in smoother pitch shifting for larger intervals. 
+    //A nominal range of 0.03 to 0.1 is recommended.
+    windowSize: types.optional(types.number, 0.1),
+    delayTime: types.optional(types.string, "0"),
+    feedback: types.optional(types.number, 0),
+
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.effects.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.effects.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate() {
+        if (!self.ui)
+            self.ui = UIObj.create();
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj("PitchShift", self)
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id);
+    }
+}));
+
+const Reverb = types.model("Reverb", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+    wet: types.optional(types.number, 1),
+
+    decay: types.optional(types.number, 1.5),
+    preDelay: types.optional(types.number, 0.01),
+
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.effects.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.effects.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate() {
+        if (!self.ui)
+            self.ui = UIObj.create();
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj("Reverb", self);
+
+        ToneObjs.effects.find(o => o.id === self.id).obj.generate().then(() => {
+            //console.log('reverb generate finished')
+        });  
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id);
+    }
+}));
+
+const StereoWidener = types.model("StereoWidener", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+    wet: types.optional(types.number, 1),
+
+    width: types.optional(types.number, 0.5),
+
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.effects.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.effects.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate() {
+        if (!self.ui)
+            self.ui = UIObj.create();
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj("StereoWidener", self)
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id);
+    }
+}));
+
+const Tremolo = types.model("Tremolo", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+    wet: types.optional(types.number, 1),
+
+    frequency: types.optional(types.union(types.number, types.string), 10),
+    type: types.optional(types.enumeration("wave", ["sine", "triangle", "sawtooth", "square", "custom"]), "sine"),
+    depth: types.optional(types.number, 0.5),
+    spread: types.optional(types.number, 180),
+
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.effects.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.effects.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate() {
+        if (!self.ui)
+            self.ui = UIObj.create();
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj("Tremolo", self);
+        ToneObjs.effects.find(o => o.id === self.id).obj.start("0:0:0");
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id);
+    }
+}));
+
+const Vibrato = types.model("Vibrato", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+    wet: types.optional(types.number, 1),
+
+    maxDelay: types.optional(types.number, 0.005),
+    frequency: types.optional(types.union(types.number, types.string), 5),
+    depth: types.optional(types.number, 0.1),
+    type: types.optional(types.enumeration("wave", ["sine", "triangle", "sawtooth", "square", "custom"]), "sine"),
+
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.effects.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.effects.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate() {
+        if (!self.ui)
+            self.ui = UIObj.create();
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj("Vibrato", self)
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id);
+    }
+}));
+
+const Effects = types.model("Effects", {
+    autofilters: types.maybe(types.array(AutoFilter)),
+    autopanners: types.maybe(types.array(AutoPanner)),
+    autowahs: types.maybe(types.array(AutoWah)),
+    bitcrushers: types.maybe(types.array(BitCrusher)),
+    chebyshevs: types.maybe(types.array(Chebyshev)),
+    choruss: types.maybe(types.array(Chorus)), //plural chorus
+    convolvers: types.maybe(types.array(Convolver)),
+    distortions: types.maybe(types.array(Distortion)),
+    feedbackdelays: types.maybe(types.array(FeedbackDelay)),
+    freeverbs: types.maybe(types.array(Freeverb)),
+    jcreverbs: types.maybe(types.array(JCReverb)),
+    midsideeffects: types.maybe(types.array(MidSideEffect)),
+    phasers: types.maybe(types.array(Phaser)),
+    pingpongdelays: types.maybe(types.array(PingPongDelay)),
+    pitchshifts: types.maybe(types.array(PitchShift)),
+    reverbs: types.maybe(types.array(Reverb)),
+    stereowideners: types.maybe(types.array(StereoWidener)),
+    tremolos: types.maybe(types.array(Tremolo)),
+    vibratos: types.maybe(types.array(Vibrato))
+}).views(self => ({
+    getEffectByTypeId(type, id) {
+        return self[type + 's'].find(item => item.id === id);
+    },
+    getAllByTrack(trackId) {
+        let p = getMembers(self).properties;
+        let list = [];
+        for (var key in p) {
+            if (p.hasOwnProperty(key)) {
+                self[key].filter(o => o.track.id === trackId).forEach(function (item) {
+                    list.push(item);
+                })
+            }
+        }
+        return list;
+    }
+})).actions(self => ({
+    add(type, args) {
+        //this broke on package.json updates
+        //self[type + 's'].push(args);
+
+        switch (type) {
+            case "autofilter":
+                if(!args.oscillator){
+                    let defaultArgs = {...Tone.AutoFilter.defaults.filter};
+                    defaultArgs.id = 'filter_' + randomId();
+                    args.filter = Filter.create(defaultArgs);
+                }
+                self[type + 's'].push(AutoFilter.create(args));
+                break;
+            case "autopanner":
+                self[type + 's'].push(AutoPanner.create(args));
+                break;
+            case "autowah":
+                self[type + 's'].push(AutoWah.create(args));
+                break;
+            case "bitcrusher":
+                self[type + 's'].push(BitCrusher.create(args));
+                break;
+            case "chebyshev":
+                self[type + 's'].push(Chebyshev.create(args));
+                break;
+            case "chorus":
+                self[type + 's'].push(Chorus.create(args));
+                break;
+            case "convolver":
+                self[type + 's'].push(Convolver.create(args));
+                break;
+            case "distortion":
+                self[type + 's'].push(Distortion.create(args));
+                break;
+            case "feedbackdelay":
+                self[type + 's'].push(FeedbackDelay.create(args));
+                break;
+            case "freeverb":
+                self[type + 's'].push(Freeverb.create(args));
+                break;
+            case "jcreverb":
+                self[type + 's'].push(JCReverb.create(args));
+                break;
+            case "midsideeffect":
+                self[type + 's'].push(MidSideEffect.create(args));
+                break;
+            case "phaser":
+                self[type + 's'].push(Phaser.create(args));
+                break;
+            case "pingpongdelay":
+                self[type + 's'].push(PingPongDelay.create(args));
+                break;
+            case "pitchshift":
+                self[type + 's'].push(PitchShift.create(args));
+                break;
+            case "reverb":
+                self[type + 's'].push(Reverb.create(args));
+                break;
+            case "stereowidener":
+                self[type + 's'].push(StereoWidener.create(args));
+                break;
+            case "tremolo":
+                self[type + 's'].push(Tremolo.create(args));
+                break;
+            case "vibrato":
+                self[type + 's'].push(Vibrato.create(args));
+                break;
+            default:
+                break;
+        }
+    },
+    delete(type, id) {
+        destroy(self.getEffectByTypeId(type, id));
+    },
+    addToneObj(name, objSelf) {
+        let p = getMembers(objSelf).properties;
+        delete p.id;
+        delete p.track;
+        delete p.ui;
+
+        let args = {};
+        for (var key in p) {
+            if (p.hasOwnProperty(key)) {
+                args[key] = objSelf[key];
+            }
+        }
+
+        if(!ToneObjs.effects.find(row => row.id === objSelf.id))
+            ToneObjs.effects.push({ id: objSelf.id, track: objSelf.track.id, obj: new Tone[name](args) });
+    },
+    delToneObj(id) {
+        store.delConnectionsByObj(id);
+        let effectItem = ToneObjs.effects.find(e => e.id === id);
+        if(effectItem){
+            if(effectItem.obj){
+                effectItem.obj.dispose();
+                ToneObjs.effects = ToneObjs.effects.filter(e => e.id !== id);
+            }
+        }
+    }
+}))
+
+//*************************************************/
+
+
+const Follower = types.model("Follower", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+    
+    smoothing: types.optional(types.number, 0.05)
+}).views(self => ({
+
+})).actions(self => ({
+    setPropVal(prop, val) {
+        self[prop] = val;
+        ToneObjs.components.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj("Follower", self);
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id);
+    }
+}));
+
+const Meter = types.model("Meter", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+
+    smoothing: types.optional(types.number, 0.8)
+}).views(self => ({
+
+})).actions(self => ({
+    setPropVal(prop, val) {
+        self[prop] = val;
+        ToneObjs.components.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj('Meter', self);
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id)
+    }
+}));
+
+const PanVol = types.model("PanVol", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+
+    pan: types.optional(types.number, 0),
+    volume: types.optional(types.number, 0),
+    mute: types.optional(types.boolean, false),
+
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.components.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.components.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate() {
+        if (!self.ui)
+            self.ui = UIObj.create();
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj("PanVol", self);
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id);
+    }
+}));
+
+const Split = types.model("Split", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track))
+}).views(self => ({
+
+})).actions(self => ({
+    setPropVal(prop, val) {
+        self[prop] = val;
+        ToneObjs.components.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj('Split', self);
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id)
+    }
+}));
+
+const Limiter = types.model("Limiter", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+
+    threshold: types.optional(types.number, -12),
+
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.components.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.components.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate() {
+        if (!self.ui)
+            self.ui = UIObj.create();
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj('Limiter', self);
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id)
+    }
+}));
+
+const Solo = types.model("Solo", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+
+    solo: types.optional(types.boolean, false),
+}).views(self => ({
+
+})).actions(self => ({
+    setPropVal(prop, val) {
+        self[prop] = val;
+        ToneObjs.components.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj('Solo', self);
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id)
+    }
+}));
+
+const Compressor = types.model("Compressor", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+
+    ratio: types.optional(types.number, 12),
+    threshold: types.optional(types.number, -24),
+    release: types.optional(types.number, 0.25),
+    attack: types.optional(types.number, 0.003),
+    knee: types.optional(types.number, 30),
+
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.components.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.components.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate() {
+        if (!self.ui)
+            self.ui = UIObj.create();
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj('Compressor', self);
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id)
+    }
+}));
+
+const MultibandCompressor = types.model("MultibandCompressor", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+
+    low: Compressor,
+    mid: Compressor,
+    high: Compressor,
+
+    lowFrequency: types.optional(types.number, 250),
+    highFrequency: types.optional(types.number, 2000),
+
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    setPropVal(prop, val, signal, child) {
+        if(child){
+            self[child][prop] = val;
+            if (signal)
+                ToneObjs.components.find(o => o.id === self.id).obj[child][prop].value = val;
+            else
+                ToneObjs.components.find(o => o.id === self.id).obj[child][prop] = val;
+        }
+        else{
+            self[prop] = val;
+            if (signal)
+                ToneObjs.components.find(o => o.id === self.id).obj[prop].value = val;
+            else
+                ToneObjs.components.find(o => o.id === self.id).obj[prop] = val;
+        }
+    },
+    afterCreate() {
+        if (!self.ui)
+            self.ui = UIObj.create();
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj('MultibandCompressor', self);
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id)
+    }
+}));
+
+
+const EQ3 = types.model("EQ3", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+
+    low: types.optional(types.number, 0),
+    mid: types.optional(types.number, 0),
+    high: types.optional(types.number, 0),
+    lowFrequency: types.optional(types.union(types.number, types.string), 400),
+    highFrequency: types.optional(types.union(types.number, types.string), 2500),
+
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.components.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.components.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate() {
+        if (!self.ui)
+            self.ui = UIObj.create();
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj('EQ3', self);
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id)
+    }
+}));
+
+const Mono = types.model("Mono", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.components.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.components.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate() {
+        if (!self.ui)
+            self.ui = UIObj.create();
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj('Mono', self);
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id)
+    }
+}));
+
+const Gate = types.model("Gate", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+
+    attack: types.optional(types.number, 0.1),
+    release: types.optional(types.number, 0.1),
+    threshold: types.optional(types.number, -40),
+
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.components.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.components.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate() {
+        if (!self.ui)
+            self.ui = UIObj.create();
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj('Gate', self);
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id)
+    }
+}));
+
+const AmplitudeEnvelope = types.model("AmplitudeEnvelope", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+
+    attack: types.optional(types.number, 0.1),
+	decay: types.optional(types.number, 0.2),
+	sustain: types.optional(types.number, 1),
+    release: types.optional(types.number, 0.8),
+
+    attackCurve: types.optional(types.union(types.string, types.array(types.number)), "linear"), //linear exponential sine cosine bounce ripple step
+    decayCurve: types.optional(types.union(types.string, types.array(types.number)), "exponential"), 
+    releaseCurve: types.optional(types.union(types.string, types.array(types.number)), "exponential"), 
+    
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.components.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.components.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate() {
+
+    },
+    afterAttach() {
+        if (!self.ui && self.track !== undefined)
+            self.ui = UIObj.create();
+
+        if(self.track !== undefined)
+            getParent(self, 2).addToneObj('AmplitudeEnvelope', self);
+    },
+    beforeDestroy() {
+        if(self.track !== undefined)
+            getParent(self, 2).delToneObj(self.id)
+    }
+}));
+
+const Envelope = types.model("Envelope", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+
+    attack: types.optional(types.number, 0.01),
+	decay: types.optional(types.number, 0.1),
+	sustain: types.optional(types.number, 0.5),
+    release: types.optional(types.number, 1),
+    
+    attackCurve: types.optional(types.union(types.string, types.array(types.number)), "linear"), //linear exponential sine cosine bounce ripple step
+    decayCurve: types.optional(types.union(types.string, types.array(types.number)), "exponential"), 
+    releaseCurve: types.optional(types.union(types.string, types.array(types.number)), "exponential"), 
+    
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    //TODO: check if part of synth instruments
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.components.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.components.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate() {
+        if (!self.ui && self.track !== undefined)
+            self.ui = UIObj.create();
+
+    },
+    afterAttach() {
+        if(self.track !== undefined)
+            getParent(self, 2).addToneObj('Envelope', self);
+    },
+    beforeDestroy() {
+        if(self.track !== undefined)
+            getParent(self, 2).delToneObj(self.id)
+    }
+}));
+
+const FrequencyEnvelope = types.model("FrequencyEnvelope", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+
+    //need these?
+    attack: types.optional(types.number, 0.1),
+	decay: types.optional(types.number, 0.2),
+	sustain: types.optional(types.number, 1),
+    release: types.optional(types.number, 0.8),
+
+    baseFrequency: types.optional(types.union(types.number, types.string), 200),
+    octaves: types.optional(types.number, 4),
+    exponent: types.optional(types.number, 2),
+
+    attackCurve: types.optional(types.union(types.string, types.array(types.number)), "linear"), //linear exponential sine cosine bounce ripple step
+    decayCurve: types.optional(types.union(types.string, types.array(types.number)), "exponential"), 
+    releaseCurve: types.optional(types.union(types.string, types.array(types.number)), "exponential"), 
+    
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    //TODO: check if part of synth instruments
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.components.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.components.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate() {
+        
+    },
+    afterAttach() {
+        if (!self.ui && self.track !== undefined)
+            self.ui = UIObj.create();
+
+        if(self.track !== undefined)
+            getParent(self, 2).addToneObj('FrequencyEnvelope', self);
+    },
+    beforeDestroy() {
+        if(self.track !== undefined)
+            getParent(self, 2).delToneObj(self.id)
+    }
+}));
+
+const LFO = types.model("LFO", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+
+    type: types.optional(types.string, "sine"),
+    min: types.optional(types.number, 0),
+    max: types.optional(types.number, 1),
+    phase: types.optional(types.number, 0),
+    frequency: types.optional(types.string, "4n"),
+    amplitude: types.optional(types.number, 1),
+    //units: Tone.Type.Default
+
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.components.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.components.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate() {
+        if (!self.ui)
+            self.ui = UIObj.create();
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj('LFO', self);
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id)
+    }
+}));
+
+const FeedbackCombFilter = types.model("FeedbackCombFilter", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+
+    delayTime: types.optional(types.union(types.number, types.string), 0.1),
+    resonance: types.optional(types.number, 0.1),
+
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.components.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.components.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate() {
+        if (!self.ui)
+            self.ui = UIObj.create();
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj('FeedbackCombFilter', self);
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id)
+    }
+}));
+
+
+const Components = types.model("Components", {
+    filters: types.maybe(types.array(Filter)),
+    followers: types.maybe(types.array(Follower)),
+    meters: types.maybe(types.array(Meter)),
+    panvols: types.maybe(types.array(PanVol)),
+    splits: types.maybe(types.array(Split)),
+    limiters: types.maybe(types.array(Limiter)),
+    solos: types.maybe(types.array(Solo)),
+    eq3s: types.maybe(types.array(EQ3)),
+    compressors: types.maybe(types.array(Compressor)),
+    monos: types.maybe(types.array(Mono)),
+    gates: types.maybe(types.array(Gate)),
+    envelopes: types.maybe(types.array(Envelope)),
+    amplitudeenvelopes: types.maybe(types.array(AmplitudeEnvelope)),
+    frequencyenvelopes: types.maybe(types.array(FrequencyEnvelope)),
+    lfos: types.maybe(types.array(LFO)),
+    feedbackcombfilters: types.maybe(types.maybe(types.array(FeedbackCombFilter))),
+    multibandcompressors: types.maybe(types.array(MultibandCompressor))
+}).views(self => ({
+    isHidden(id){
+        let count = (id.match(/_/g) || []).length;
+        if(count >= 2)
+            return true;
+        else
+            return false;
+    },
+    getComponentByTypeId(type, id) {
+        return self[type + 's'].find(item => item.id === id);
+    },
+    getAllByTrack(trackId) {
+        let p = getMembers(self).properties;
+        let list = [];
+        for (var key in p) {
+            if (p.hasOwnProperty(key)) {
+                self[key].filter(o => o.track.id === trackId).forEach(function (item) {
+                    list.push(item);
+                })
+            }
+        }
+        return list;
+    }
+})).actions(self => ({
+    add(type, args) {
+        //this broke during package.json update...
+        //self[type + 's'].push(args)
+
+        switch (type) {
+            case "filter":
+                self[type + 's'].push(Filter.create(args));
+                break;
+            case "follower":
+                self[type + 's'].push(Follower.create(args));
+                break;
+            case "meter":
+                self[type + 's'].push(Meter.create(args));
+                break;
+            case "panvol":
+                self[type + 's'].push(PanVol.create(args));
+                break;
+            case "split":
+                self[type + 's'].push(Split.create(args));
+                break;
+            case "limiter":
+                self[type + 's'].push(Limiter.create(args));
+                break;
+            case "solo":
+                self[type + 's'].push(Solo.create(args));
+                break;
+            case "eq3":
+                self[type + 's'].push(EQ3.create(args));
+                break;
+            case "compressor":
+                self[type + 's'].push(Compressor.create(args));
+                break;
+            case "mono":
+                self[type + 's'].push(Mono.create(args));
+                break;
+            case "gate":
+                self[type + 's'].push(Gate.create(args));
+                break;
+            case "envelope":
+                self[type + 's'].push(Envelope.create(args));
+                break;
+            case "amplitudeenvelope":
+                self[type + 's'].push(AmplitudeEnvelope.create(args));
+                break;
+            case "frequencyenvelope":
+                self[type + 's'].push(FrequencyEnvelope.create(args));
+                break;
+            case "lfo":
+                self[type + 's'].push(LFO.create(args));
+                break;
+            case "feedbackcombfilter":
+                self[type + 's'].push(FeedbackCombFilter.create(args));
+                break;
+            case "multibandcompressor":
+                self[type + 's'].push(MultibandCompressor.create(args));
+                break;
+            default:
+                break;
+        }
+    },
+    delete(type, id) {
+        destroy(self.getComponentByTypeId(type, id));
+    },
+    addToneObj(name, objSelf) {
+        let p = getMembers(objSelf).properties;
+        delete p.id;
+        delete p.track;
+        delete p.ui;
+
+        let args = {};
+        for (var key in p) {
+            if (p.hasOwnProperty(key)) {
+                args[key] = objSelf[key];
+            }
+        }
+
+        if(!ToneObjs.components.find(row => row.id === objSelf.id))
+            ToneObjs.components.push({ id: objSelf.id, track: objSelf.track.id, obj: new Tone[name](args) });
+    
+    },
+    delToneObj(id) {
+        store.delConnectionsByObj(id);
+        let componentItem = ToneObjs.components.find(e => e.id === id);
+        if(componentItem){
+            if(componentItem.obj){
+                componentItem.obj.dispose();
+                ToneObjs.components = ToneObjs.components.filter(e => e.id !== id);
+            }
+        }
+    }
+}))
+
+const AMOscillator = types.model("AMOscillator", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+
+    frequency: types.optional(types.union(types.number, types.string), 440), //both number and string
+    type: types.optional(types.string, "sine"), //partials can also be used ex) "sine4"
+    modulationType: types.optional(types.string, "square"), //partials can also be used ex) "sine4"
+    detune: types.optional(types.number, 0),
+    phase: types.optional(types.number, 0),
+    harmonicity: types.optional(types.number, 1),
+    volume: types.optional(types.number, 0),
+    //partials: types.optional(types.array(types.number), []),
+
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    //check if part of synth instrument and use the ToneObj
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.sources.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.sources.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate() {},
+    afterAttach() {
+        if (!self.ui && self.track !== undefined)
+            self.ui = UIObj.create();
+
+        if(self.track !== undefined){
+            getParent(self, 2).addToneObj('AMOscillator', self);
+        }
+    },
+    beforeDestroy() {
+        if(self.track !== undefined)
+            getParent(self, 2).delToneObj(self.id)
+    }
+}));
+
+const FMOscillator = types.model("FMOscillator", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+
+    frequency: types.optional(types.union(types.number, types.string), 440), //both number and string
+    type: types.optional(types.string, "sine"), //partials can also be used ex) "sine4"
+    modulationType: types.optional(types.string, "square"), //partials can also be used ex) "sine4"
+    modulationIndex: types.optional(types.number, 2),
+    detune: types.optional(types.number, 0),
+    phase: types.optional(types.number, 0),
+    harmonicity: types.optional(types.number, 1),
+    volume: types.optional(types.number, 0),
+    //partials: types.optional(types.array(types.number), []),
+
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    //check if part of synth instrument and use the ToneObj
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.sources.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.sources.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate() {},
+    afterAttach() {
+        if (!self.ui && self.track !== undefined)
+            self.ui = UIObj.create();
+
+        if(self.track !== undefined){
+            getParent(self, 2).addToneObj('FMOscillator', self);
+        }
+    },
+    beforeDestroy() {
+        if(self.track !== undefined)
+            getParent(self, 2).delToneObj(self.id)
+    }
+}));
+
+const FatOscillator = types.model("FatOscillator", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+
+    type: types.optional(types.string, "sawtooth"), //partials can also be used ex) "sine4"
+    frequency: types.optional(types.union(types.number, types.string), 440), //both number and string
+    detune: types.optional(types.number, 0),
+    phase: types.optional(types.number, 0),
+    spread: types.optional(types.number, 20),
+    count: types.optional(types.number, 3),
+    volume: types.optional(types.number, 0),
+    //partials: types.optional(types.array(types.number), []),
+
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    //check if part of synth instrument and use the ToneObj
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.sources.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.sources.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate() {},
+    afterAttach() {
+        if (!self.ui && self.track !== undefined)
+            self.ui = UIObj.create();
+
+        if(self.track !== undefined){
+            getParent(self, 2).addToneObj('FatOscillator', self);
+        }
+    },
+    beforeDestroy() {
+        if(self.track !== undefined)
+            getParent(self, 2).delToneObj(self.id)
+    }
+}));
+
+
+const Oscillator = types.model("Oscillator", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+
+    type: types.optional(types.string, "sine"), //partials can also be used ex) "sine4"
+    frequency: types.optional(types.union(types.number, types.string), 440), //TODO: types.custom for string and number since "C4" and 440 can be used
+    detune: types.optional(types.number, 0),
+    phase: types.optional(types.number, 0),
+    volume: types.optional(types.number, 0),
+    //partials: types.optional(types.array(types.number), []),
+
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    //check if part of synth instrument and use the ToneObj
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.sources.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.sources.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate() {
+  
+    },
+    afterAttach() {
+        if (!self.ui && self.track !== undefined)
+            self.ui = UIObj.create();
+
+        if(self.track !== undefined){
+            getParent(self, 2).addToneObj('Oscillator', self);
+        }
+    },
+    beforeDestroy() {
+        if(self.track !== undefined)
+            getParent(self, 2).delToneObj(self.id)
+    }
+}));
+
+/*
+Tone.OmniOscillator aggregates Tone.Oscillator, Tone.PulseOscillator, Tone.PWMOscillator, Tone.FMOscillator, Tone.AMOscillator, and Tone.FatOscillator into one class. 
+The oscillator class can be changed by setting the type. omniOsc.type = "pwm" will set it to the Tone.PWMOscillator. 
+Prefixing any of the basic types (“sine”, “square4”, etc.) with “fm”, “am”, or “fat” will use the FMOscillator, AMOscillator or FatOscillator respectively. 
+For example: omniOsc.type = "fatsawtooth" will create set the oscillator to a FatOscillator of type “sawtooth”.
+*/
+const OmniOscillator = types.model("OmniOscillator", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+
+    type: types.optional(types.string, "sine"), //partials can also be used ex) "sine4"
+    frequency: types.optional(types.union(types.number, types.string), 440), //both number and string
+    detune: types.optional(types.number, 0),
+    phase: types.optional(types.number, 0),
+    volume: types.optional(types.number, 0),
+    //harmonicity ?
+    //partials: types.optional(types.array(types.number), []),
+
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    //check if part of synth instrument and use the ToneObj
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.sources.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.sources.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate() {},
+    afterAttach() {
+        if (!self.ui && self.track !== undefined)
+            self.ui = UIObj.create();
+        
+        if(self.track !== undefined){
+            getParent(self, 2).addToneObj('OmniOscillator', self);
+        }
+    },
+    beforeDestroy() {
+        if(self.track !== undefined)
+            getParent(self, 2).delToneObj(self.id)
+    }
+}));
+
+const PWMOscillator = types.model("PWMOscillator", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+
+    type: types.optional(types.string, "sine"), //partials can also be used ex) "sine4"
+    frequency: types.optional(types.union(types.number, types.string), 440), //both number and string
+    detune: types.optional(types.number, 0),
+    phase: types.optional(types.number, 0),
+    modulationFrequency: types.optional(types.union(types.number, types.string), 0.4), //both string and number (frequency)
+    volume: types.optional(types.number, 0),
+    //harmonicity //no harmonicity for PWM
+    //partials: types.optional(types.array(types.number), []), //no partials for PWM
+
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    //check if part of synth instrument and use the ToneObj
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.sources.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.sources.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate() {},
+    afterAttach() {
+        if (!self.ui && self.track !== undefined)
+            self.ui = UIObj.create();
+
+        if(self.track !== undefined){
+            getParent(self, 2).addToneObj('PWMOscillator', self);
+        }
+    },
+    beforeDestroy() {
+        if(self.track !== undefined)
+            getParent(self, 2).delToneObj(self.id)
+    }
+}));
+
+
+const PulseOscillator = types.model("PulseOscillator", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+
+    type: types.optional(types.string, "sine"), //partials can also be used ex) "sine4"
+    frequency: types.optional(types.union(types.number, types.string), 440), //both number and string
+    detune: types.optional(types.number, 0),
+    phase: types.optional(types.number, 0),
+    width: types.optional(types.number, 0.2),
+    volume: types.optional(types.number, 0),
+    //partials: types.optional(types.array(types.number), []),
+
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    //check if part of synth instrument and use the ToneObj
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.sources.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.sources.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate() {},
+    afterAttach() {
+        if (!self.ui && self.track !== undefined)
+            self.ui = UIObj.create();
+
+        if(self.track !== undefined){
+            getParent(self, 2).addToneObj('PulseOscillator', self);
+        }
+    },
+    beforeDestroy() {
+        if(self.track !== undefined)
+            getParent(self, 2).delToneObj(self.id)
+    }
+}));
+
+
+const Noise = types.model("Noise", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+
+    type: types.optional(types.string, "white"), //white pink brown
+    playbackRate: types.optional(types.number, 1),
+    volume: types.optional(types.number, 0),
+
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    //check if part of synth instrument and use the ToneObj
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.sources.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.sources.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate() {
+    },
+    afterAttach() {
+        if (!self.ui && self.track !== undefined)
+            self.ui = UIObj.create();
+
+        if(self.track !== undefined)
+            getParent(self, 2).addToneObj('Noise', self);
+
+    },
+    beforeDestroy() {
+        if(self.track !== undefined)
+            getParent(self, 2).delToneObj(self.id)
+    }
+}));
+
+/*
+var motu = new Tone.UserMedia();
+//opening the input asks the user to activate their mic
+motu.open().then(function(){
+	//promise resolves when input is available
+});
+*/
+const UserMedia = types.model("UserMedia", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+
+    type: types.optional(types.number, 0), 
+    mute: types.optional(types.boolean, false),
+
+    ui: types.maybe(UIObj)
+}).views(self => ({
+
+})).actions(self => ({
+    //check if part of synth instrument and use the ToneObj
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.sources.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.sources.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate() {
+        self.ui = UIObj.create();
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj('UserMedia', self);
+
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id)
+    }
+}));
+
+
+
+const Sources = types.model("Sources", {
+    amoscillators: types.maybe(types.array(AMOscillator)),
+    fatoscillators: types.maybe(types.array(FatOscillator)),
+    fmoscillators: types.maybe(types.array(FMOscillator)),
+    oscillators: types.maybe(types.array(Oscillator)),
+    omnioscillators: types.maybe(types.array(OmniOscillator)),
+    pwmoscillators: types.maybe(types.array(PWMOscillator)),
+    pulseoscillators: types.maybe(types.array(PulseOscillator)),
+    noises: types.maybe(types.array(Noise)),
+    usermedias: types.maybe(types.array(UserMedia))
+}).views(self => ({
+    getSourceByTypeId(type, id) {
+        return self[type + 's'].find(item => item.id === id);
+    },
+    getAllByTrack(trackId) {
+        let p = getMembers(self).properties;
+        let list = [];
+        for (var key in p) {
+            if (p.hasOwnProperty(key)) {
+                self[key].filter(o => o.track.id === trackId).forEach(function (item) {
+                    list.push(item);
+                })
+            }
+        }
+        return list;
+    }
+})).actions(self => ({
+    add(type, args) {
+        //this broke during package.json update....
+        //self[type + 's'].push(args);
+
+        switch (type) {
+            case "amoscillator":
+                self[type + 's'].push(AMOscillator.create(args));
+                break;
+            case "fatoscillator":
+                self[type + 's'].push(FatOscillator.create(args));
+                break
+            case "fmoscillator":
+                self[type + 's'].push(FMOscillator.create(args));
+                break
+            case "oscillator":
+                self[type + 's'].push(Oscillator.create(args));
+                break;
+            case "omnioscillator":
+                self[type + 's'].push(OmniOscillator.create(args));
+                break;
+            case "pwmoscillator":
+                self[type + 's'].push(PWMOscillator.create(args));
+                break;
+            case "pulseoscillator":
+                self[type + 's'].push(PulseOscillator.create(args));
+                break;
+            case "noise":
+                self[type + 's'].push(Noise.create(args));
+                break;
+            case "usermedia":
+                self[type + 's'].push(UserMedia.create(args));
+                break;
+            default:
+                break;
+        }
+    },
+    delete(type, id) {
+        destroy(self.getSourceByTypeId(type, id));
+    },
+    addToneObj(name, objSelf) {
+        let p = getMembers(objSelf).properties;
+        delete p.id;
+        delete p.track;
+        delete p.ui;
+
+        let args = {};
+        for (var key in p) {
+            if (p.hasOwnProperty(key)) {
+                args[key] = objSelf[key];
+            }
+        }
+
+        if(!ToneObjs.sources.find(row => row.id === objSelf.id))
+            ToneObjs.sources.push({ id: objSelf.id, track: objSelf.track.id, obj: new Tone[name](args) });
+    },
+    delToneObj(id) {
+        store.delConnectionsByObj(id);
+        let sourceItem = ToneObjs.sources.find(e => e.id === id);
+        if(sourceItem){
+            if(sourceItem.obj){
+                sourceItem.obj.dispose();
+                ToneObjs.sources = ToneObjs.sources.filter(e => e.id !== id);
+            }
+        }
+    }
+}));
+
+
+const Player = types.model("Player", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+    sample: types.maybe(types.reference(Sample)),
+    region: types.maybe(types.reference(Region)),
+
+    url: types.maybe(types.string),
+    //onload  : types.maybe(types.null) , //hm
+    playbackRate: types.optional(types.number, 1),
+    loop: types.optional(types.boolean, false),
+    autostart: types.optional(types.boolean, false),
+    loopStart: types.optional(types.number, 0),
+    loopEnd: types.optional(types.number, 0),
+    retrigger: types.optional(types.boolean, false),
+    reverse: types.optional(types.boolean, false),
+    fadeIn: types.optional(types.number, 0),
+    fadeOut: types.optional(types.number, 0),
+    volume: types.optional(types.number, 0),
+
+    ui: types.maybe(UIObj)
+}).actions(self => ({
+    setPropVal(prop, val, signal) {
+        self[prop] = val;
+        if (signal)
+            ToneObjs.instruments.find(o => o.id === self.id).obj[prop].value = val;
+        else
+            ToneObjs.instruments.find(o => o.id === self.id).obj[prop] = val;
+    },
+    afterCreate() {
+        if (!self.ui)
+            self.ui = UIObj.create();
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj('Player', self);
+
+        let player = ToneObjs.instruments.find(o => o.id === self.id).obj;
+
+        if (self.region) {
+            store.DBLoadAudioFile(self.region.id).then(result => {
+                player.buffer.fromArray(result.data);
+            });
+        }
+        else {            
+            store.DBLoadAudioFile(self.sample.id).then(result => {
+                if(result){
+                    if(result.data){
+                        if (Array.isArray(result.data) || result.data instanceof Float32Array) {            
+                            player.buffer.fromArray(result.data);
+                        }
+                        else{
+                            let blobUrl = window.URL.createObjectURL(result.data);
+                            player.load(blobUrl, function(){
+                                window.URL.revokeObjectURL(blobUrl);
+                            });
+                        }
+                    }
+                  }
+            });
+        }
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id);
+    }
+}));
+
+
+const Synth = types.model("Synth", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+
+    oscillator: OmniOscillator,
+    envelope: AmplitudeEnvelope,
+    portamento: types.optional(types.number, 0),
+    volume: types.optional(types.number, 0),
+
+    ui: types.maybe(UIObj)
+}).actions(self => ({
+    setPropVal(prop, val, signal, child) {
+        if(child){
+            self[child][prop] = val;
+            ToneObjs.instruments.find(o => o.id === self.id).obj.set(child + "." + prop, val);
+        }
+        else{
+            self[prop] = val;
+            ToneObjs.instruments.find(o => o.id === self.id).obj.set(prop, val);
+        }
+    },
+    afterCreate() {
+        if (!self.ui)
+            self.ui = UIObj.create();
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj('Synth', self);
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id);
+    }
+}));
+
+
+const MonoSynth = types.model("MonoSynth", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+
+    //frequency: types.optional(types.union(types.number, types.string), 'C4'), //this should be custom type allowing numbers/strings (freq/note)
+    detune: types.optional(types.number, 0),
+    oscillator: OmniOscillator, //square default
+    filter: Filter, //Q: 6 , type: lowpass ,rolloff: -24
+    envelope: AmplitudeEnvelope, //attack: 0.005 , decay: 0.1 , sustain: 0.9 , release: 1
+    filterEnvelope: FrequencyEnvelope, //attack: 0.06 ,decay: 0.2 ,sustain: 0.5 ,release: 2 ,baseFrequency: 200 ,octaves: 7 , exponent: 2
+    portamento: types.optional(types.number, 0),
+    volume: types.optional(types.number, -8), //... 0 is going to blow my eardrums
+
+    ui: types.maybe(UIObj)
+}).views(self => ({
+    getParentId(){
+        return getParent(self, 1).id;
+    }
+})).actions(self => ({
+    setPropVal(prop, val, signal, child) {
+        if(self.getParentId()){
+            let parent = getParent(self, 1);
+            if(parent.id.split('_')[0] === "duosynth"){
+                let voice = "voice0";
+                if(parent.voice1.id === self.id)
+                    voice = "voice1";
+
+                if(child){
+                    self[child][prop] = val;
+                    ToneObjs.instruments.find(o => o.id === parent.id).obj.set(voice + "." + child + "." + prop, val);
+                }
+                else{
+                    self[prop] = val;
+                    ToneObjs.instruments.find(o => o.id === parent.id).obj.set(voice + "." + prop, val);
+                }
+            }
+        }
+        else{
+            if(child){
+                self[child][prop] = val;
+                ToneObjs.instruments.find(o => o.id === self.id).obj.set(child + "." + prop, val);
+            }
+            else{
+                self[prop] = val;
+                ToneObjs.instruments.find(o => o.id === self.id).obj.set(prop, val);
+            }
+        }
+    },
+    afterCreate() {
+
+    },
+    afterAttach() {
+        if (!self.ui && self.track !== undefined)
+            self.ui = UIObj.create();
+
+        if(self.track !== undefined)
+            getParent(self, 2).addToneObj('MonoSynth', self);
+    },
+    beforeDestroy() {
+        if(self.track !== undefined)
+            getParent(self, 2).delToneObj(self.id);
+    }
+}));
+
+const AMSynth = types.model("AMSynth", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+
+    harmonicity: types.optional(types.number, 3),
+    detune: types.optional(types.number, 0),
+    oscillator : OmniOscillator , //sine default
+    envelope : AmplitudeEnvelope,
+    modulation: OmniOscillator, //type:square
+    modulationEnvelope : AmplitudeEnvelope,//({attack: 0.5 ,decay: 0 ,sustain: 1 ,release: 0.5}),
+    portamento: types.optional(types.number, 0),
+    volume: types.optional(types.number, 0),
+
+    ui: types.maybe(UIObj)
+}).actions(self => ({
+    setPropVal(prop, val, signal, child) {
+        if(child){
+            self[child][prop] = val;
+            ToneObjs.instruments.find(o => o.id === self.id).obj.set(child + "." + prop, val);
+        }
+        else{
+            self[prop] = val;
+            ToneObjs.instruments.find(o => o.id === self.id).obj.set(prop, val);
+        }
+    },
+    afterCreate() {
+        if (!self.ui)
+            self.ui = UIObj.create();
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj('AMSynth', self);
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id);
+    }
+}));
+
+const FMSynth = types.model("FMSynth", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+
+    harmonicity: types.optional(types.number, 3) ,
+    modulationIndex: types.optional(types.number, 10) ,
+    detune: types.optional(types.number, 0),
+    oscillator: OmniOscillator , //sine default
+    envelope: AmplitudeEnvelope,
+    modulation: OmniOscillator, //set to square
+    modulationEnvelope: AmplitudeEnvelope,//({attack: 0.5 ,decay: 0 ,sustain: 1 ,release: 0.5}),
+    portamento: types.optional(types.number, 0),
+    volume: types.optional(types.number, 0),
+
+    ui: types.maybe(UIObj)
+}).actions(self => ({
+    setPropVal(prop, val, signal, child) {
+        if(child){
+            self[child][prop] = val;
+            ToneObjs.instruments.find(o => o.id === self.id).obj.set(child + "." + prop, val);
+        }
+        else{
+            self[prop] = val;
+            ToneObjs.instruments.find(o => o.id === self.id).obj.set(prop, val);
+        }
+    },
+    afterCreate() {
+        if (!self.ui)
+            self.ui = UIObj.create();
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj('FMSynth', self);
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id);
+    }
+}));
+
+const MetalSynth = types.model("MetalSynth", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+
+    frequency: types.optional(types.union(types.number, types.string), 200),
+    envelope: AmplitudeEnvelope, // {"attack" : 0.001, "decay" : 1.4, "release" : 0.2}
+    harmonicity: types.optional(types.number, 5.1),
+    modulationIndex: types.optional(types.number, 32),
+    resonance: types.optional(types.number, 4000),
+    octaves: types.optional(types.number, 1.5),
+    volume: types.optional(types.number, 0),
+
+    ui: types.maybe(UIObj)
+}).actions(self => ({
+    setPropVal(prop, val, signal, child) {
+        if(child){
+            self[child][prop] = val;
+            if (signal)
+                ToneObjs.instruments.find(o => o.id === self.id).obj[child][prop].value = val;
+            else
+                ToneObjs.instruments.find(o => o.id === self.id).obj[child][prop] = val;
+        }
+        else{
+            self[prop] = val;
+            if (signal)
+                ToneObjs.instruments.find(o => o.id === self.id).obj[prop].value = val;
+            else
+                ToneObjs.instruments.find(o => o.id === self.id).obj[prop] = val;
+        }
+    },
+    afterCreate() {
+        if (!self.ui)
+            self.ui = UIObj.create();
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj('MetalSynth', self);
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id);
+    }
+}));
+
+const MembraneSynth = types.model("MembraneSynth", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+
+    pitchDecay: types.optional(types.number, 0.05),
+    octaves: types.optional(types.number, 10),
+    oscillator: OmniOscillator,
+    envelope: AmplitudeEnvelope,
+    volume: types.optional(types.number, 0),
+
+    ui: types.maybe(UIObj)
+}).actions(self => ({
+    setPropVal(prop, val, signal, child) {
+        if(child){
+            self[child][prop] = val;
+            if (signal)
+                ToneObjs.instruments.find(o => o.id === self.id).obj[child][prop].value = val;
+            else
+                ToneObjs.instruments.find(o => o.id === self.id).obj[child][prop] = val;
+        }
+        else{
+            self[prop] = val;
+            if (signal)
+                ToneObjs.instruments.find(o => o.id === self.id).obj[prop].value = val;
+            else
+                ToneObjs.instruments.find(o => o.id === self.id).obj[prop] = val;
+        }
+    },
+    afterCreate() {
+        if (!self.ui)
+            self.ui = UIObj.create();
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj('MembraneSynth', self);
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id);
+    }
+}));
+
+const PluckSynth = types.model("PluckSynth", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+
+    attackNoise: types.optional(types.number, 1),
+	dampening: types.optional(types.union(types.number, types.string), 4000),
+    resonance: types.optional(types.number, 0.7),
+    volume: types.optional(types.number, 0),
+
+    ui: types.maybe(UIObj)
+}).actions(self => ({
+    setPropVal(prop, val, signal, child) {
+        if(child){
+            self[child][prop] = val;
+            if (signal)
+                ToneObjs.instruments.find(o => o.id === self.id).obj[child][prop].value = val;
+            else
+                ToneObjs.instruments.find(o => o.id === self.id).obj[child][prop] = val;
+        }
+        else{
+            self[prop] = val;
+            if (signal)
+                ToneObjs.instruments.find(o => o.id === self.id).obj[prop].value = val;
+            else
+                ToneObjs.instruments.find(o => o.id === self.id).obj[prop] = val;
+        }
+    },
+    afterCreate() {
+        if (!self.ui)
+            self.ui = UIObj.create();
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj('PluckSynth', self);
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id);
+    }
+}));
+
+const NoiseSynth = types.model("NoiseSynth", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+
+    noise: Noise,
+    envelope: AmplitudeEnvelope,
+    volume: types.optional(types.number, 0),
+
+    ui: types.maybe(UIObj)
+}).actions(self => ({
+    setPropVal(prop, val, signal, child) {
+        if(child){
+            self[child][prop] = val;
+            if (signal)
+                ToneObjs.instruments.find(o => o.id === self.id).obj[child][prop].value = val;
+            else
+                ToneObjs.instruments.find(o => o.id === self.id).obj[child][prop] = val;
+        }
+        else{
+            self[prop] = val;
+            if (signal)
+                ToneObjs.instruments.find(o => o.id === self.id).obj[prop].value = val;
+            else
+                ToneObjs.instruments.find(o => o.id === self.id).obj[prop] = val;
+        }
+    },
+    afterCreate() {
+        if (!self.ui)
+            self.ui = UIObj.create();
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj('NoiseSynth', self);
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id);
+    }
+}));
+
+
+const PolySynth = types.model("PolySynth", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+
+    polyphony: types.optional(types.number, 4),
+    detune: types.optional(types.number, 0),
+    voice: types.optional(types.string, "Synth"), //convert to obj Tone.Synth Tone["Synth"]
+    volume: types.optional(types.number, 0),
+
+    ui: types.maybe(UIObj)
+}).actions(self => ({
+    setPropVal(prop, val, signal, child) {
+        if(child){
+            self[child][prop] = val;
+            if (signal)
+                ToneObjs.instruments.find(o => o.id === self.id).obj[child][prop].value = val;
+            else
+                ToneObjs.instruments.find(o => o.id === self.id).obj[child][prop] = val;
+        }
+        else{
+            self[prop] = val;
+            if (signal)
+                ToneObjs.instruments.find(o => o.id === self.id).obj[prop].value = val;
+            else
+            {
+                if(prop === "voice"){
+                    ToneObjs.instruments.find(o => o.id === self.id).obj[prop] =  Tone[val];
+                }
+                else{
+                    ToneObjs.instruments.find(o => o.id === self.id).obj[prop] = val;
+                }
+            }
+        }
+    },
+    afterCreate() {
+        if (!self.ui)
+            self.ui = UIObj.create();
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj('PolySynth', self);
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id);
+    }
+}));
+
+const DuoSynth = types.model("DuoSynth", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+
+    vibratoAmount: types.optional(types.number, 0.5),
+	vibratoRate: types.optional(types.union(types.number, types.string), 5),
+    harmonicity: types.optional(types.number, 1.5),
+    voice0: MonoSynth,
+    voice1: MonoSynth,
+    volume: types.optional(types.number, 0),
+    
+    ui: types.maybe(UIObj)
+}).actions(self => ({
+    setPropVal(prop, val, signal, child) {
+        if(child){
+            self[child][prop] = val;
+            ToneObjs.instruments.find(o => o.id === self.id).obj.set(child + "." + prop, val);
+        }
+        else{
+            self[prop] = val;
+            ToneObjs.instruments.find(o => o.id === self.id).obj.set(prop, val);
+        }
+    },
+    afterCreate() {
+        if (!self.ui)
+            self.ui = UIObj.create();
+    },
+    afterAttach() {
+        getParent(self, 2).addToneObj('DuoSynth', self);
+    },
+    beforeDestroy() {
+        getParent(self, 2).delToneObj(self.id);
+    }
+}));
+
+const TinySynth = types.model("TinySynth", {
+    id: types.identifier,
+    track: types.maybe(types.reference(Track)),
+
+    panvol: types.maybe(types.reference(PanVol)),
+
+    channel: types.optional(types.number, 0), //0-15  9=drums
+    instrument: types.optional(types.number, 0),
+    
+    ui: types.maybe(UIObj)
+}).actions(self => ({
+    setPropVal(prop, val, signal, child) {
+        if(prop === "instrument"){
+            self[prop] = val;
+            ToneObjs.custom.find(o => o.id === self.id).obj.send([0xc0, val]);
+        }
+        else if(prop === "channel"){
+            self[prop] = val;
+        }
+    },
+    afterCreate() {
+        if (!self.ui)
+            self.ui = UIObj.create();
+    },
+    afterAttach() {
+        let outId = 'tinysynth_panvol_' + self.id.split('_')[1];
+
+        if(!self.panvol){
+            store.components.add('panvol', {id: outId, track: self.track.id});
+            self.panvol = outId;
+        }
+
+        //this is trouble if panvol components are added
+        // let outPanvol = store.components.getAllByTrack(self.track.id).find(c => c.id.split('_')[0] === 'panvol');
+
+        /*
+        if(!self.connection){
+            let cId = 'connection_' + randomId()
+            store.addConnection(cId, self.track.id, outId, outPanvol.id, 'component', 'component');
+            self.connection = cId;
+        }
+        */
+        let outObj = ToneObjs.components.find(c => c.id === outId).obj;
+
+        if(!ToneObjs.custom.find(row => row.id === self.id)){
+            ToneObjs.custom.push({id: self.id, track: self.track.id, obj: new window.WebAudioTinySynth({internalcontext:0, useReverb:0})})
+            
+            let tinySynth = ToneObjs.custom.find(t => t.id === self.id).obj;
+            tinySynth.setAudioContext(Tone.context, outObj);
+            tinySynth.send([0xc0, self.instrument]);
+        }
+    },
+    beforeDestroy() {
+        let toneRow = ToneObjs.custom.find(o => o.id === self.id);
+        toneRow.obj = null;
+        delete toneRow.obj;
+        ToneObjs.custom = ToneObjs.custom.filter(o => o.id !== self.id);
+        //store.components.delete('panvol', 'tinysynth_panvol_' + self.id.split('_')[1])
+    }
+}));
+
+
+const Instruments = types.model("Instruments", {
+    players: types.maybe(types.array(Player)),
+    amsynths: types.maybe(types.array(AMSynth)),
+    fmsynths: types.maybe(types.array(FMSynth)),
+    synths: types.maybe(types.array(Synth)),
+    monosynths: types.maybe(types.array(MonoSynth)),
+    metalsynths: types.maybe(types.array(MetalSynth)),
+    membranesynths: types.maybe(types.array(MembraneSynth)),
+    plucksynths: types.maybe(types.array(PluckSynth)),
+    noisesynths: types.maybe(types.array(NoiseSynth)),
+    polysynths: types.maybe(types.array(PolySynth)),
+    duosynths: types.maybe(types.array(DuoSynth)),
+    tinysynths: types.maybe(types.array(TinySynth))
+}).views(self => ({
+    getInstrumentByTypeId(type, id) {
+        return self[type + 's'].find(item => item.id === id);
+    },
+    //audio track has 1 player
+    getPlayerByTrack(trackId) {
+        return self.players.find(p => p.track.id === trackId)
+    },
+    getAllByTrack(trackId) {
+        let p = getMembers(self).properties;
+        let list = [];
+        for (var key in p) {
+            if (p.hasOwnProperty(key)) {
+                self[key].filter(o => o.track.id === trackId).forEach(function (item) {
+                    list.push(item);
+                })
+            }
+        }
+        return list;
+    }
+})).actions(self => ({
+    add(type, args) {
+        //this broke during package.json update....
+        //self[type + 's'].push(args);
+
+        switch (type) {
+            case "player":
+                self[type + 's'].push(Player.create(args));
+                break;
+            case "synth":
+                if(!args.oscillator){
+                    let defaultArgs = {...Tone.Synth.defaults.oscillator};
+                    defaultArgs.id = 'omnioscillator_' + randomId();
+                    args.oscillator = OmniOscillator.create(defaultArgs);
+                }
+                if(!args.envelope){
+                    let defaultArgs = {...Tone.Synth.defaults.envelope};
+                    defaultArgs.id = 'amplitudeenvelope_' + randomId();
+                    args.envelope = AmplitudeEnvelope.create(defaultArgs);
+                }
+                self[type + 's'].push(Synth.create(args));
+                break;
+            case "amsynth":
+                if(!args.oscillator){
+                    let defaultArgs = {...Tone.AMSynth.defaults.oscillator};
+                    defaultArgs.id = 'omnioscillator_' + randomId();
+                    args.oscillator = OmniOscillator.create(defaultArgs)
+                }
+                if(!args.envelope){
+                    let defaultArgs = {...Tone.AMSynth.defaults.envelope};
+                    defaultArgs.id = 'amplitudeenvelope_' + randomId();
+                    args.envelope = AmplitudeEnvelope.create(defaultArgs);
+                }
+                if(!args.modulation){
+                    let defaultArgs = {...Tone.AMSynth.defaults.modulation};
+                    defaultArgs.id = 'omnioscillator_' + randomId();
+                    args.modulation = OmniOscillator.create(defaultArgs);
+                }
+                if(!args.modulationEnvelope){
+                    let defaultArgs = {...Tone.AMSynth.defaults.modulationEnvelope};
+                    defaultArgs.id = 'amplitudeenvelope_' + randomId();
+                    args.modulationEnvelope = AmplitudeEnvelope.create(defaultArgs);
+                }
+                self[type + 's'].push(AMSynth.create(args));
+                break;
+            case "fmsynth":
+                if(!args.oscillator){
+                    let defaultArgs = {...Tone.FMSynth.defaults.oscillator};
+                    defaultArgs.id = 'omnioscillator_' + randomId();
+                    args.oscillator = OmniOscillator.create(defaultArgs)
+                }
+                if(!args.envelope){
+                    let defaultArgs = {...Tone.FMSynth.defaults.envelope};
+                    defaultArgs.id = 'amplitudeenvelope_' + randomId();
+                    args.envelope = AmplitudeEnvelope.create(defaultArgs);
+                }
+                if(!args.modulation){
+                    let defaultArgs = {...Tone.FMSynth.defaults.modulation};
+                    defaultArgs.id = 'omnioscillator_' + randomId();
+                    args.modulation = OmniOscillator.create(defaultArgs);
+                }
+                if(!args.modulationEnvelope){
+                    let defaultArgs = {...Tone.FMSynth.defaults.modulationEnvelope};
+                    defaultArgs.id = 'amplitudeenvelope_' + randomId();
+                    args.modulationEnvelope = AmplitudeEnvelope.create(defaultArgs);
+                }
+                self[type + 's'].push(FMSynth.create(args));
+                break;
+            case "monosynth":
+                if(!args.oscillator){
+                    let defaultArgs = {...Tone.MonoSynth.defaults.oscillator};
+                    defaultArgs.id = 'omnioscillator_' + randomId();
+                    args.oscillator = OmniOscillator.create(defaultArgs)
+                }
+                if(!args.filter){
+                    let defaultArgs = {...Tone.MonoSynth.defaults.filter};
+                    defaultArgs.id = 'filter_' + randomId();
+                    args.filter = Filter.create(defaultArgs)
+                }
+                if(!args.envelope){
+                    let defaultArgs = {...Tone.MonoSynth.defaults.envelope};
+                    defaultArgs.id = 'amplitudeenvelope_' + randomId();
+                    args.envelope = AmplitudeEnvelope.create(defaultArgs);
+                }
+                if(!args.filterEnvelope){
+                    let defaultArgs = {...Tone.MonoSynth.defaults.filterEnvelope};
+                    defaultArgs.id = 'frequencyenvelope_' + randomId();
+                    args.filterEnvelope = FrequencyEnvelope.create(defaultArgs);
+                }
+                self[type + 's'].push(MonoSynth.create(args));
+                break;
+            case "metalsynth":
+                if(!args.envelope){
+                    let defaultArgs = {...Tone.MetalSynth.defaults.envelope};
+                    defaultArgs.id = 'amplitudeenvelope_' + randomId();
+                    args.envelope = AmplitudeEnvelope.create(defaultArgs)
+                }
+                self[type + 's'].push(MetalSynth.create(args));
+                break;
+            case "membranesynth":
+                if(!args.oscillator){
+                    let defaultArgs = {...Tone.MembraneSynth.defaults.oscillator};
+                    defaultArgs.id = 'omnioscillator_' + randomId();
+                    args.oscillator = OmniOscillator.create(defaultArgs)
+                }
+                if(!args.envelope){
+                    let defaultArgs = {...Tone.MembraneSynth.defaults.envelope};
+                    defaultArgs.id = 'amplitudeenvelope_' + randomId();
+                    args.envelope = AmplitudeEnvelope.create(defaultArgs)
+                }
+                self[type + 's'].push(MembraneSynth.create(args));
+                break;
+            case "plucksynth":
+                self[type + 's'].push(PluckSynth.create(args));
+                break;
+            case "noisesynth":
+                if(!args.noise){
+                    let defaultArgs = {...Tone.NoiseSynth.defaults.noise};
+                    defaultArgs.id = 'noise_' + randomId();
+                    args.noise = Noise.create(defaultArgs)
+                }
+                if(!args.envelope){
+                    let defaultArgs = {...Tone.NoiseSynth.defaults.envelope};
+                    defaultArgs.id = 'amplitudeenvelope_' + randomId();
+                    args.envelope = AmplitudeEnvelope.create(defaultArgs)
+                }
+                self[type + 's'].push(NoiseSynth.create(args));
+                break;
+            case "polysynth":
+                self[type + 's'].push(PolySynth.create(args));
+                break;
+            case "duosynth":
+                if(!args.voice0){
+                    let defaultArgs = cloneDeep(Tone.DuoSynth.defaults.voice0);
+                    defaultArgs.id = 'monosynth_' + randomId();
+
+                    defaultArgs.oscillator.id = 'omnioscillator_' + randomId();
+                    defaultArgs.oscillator = OmniOscillator.create(defaultArgs.oscillator)
+
+                    //no filter defined in duosynth defaults
+                    if(!defaultArgs.filter)
+                        defaultArgs.filter = {...Tone.MonoSynth.defaults.filter};
+
+                    defaultArgs.filter.id = 'filter_' + randomId();
+                    defaultArgs.filter = Filter.create(defaultArgs.filter)
+                    
+                    defaultArgs.envelope.id = 'amplitudeenvelope_' + randomId();
+                    defaultArgs.envelope = AmplitudeEnvelope.create(defaultArgs.envelope);
+                    
+                    defaultArgs.filterEnvelope.id = 'frequencyenvelope_' + randomId();
+                    defaultArgs.filterEnvelope = FrequencyEnvelope.create(defaultArgs.filterEnvelope);
+                    
+                    args.voice0 = MonoSynth.create(defaultArgs)
+                }
+                if(!args.voice1){
+                    let defaultArgs = cloneDeep(Tone.DuoSynth.defaults.voice1);
+                    defaultArgs.id = 'monosynth_' + randomId();
+
+                    defaultArgs.oscillator.id = 'omnioscillator_' + randomId();
+                    defaultArgs.oscillator = OmniOscillator.create(defaultArgs.oscillator)
+                    
+                    //no filter in defaults quick fix
+                    if(!defaultArgs.filter)
+                        defaultArgs.filter = {...Tone.MonoSynth.defaults.filter};
+                    
+                    defaultArgs.filter.id = 'filter_' + randomId();
+                    defaultArgs.filter = Filter.create(defaultArgs.filter)
+                    
+                    defaultArgs.envelope.id = 'amplitudeenvelope_' + randomId();
+                    defaultArgs.envelope = AmplitudeEnvelope.create(defaultArgs.envelope);
+                    
+                    defaultArgs.filterEnvelope.id = 'frequencyenvelope_' + randomId();
+                    defaultArgs.filterEnvelope = FrequencyEnvelope.create(defaultArgs.filterEnvelope);
+
+                    args.voice1 = MonoSynth.create(defaultArgs)
+                }
+                
+                self[type + 's'].push(DuoSynth.create(args));
+                break;
+            case "tinysynth":
+                self[type + 's'].push(TinySynth.create(args))
+                break;
+            default:
+                break;
+        }
+    },
+    delete(type, id) {
+        destroy(self.getInstrumentByTypeId(type, id));
+    },
+    addToneObj(name, objSelf) {
+        let p = getMembers(objSelf).properties;
+        delete p.id;
+        delete p.track;
+        delete p.ui;
+
+        let args = {};
+        for (var key in p) {
+            if (p.hasOwnProperty(key)) {
+                args[key] = objSelf[key];
+            }
+        }
+
+        if(name !== "Player" && name !== "NoiseSynth" && name !== "PluckSynth" && name !== "MembraneSynth" && name !== "MetalSynth"){
+            if(!ToneObjs.instruments.find(row => row.id === objSelf.id)){
+                ToneObjs.instruments.push({ id: objSelf.id, track: objSelf.track.id, obj: new Tone.PolySynth(8, Tone[name]).set(args) });
+            }
+        }
+        else{
+            if(!ToneObjs.instruments.find(row => row.id === objSelf.id)){
+                ToneObjs.instruments.push({ id: objSelf.id, track: objSelf.track.id, obj: new Tone[name](args) });
+            }
+        }
+        
+    },
+    delToneObj(id) {
+        store.delConnectionsByObj(id);
+        let instrumentItem = ToneObjs.instruments.find(e => e.id === id);
+        if(instrumentItem){
+            if(instrumentItem.obj){
+                instrumentItem.obj.dispose();
+                ToneObjs.instruments = ToneObjs.instruments.filter(e => e.id !== id);
+            }
+        }
+    },
+}));
+
+const Scene = types.model("Scene", {
+    id: types.identifier,
+    start: types.string,
+    end: types.string,
+    on: types.optional(types.boolean, true)
+}).views(self => ({
+})).actions(self => ({
+    setStart(time) {
+        self.start = time;
+    },
+    setEnd(time) {
+        self.end = time;
+    }
+}));
+
+const Note = types.model("Note", {
+    id: types.identifier,
+    time: types.string,
+    mute: types.optional(types.boolean, false),
+    //note: types.maybe(types.union(types.number, types.string)), //freq and string..
+    note: types.maybe(types.union(types.array(types.number), types.array(types.string))), //freq and string..
+    duration: types.maybe(types.union(types.number, types.string)), //audio tracks use % .. insts use quantized time for now
+    velocity: types.optional(types.number, 1),
+    probability: types.optional(types.number, 1),
+    //playbackRate: types.maybe(types.number),
+    //humanize: types.optional(types.union(types.boolean, types.string, types.number), false),
+    offset: types.optional(types.number, 0), // % of quantized position
+}).views(self => ({
+    getPattern(){
+        return getParent(self, 2);
+    },
+    getNote(){
+        if(self.note !== undefined)
+            return self.note.map(n => n)
+        else
+            return undefined
+    }
+})).actions(self => ({
+    setRandomNote(){
+      //  self.note = randNote;
+      //  self.setPartNote();
+    },
+    setNote(note){
+        self.note = note;
+        self.setPartNote();
+    },
+    setOffset(val){
+        self.offset = val;
+        self.setPartNote();
+    },
+    setVelocity(val){
+        self.velocity = val;
+        self.setPartNote();
+    },
+    setDuration(val){
+        self.duration = val;
+        self.setPartNote();
+    },
+    setProbability(val){
+        self.probability = val;
+        self.setPartNote();
+    },
+    setHumanize(val){
+        self.humanize = val;
+        self.setPartNote();
+    },
+    toggle() {
+        self.mute = !self.mute;
+        self.setPartNote();
+    },
+    setPartNote(){
+        let part = ToneObjs.parts.find(p => p.id === getParent(self, 2).id);
+        let event = part.obj.at(self.time, { "mute": self.mute, "note": self.getNote(), "duration": self.duration, "velocity": self.velocity, "offset": self.offset, "time": self.time});
+        event.probability = self.probability;
+        event.humanize = self.humanize;
+    },
+    afterAttach() {
+        self.setPartNote();
+    },
+    /*
+    beforeDetach() {
+        console.log('note being DETACHED')
+        let part = ToneObjs.parts.find(p => p.id === getParent(self, 2).id);
+        //part.obj.remove(self.time, self.note);
+        part.obj.remove(self.time);
+    },
+    */
+    beforeDestroy() {
+        let part = ToneObjs.parts.find(p => p.id === getParent(self, 2).id);
+        //part.obj.remove(self.time, self.note);
+        part.obj.remove(self.time);
+    }
+}));
+
+const Pattern = types.model("Pattern", {
+    id: types.identifier,
+    resolution: types.optional(types.number, 16),
+    track: types.reference(Track),
+    scene: types.reference(Scene),
+    notes: types.maybe(types.array(Note))
+}).views(self => ({
+    getNote(time) {
+        return self.notes.find(n => n.time === time);
+    },
+    getSortedNotesAsc() {
+        let sceneNotes = [];
+        self.notes.forEach(function (note) {
+            if (Tone.Time(note.time) < Tone.Time(store.getSceneLength(self.scene.id)))
+                sceneNotes.push(note);
+        })
+
+        return sceneNotes.sort(function (a, b) {
+            return Tone.Time(a.time).toSeconds() - Tone.Time(b.time).toSeconds();
+        });
+    },
+    getSortedNotesDesc() {
+        let sceneNotes = [];
+        self.notes.forEach(function (note) {
+            if (Tone.Time(note.time) < Tone.Time(store.getSceneLength(self.scene.id)))
+                sceneNotes.push(note);
+        })
+
+        return sceneNotes.sort(function (a, b) {
+            return Tone.Time(b.time).toSeconds() - Tone.Time(a.time).toSeconds();
+        });
+    },
+    getLength(){
+        return store.getSceneLength(self.scene.id);
+    }
+})).actions(self => {
+    function addNote(time, mute, val, dur) {
+        let values;
+
+        if(val){
+          values = val.map(n => n)
+        }
+
+        self.notes.push(Note.create({ id: 'note_' + randomId(), time: time, mute: mute, note: values, duration: dur}));
+    }
+    function deleteNote(note){
+        destroy(note);
+    }
+    function setResolution(val) {
+        self.resolution = val;
+    }
+    function deleteNotes(){
+        self.getSortedNotesAsc().forEach(function(note){
+            destroy(note); // throws warnings .. need to find out why ghost notes are being read
+            //detach(note); // https://spectrum.chat/mobx-state-tree/general/using-detach-instead-of-destroying~40b2a245-659d-463e-a8c4-80bf84bd30d8
+        })
+    }
+    function pastePattern(src){
+        self.resolution = src.resolution;
+        
+        self.deleteNotes();
+        
+        //use snapshot instead?
+        src.notes.forEach(function(note){
+            self.notes.push(Note.create({
+                    id: 'note_' + randomId(),
+                    time: note.time,
+                    mute: note.mute,
+                    note: note.getNote(),
+                    duration: note.duration,
+                    velocity: note.velocity,
+                    probability: note.probability,
+                    humanize: note.humanize,
+                    offset: note.offset
+                })
+            )
+        })
+    }
+    function initPart(offline) {
+        let tObjs = ToneObjs;
+
+        if(offline)
+            tObjs = offline;
+
+        let part = tObjs.parts.find(p => p.id === self.id);
+        part.obj = new Tone.Part(function (time, value) {
+
+            //empty inst notes are ignored
+            //audio notes are always undefined FYI
+            if(value.note)
+                if(value.note.length === 1) 
+                    if(value.note[0] === '')
+                        return;
+            
+
+            let offset = Tone.Time(self.resolution + 'n') * value.offset;
+
+            //convert to freq for notes like F##3 that Tone doesn't support
+            if(value.note){
+                for(let i=0; i<value.note.length; i++){
+                    if(isNaN(value.note[i])){
+                        value.note[i] = TonalNote.freq(value.note[i]);
+                    }
+                }
+            }
+
+            //get prev note if duration exceeds current note's
+            function checkPrevNoteDur(){
+                let deltaDur, objNote;
+                let result = self.getSortedNotesDesc().filter(n => Tone.Time(n.time) < Tone.Time(value.time)).some(note => {
+                        if(note.note){
+                            if(note.note[0]){
+                                //no need for offset
+                                let prevEndDur = Tone.Time(note.time) + Tone.Time(note.duration);
+                                let currEndDur = Tone.Time(value.time) + Tone.Time(value.duration);
+                                if(prevEndDur > currEndDur){ 
+                                    deltaDur = Tone.Time(prevEndDur) - Tone.Time(currEndDur);
+                                    objNote = note;
+                                    return true;
+                                }
+                            }
+                        }
+                    })
+
+                if(result)
+                    return {note: objNote, deltaDur: deltaDur}
+                else
+                    return false;
+            }
+
+            tObjs.instruments.filter(inst => inst.track === part.track).forEach(function (instrument) {
+                let type = instrument.id.split('_')[0];
+                if (!value.mute){
+                    if(type === 'player'){
+                        instrument.obj.volume.value = value.velocity;
+                        instrument.obj.stop(time + offset); //stop current play at next note
+                        instrument.obj.start(time + offset);
+                        if(value.duration < 1){
+                            let computedDur = instrument.obj.buffer.duration / instrument.obj.playbackRate;
+                            computedDur *= value.duration;
+                            computedDur += offset;
+                            instrument.obj.stop(time + computedDur)
+                        }
+                    }
+                    else if(type === 'metalsynth'){
+                        if(value.note !== undefined){
+                            instrument.obj.frequency.setValueAtTime(value.note[0], time + offset, Math.random()*0.5 + 0.5);
+                            instrument.obj.triggerAttackRelease(Tone.Time(value.duration), time + offset, value.velocity);
+                            
+                            let objContinue = checkPrevNoteDur();
+                            if(objContinue){
+                                instrument.obj.frequency.setValueAtTime(objContinue.note.getNote()[0], time + Tone.Time(value.duration), Math.random()*0.5 + 0.5);
+                                instrument.obj.triggerAttackRelease(objContinue.deltaDur, time + Tone.Time(value.duration), objContinue.note.velocity);
+                            }
+                            
+                        }
+                    }
+                    else if(type === "noisesynth"){
+                        if(value.note !== undefined){
+                            instrument.obj.triggerAttackRelease(Tone.Time(value.duration), time + offset, value.velocity);
+                            
+                            let objContinue = checkPrevNoteDur();
+                            if(objContinue){
+                                instrument.obj.triggerAttackRelease(objContinue.note.getNote()[0], objContinue.deltaDur, time + Tone.Time(value.duration), objContinue.note.velocity);
+                            }
+                            
+                        }
+                    }
+                    else if(type === "synth" || type === "monosynth" || type === "amsynth" || type === "fmsynth" || type === "duosynth"){
+                        if(value.note !== undefined){
+                            //instrument.obj.releaseAll(time + offset);
+                            instrument.obj.triggerAttackRelease(value.note, Tone.Time(value.duration), time + offset, value.velocity);
+                            
+                            let objContinue = checkPrevNoteDur();
+                            if(objContinue){
+                                instrument.obj.triggerAttackRelease(objContinue.note.getNote(), objContinue.deltaDur, time + Tone.Time(value.duration), objContinue.note.velocity);
+                            }
+                            
+                        }
+                    }
+                    //TODO: deal with prev note duration continue as above?
+                    else if(type === "plucksynth" || type === "membranesynth"){
+                        if(value.note !== undefined){
+                            instrument.obj.triggerAttackRelease(value.note[0], Tone.Time(value.duration), time + offset, value.velocity);
+                        }
+                    }
+                }
+            })
+            tObjs.sources.filter(src => src.track === part.track).forEach(function (source) {
+                let type = source.id.split('_')[0];
+                if (!value.mute){
+                    if(value.note !== undefined){
+                        if(type !== 'noise')
+                            source.obj.frequency.value = value.note[0];
+
+                        source.obj.start(time + offset);
+                        source.obj.stop(time + Tone.Time(value.duration));
+                    }
+                }
+            })
+            tObjs.components.filter(src => src.track === part.track && src.id.split('_')[0] === 'amplitudeenvelope').forEach(function (component) {
+                if (!value.mute){
+                    if(value.note !== undefined){
+                        component.obj.triggerAttackRelease(Tone.Time(value.duration), time + offset, value.velocity);
+                        
+                        let objContinue = checkPrevNoteDur();
+                        if(objContinue){
+                            component.obj.triggerAttackRelease(objContinue.note.getNote()[0], objContinue.deltaDur, time + Tone.Time(value.duration), objContinue.note.velocity);
+                        }
+                        
+                    }
+                }
+            })
+            tObjs.custom.filter(o => o.track === part.track).forEach(function(row){
+                if(row.obj){
+                    if(!value.mute){
+                        if(!value.note !== undefined){
+                            let ch = store.instruments.getInstrumentByTypeId("tinysynth", row.id).channel;
+
+                            value.note.forEach(n => {
+                                let noteNum = Tone.Frequency(n).toMidi();
+                                
+                                row.obj.send([0x90 + ch, noteNum, 100], time + offset)
+                                row.obj.send([0x80 + ch, noteNum, 0], time + Tone.Time(value.duration));
+                            })
+                            
+                            let objContinue = checkPrevNoteDur();
+                            if(objContinue){
+                                objContinue.note.getNote().forEach(n => {
+                                    let noteNum = Tone.Frequency(n).toMidi();
+
+                                    //stop prev note for curr note
+                                    row.obj.send([0x80 + ch, noteNum, 0], time + offset);
+
+                                    //continue prev note
+                                    row.obj.send([0x90 + ch, noteNum, 100], time + Tone.Time(value.duration))
+                                    row.obj.send([0x80 + ch, noteNum, 0], time + Tone.Time(value.duration) + objContinue.deltaDur);
+                                })
+                            }
+                            
+                        }
+                    }
+                }
+            });
+        }).start(self.scene.start).stop(self.scene.end);
+    }
+    function afterAttach() {
+        if(!ToneObjs.parts.find(row => row.id === self.id)){
+            ToneObjs.parts.push({
+                id: self.id,
+                track: self.track.id
+            });
+
+            self.initPart();
+        }
+    }
+    function beforeDestroy() {
+        ToneObjs.parts.find(p => p.id === self.id).obj.removeAll();
+        ToneObjs.parts.find(p => p.id === self.id).obj.dispose();
+        ToneObjs.parts.splice(ToneObjs.parts.findIndex(p => p.id === self.id), 1);
+
+    }
+    return { addNote, deleteNote, setResolution, pastePattern, deleteNotes, initPart, afterAttach, beforeDestroy }
+});
+
+const UI = types.model("UI", {
+    viewMode: types.optional(types.string, "sequencer"),
+    mixMode: types.optional(types.boolean, false),
+    editMode: types.optional(types.boolean, true),
+    recordMode: types.optional(types.boolean, false),
+    settings: types.optional(types.boolean, false),
+    viewLength: types.optional(types.string, "1:0:0"),
+    windowHeight: types.optional(types.number, 0),
+    windowWidth: types.optional(types.number, 0),
+    selectedScene: types.maybe(types.reference(Scene)),
+    selectedTrack: types.maybe(types.reference(Track)),
+    selectedPattern: types.maybe(types.reference(Pattern)),
+    selectedObj: types.maybe(types.string),
+    selectedGroup: types.optional(types.string, "A"),
+    selectedNote: types.maybe(types.reference(Note)),
+    selectedKey: types.optional(types.string, ''),
+    selectedChord: types.maybe(types.string),
+    device: types.maybe(types.union(types.literal("mobile"), types.literal("desktop"))),
+    showSideBar: types.optional(types.boolean, false)
+}).views(self => ({
+    getSelectedPatternProp(prop){
+        if(prop === "resolution"){
+            if(self.selectedPattern)
+                return self.selectedPattern.resolution;
+            else
+                return undefined;
+        }
+        else if(prop === "notes"){
+            if(self.selectedPattern)
+                return self.selectedPattern.getSortedNotesAsc();
+            else
+                return undefined;
+        }
+    },
+    getSelectedNoteValue(){
+        if(self.selectedNote){
+            if(self.selectedNote.note)
+                return self.selectedNote.note.map(n => n);
+            else
+                return undefined;
+        }
+        else
+          return undefined;
+    },
+    getGridSizes(){
+        //console.log('getGridSizesCalled')
+        if(self.selectedScene){
+            let windowWidth = self.windowWidth;
+            let viewLength = Tone.Time(self.viewLength);
+            let sceneLength = store.getSceneLength(self.selectedScene.id);
+
+            if(sceneLength > viewLength) {
+                let scenePx = (sceneLength / viewLength) * windowWidth;
+
+                let parentWidth = ((scenePx * 2) - windowWidth) + 'px';
+                let parentLeft = ((scenePx * -1) + windowWidth) + 'px';
+
+                let containerWidth = scenePx + 'px';
+                let containerLeft = (scenePx - windowWidth) + 'px';
+                
+                return {parent: {width: parentWidth, left: parentLeft}, container:{width: containerWidth, left: containerLeft}}
+            }
+        }
+        
+        return {parent: {width: self.windowWidth + 'px', left: 0}, container:{width: self.windowWidth + 'px', left: 0}}
+    },
+    calibrateSizes(setupScroll) {
+        //console.log('calibrateSizes called')
+        if(self.selectedScene){
+            if (self.viewMode === "sequencer" || self.viewMode === "button" || self.viewMode === "edit") {
+                let windowWidth = self.windowWidth;
+                let viewLength = self.viewLength;
+                let songLength = store.getSceneLength(self.selectedScene.id);
+                let gridParent = document.getElementById('gridParent');
+                let gridContainer = document.getElementById('gridContainer');
+
+                if (Tone.Time(songLength).toSeconds() >= Tone.Time(viewLength).toSeconds()) {
+                    let viewSecs = Tone.Time(viewLength).toSeconds();
+                    let songSecs = Tone.Time(songLength).toSeconds();
+                    let songPx = windowWidth * (songSecs / viewSecs);
+
+                    gridParent.style.width = ((songPx * 2) - windowWidth) + 'px';
+                    gridParent.style.left = ((songPx * -1) + windowWidth) + 'px';
+
+                    gridContainer.style.width = songPx + 'px';
+                    gridContainer.style.left = (songPx - windowWidth) + 'px';
+                }
+
+                //redraw called here due to offset.... set flag and call as needed?
+                if(self.viewMode === "sequencer" && setupScroll){
+                    let gridContainerHeight = gridContainer.offsetHeight;
+                    let diff = gridContainerHeight - (self.windowHeight - 135); //135 = header + footer + toolbar + gridtimeline
+                    if(diff > 0){
+                        gridParent.style.top = (40 - diff) + 'px';
+                        gridParent.style.height = (gridContainerHeight + diff) + 'px';
+                        interact('#gridContainer').fire({ type: 'dragmove', target: gridContainer });
+                    }    
+                }
+
+                //align grid to right side if gap is created on size change
+                let left = gridContainer.style.left.replace('px', '');
+                let dx = gridContainer.getAttribute('data-x') * -1;
+                if (left < dx) {
+                    gridContainer.setAttribute('data-x', left * -1)
+                    interact('#gridContainer').fire({ type: 'dragmove', target: gridContainer });
+                }
+            }
+        }
+    },
+    getWindowSizes() {
+        return { width: self.windowWidth, height: self.windowHeight }
+    }
+})).actions(self => {
+    function setWindowWidthHeight(width, height) {
+        self.windowHeight = height;
+
+        if(width >= 960){
+            if(!self.showSideBar)
+                self.showSideBar = true;
+            
+            self.windowWidth = width * 0.8;
+        }
+        else{
+            if(self.showSideBar)
+                self.showSideBar = false;
+            
+            self.windowWidth = width;
+        }
+    }   
+    function toggleMixMode() {
+        self.mixMode = !self.mixMode;
+    }
+    function toggleEditMode() {
+        self.editMode = !self.editMode;
+    }
+    function toggleRecordMode() {
+        self.recordMode = !self.recordMode;
+    }
+    function toggleSettings() {
+        self.settings = !self.settings;
+    }
+    function setViewLength(val) {
+        if(self.selectedScene){
+            if(Tone.Time(val) <= store.getSceneLength(self.selectedScene.id) && Tone.Time(val) > Tone.Time("0:1:0")){
+                self.viewLength = val;
+                self.calibrateSizes();
+            }
+        }
+    }
+    function setViewScene(scene) {
+        self.setViewLength(Tone.Time(store.getSceneLength(scene.id)).toBarsBeatsSixteenths())
+        /*
+        let pxStart = self.windowWidth * (Tone.Time(scene.start) / Tone.Time(self.viewLength));
+        let ele = document.getElementById('gridContainer');
+        let x = pxStart * -1, y = ele.getAttribute('data-y') || 0;
+
+        ele.setAttribute('data-x', x);
+        ele.setAttribute('data-y', y);
+        ele.style.webkitTransform = ele.style.transform = 'translate(' + x + 'px,' + y + 'px)';
+
+        //interact('#gridContainer').fire({type: 'dragmove', target: ele});
+        //Mix rows
+        //TODO: bugfix the mixrow on first load when selecting track and enabling mixview
+        //     mixrow toggle doesn't call function to adjust position
+
+        let elements = document.getElementsByClassName('track-rowmix');
+        if (elements.length > 0)
+            for (var i = 0; i < elements.length; i++)
+                elements[i].style.webkitTransform = elements[i].style.transform = 'translate(' + (x * -1) + 'px)';
+        
+        */
+
+    }
+    function selectScene(id) {
+        self.selectedScene = store.getScene(id);
+        if (self.selectedScene)
+            self.setViewScene(self.selectedScene)
+    }
+    function selectTrack(id) {
+        if(!id){
+            if(store.ui.viewMode === "edit")
+                store.ui.toggleViewMode('sequencer');
+
+            self.selectedTrack = undefined;
+        }
+        else
+            self.selectedTrack = store.getTrack(id);
+    }
+    function selectPattern(id) {
+        if(id){
+            let pattern = store.getPattern(id);
+            self.selectScene(pattern.scene.id)
+            self.selectedPattern = pattern;
+        }
+        else{
+            self.selectedPattern = undefined;
+        }
+    }
+    function selectObj(id) {
+        self.selectedObj = id;
+    }
+    function selectGroup(group) {
+        self.selectedGroup = group;
+    }
+    function selectNote(note){
+        //let prevNote = self.selectedNote;
+
+        self.selectedNote = note;
+
+        //delete prev selected note if no value was applied
+        //warning: node being used after destroy
+        /*
+        if(prevNote){
+            if(self.selectedNote !== prevNote){
+                if(prevNote.getPattern().track.type === 'instrument'){
+                    let noteVals = prevNote.getNote();
+                    if(noteVals){
+                        if(noteVals[0] === ''){
+                            //throws warnings
+                            console.log('prevNote: ' + prevNote.id)
+                            console.log('currNote: ' + self.selectedNote.id)
+                            let pattern = prevNote.getPattern();
+                            pattern.deleteNote(prevNote);
+                            
+                        }
+                    }
+                }
+            }
+        }
+        */
+    }
+    function selectKey(key){
+        self.selectedKey = key;
+    }
+    function selectChord(chord){
+        self.selectedChord = chord;
+    }
+    function toggleViewMode(mode) {
+        if (!mode) {
+            if (self.viewMode === "sequencer"){
+                if(self.selectedNote && self.selectedTrack){
+                    if(self.selectedNote.getPattern().track !== self.selectedTrack){
+                        self.selectNote(undefined);
+                    }
+                }
+                if(self.editMode)
+                    self.editMode = false;
+                
+                self.viewMode = "button";
+            }
+            else{
+                if(self.mixMode)
+                    self.mixMode = false;
+                
+                self.viewMode = "sequencer";
+            }
+        }
+        else if (mode === "edit") {
+            if(self.selectedNote && self.selectedTrack){
+                if(self.selectedNote.getPattern().track !== self.selectedTrack){
+                    self.selectNote(undefined);
+                }
+            }
+            self.viewMode = "edit";
+        }
+        else if (mode === "sequencer") {
+            self.viewMode = "sequencer";
+        }
+    }
+    function setDevice() {
+        //take a look at matchMedia if needed
+        let device = 'desktop';
+        if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) )
+          device = 'mobile';
+    
+        self.device = device;
+    }
+    return { setWindowWidthHeight, toggleMixMode, setViewLength, setViewScene, toggleSettings, selectScene, selectTrack, selectPattern, selectObj, selectGroup, selectNote, selectKey, selectChord, toggleViewMode, toggleEditMode, toggleRecordMode, setDevice }
+});
+
+const Settings = types.model("Settings", {
+    title: types.maybe(types.string),
+    modified: types.optional(types.number, Date.now()),
+    bpm: types.optional(types.number, 90),
+    swing: types.optional(types.number, 0),
+    swingSubdivision: types.optional(types.string, "8n"),
+    loopStart: types.optional(types.string, "0:0:0"),
+    loopEnd: types.optional(types.string, "1:0:0"),
+    scale: types.optional(types.string, "major"),
+    key: types.optional(types.string, "C")
+}).actions(self => ({
+    setScale(scale){
+        self.scale = scale;
+    },
+    setKey(key){
+        self.key = key;
+    },
+    setSongTitle(id){
+        self.title = id;
+    },
+    setModified(time){
+        self.modified = time;
+    },
+    setBPM(val) {
+        self.bpm = val;
+        Tone.Transport.bpm.value = parseFloat(val);
+    },
+    setSwing(val) {
+        self.swing = val;
+        Tone.Transport.swing = parseFloat(val);
+    },
+    setSwingSubDivision(val) {
+        self.swingSubdivision = val;
+        Tone.Transport.swingSubdivision = val;
+    },
+    setLoopStart(val) {
+        self.loopStart = val;
+        Tone.Transport.loopStart = Tone.Time(val);
+    },
+    setLoopEnd(val) {
+        self.loopEnd = val;
+        Tone.Transport.loopEnd = Tone.Time(val);
+    }
+}))
+
+export const RootStore = types.model("RootStore", {
+    id: types.maybe(types.string),
+
+    settings: Settings,
+
+    tracks: types.maybe(types.array(Track)),
+    patterns: types.maybe(types.array(Pattern)),
+    scenes: types.maybe(types.array(Scene)),
+    samples: types.maybe(types.array(Sample)),
+
+    ui: UI,
+
+    sources: types.maybe(Sources),
+    instruments: types.maybe(Instruments),
+    effects: types.maybe(Effects),
+    components: types.maybe(Components),
+    connections: types.maybe(types.array(Connection)),
+})
+    .views(self => {
+        return {
+            getObjsByTrackObj(track) {
+                let list = [];
+                if (track) {
+                    list = list.concat(self.instruments.getAllByTrack(track.id));
+                    list = list.concat(self.effects.getAllByTrack(track.id));
+                    list = list.concat(self.components.getAllByTrack(track.id));
+                    list = list.concat(self.sources.getAllByTrack(track.id));
+                }
+                return list;
+            },
+            getObjTypeByIdTrack(id, track) {
+                if (self.instruments.getAllByTrack(track).find(o => o.id === id))
+                    return "instrument";
+                else if (self.effects.getAllByTrack(track).find(o => o.id === id))
+                    return "effect";
+                else if (self.components.getAllByTrack(track).find(o => o.id === id))
+                    return "component";
+                else if(self.sources.getAllByTrack(track).find(o => o.id === id))
+                    return "source";
+                else
+                    return null;
+            },
+            getTrack(trackId) {
+                return self.tracks.find(t => t.id === trackId);
+            },
+            getTrackBySampleRegion(sampleId, regionId) {
+                //return self.tracks.filter(t => t.type !== "master" && t.type === "audio").find(t => (t.sample.id === sampleId && t.region.id === regionId))
+                return self.tracks.filter(t => t.type !== "master" && t.type === "audio" && t.sample.id === sampleId && t.region).find(t => t.region.id === regionId);
+            },
+            getTracksByGroup(group){
+                return self.tracks.filter(t => t.group === group);
+            },
+            getScene(sceneId) {
+                return self.scenes.find(s => s.id === sceneId);
+            },
+            getSceneByTime(time) {
+                let t = Tone.Time(time);
+                return self.scenes.find(s => (t >= Tone.Time(s.start) && t < Tone.Time(s.end)))
+            },
+            getScenesAsc() {
+                return self.scenes.sort(function (a, b) {
+                    return Tone.Time(a.start) - Tone.Time(b.start);
+                });
+            },
+            getScenesDesc() {
+                return self.scenes.sort(function (a, b) {
+                    return Tone.Time(b.start) - Tone.Time(a.start);
+                });
+            },
+            getPrevScene(sceneId) {
+                let s = self.getScene(sceneId);
+                let sceneList = self.getScenesDesc();
+
+                if (sceneList.length > 1) {
+                    for (let i = 0; i < sceneList.length; i++) {
+                        if (sceneList[i] === s && i !== sceneList.length) {
+                            return sceneList[i + 1];
+                        }
+                    }
+                }
+            },
+            getNextScene(sceneId) {
+                let s = self.getScene(sceneId);
+                let sceneList = self.getScenesAsc();
+
+                if (sceneList.length > 1) {
+                    for (let i = 0; i < sceneList.length; i++) {
+                        if (sceneList[i] === s && i !== sceneList.length) {
+                            return sceneList[i + 1];
+                        }
+                    }
+                }
+            },
+            getPattern(patternId) {
+                return self.patterns.find(p => p.id === patternId)
+            },
+            getAllSamples(){
+                return self.samples;
+            },
+            getAllRegions(){
+                let list = [];
+                self.getAllSamples().forEach(s => { list.push(...s.regions) });
+                return list;
+            },
+            getSample(sampleId) {
+                return self.samples.find(s => s.id === sampleId);
+            },
+            getSampleByUrlLength(url, length) {
+                return self.samples.find(s => (s.url === url && s.length === length));
+            },
+            getConnection(connId) {
+                return self.connections.find(c => c.id === connId);
+            },
+            getConnectionsByObjId(id) {
+                return self.connections.filter(c => (c.src === id || c.dest === id));
+            },
+            getConnectionsByTrack(trackId) {
+                return self.connections.filter(c => c.track.id === trackId)
+            },
+            getPatternsByTrack(trackId) {
+                return self.patterns.filter(p => p.track.id === trackId)
+            },
+            getPatternsByScene(sceneId) {
+                return self.patterns.filter(p => p.scene.id === sceneId)
+            },
+            getPatternByTrackScene(trackId, sceneId) {
+                return self.patterns.find(p => (p.track.id === trackId && p.scene.id === sceneId));
+            },
+            getNotesByTrack(trackId) {
+                let notes = [];
+                self.getPatternsByTrack(trackId).forEach(function (pattern) {
+                    notes = notes.concat(pattern.getSortedNotesAsc())
+                })
+                return notes;
+            },
+            getSceneLength(sceneId) {
+                let scene = self.getScene(sceneId);
+                return Tone.Time(scene.end) - Tone.Time(scene.start)
+            },
+            getSongLength() {
+                let length = 0;
+                self.scenes.forEach(function (scene) {
+                    length = Tone.Time(length) + Tone.Time(self.getSceneLength(scene.id));
+                });
+                return length;
+            },
+            getLoopLength() {
+                return Tone.Time(self.settings.loopEnd) - Tone.Time(self.settings.loopStart);
+            },
+            refreshConnections(){
+                self.connections.forEach(function(c){
+                    //console.log(c.id + ' track: ' + c.track.id + ' group: ' + c.track.group)
+                })
+                //return self.connections;
+            }
+        };
+    })
+    .actions(self => {
+        //setUndoManager(self);
+
+        function addScene(sceneId, start, end) {
+            self.scenes.push(Scene.create({ id: sceneId, start: start, end: end, on: true }))
+            self.tracks.forEach(function (track) {
+                if(track.type !== "master"){
+                    self.addPattern('pattern_' + randomId(), 16, track.id, sceneId, [])
+                }
+            });
+            //TODO: scene gets added to end of song currently, need to shift scene times if middle of track
+        }
+        function delScene(sceneId) {
+            //always 1 scene
+            if(self.scenes.length > 1){
+                let scene = self.getScene(sceneId);
+                self.getPatternsByScene(sceneId).forEach(pattern => self.delPattern(pattern.id));
+
+                let nextScene = self.getNextScene(scene.id);
+                let prevScene = self.getPrevScene(scene.id);
+
+                //last scene
+                if (!nextScene){
+                    if(Tone.Time(self.settings.loopStart) >= Tone.Time(scene.start)){
+                        self.settings.setLoopStart(prevScene.start);
+                    }
+                    if(Tone.Time(self.settings.loopEnd) > Tone.Time(scene.start)){
+                        self.settings.setLoopEnd(prevScene.end);
+                    }
+
+                    self.ui.selectScene(prevScene.id);
+                }
+                else{
+                    //shift scene times back
+                    self.shiftSceneTimes(scene.end, self.getSceneLength(scene.id), "sub");
+
+                    self.ui.selectScene(nextScene.id);
+                }
+
+                destroy(scene);
+            }
+        }
+        function shiftSceneTimes(time, length, op) {
+            let sceneList = self.getScenesAsc().filter(s => Tone.Time(s.end) >= Tone.Time(time));
+            sceneList.forEach(function (scene) {
+                if (op === "sub") {
+                    if (scene !== sceneList[0])
+                        scene.start = Tone.Time(Tone.Time(scene.start) - Tone.Time(length)).toBarsBeatsSixteenths();
+
+                    scene.end = Tone.Time(Tone.Time(scene.end) - Tone.Time(length)).toBarsBeatsSixteenths();
+                }
+                if (op === "add") {
+                    if (scene !== sceneList[0])
+                        scene.start = Tone.Time(Tone.Time(scene.start) + Tone.Time(length)).toBarsBeatsSixteenths();
+
+                    scene.end = Tone.Time(Tone.Time(scene.end) + Tone.Time(length)).toBarsBeatsSixteenths();
+                }
+
+                store.getPatternsByScene(scene.id).forEach(function (pattern) {
+                    let part = ToneObjs.parts.find(p => p.id === pattern.id).obj;
+                    part.dispose();
+
+                    pattern.initPart();
+
+                    pattern.getSortedNotesAsc().forEach(function (note) {
+                        note.setPartNote();
+                    })
+                })
+            })
+
+            //update loopstart/end
+            if(Tone.Time(self.settings.loopEnd) >= Tone.Time(time)){
+                if(op === 'add')
+                    store.settings.setLoopEnd(Tone.Time(Tone.Time(self.settings.loopEnd) + Tone.Time(length)).toBarsBeatsSixteenths());
+                else if(op === 'sub')
+                    store.settings.setLoopEnd(Tone.Time(Tone.Time(self.settings.loopEnd) - Tone.Time(length)).toBarsBeatsSixteenths());
+            }
+            if(Tone.Time(self.settings.loopStart) >= Tone.Time(time)){
+                if(op === 'add')
+                    store.settings.setLoopStart(Tone.Time(Tone.Time(self.settings.loopStart) + Tone.Time(length)).toBarsBeatsSixteenths());
+                else if(op === 'sub')
+                    store.settings.setLoopStart(Tone.Time(Tone.Time(self.settings.loopStart) - Tone.Time(length)).toBarsBeatsSixteenths());
+            }
+        }
+        function swapScenes(sId1, sId2) {
+            let s1 = self.getScene(sId1);
+            let s2 = self.getScene(sId2);
+            let start1 = s1.start;
+            let length2 = self.getSceneLength(s2.id);
+
+            s1.setStart(Tone.Time(Tone.Time(s2.end) - Tone.Time(self.getSceneLength(s1.id))).toBarsBeatsSixteenths());
+            s1.setEnd(s2.end);
+            s2.setStart(start1);
+            s2.setEnd(Tone.Time(Tone.Time(start1) + Tone.Time(length2)).toBarsBeatsSixteenths());
+
+            [s1, s2].forEach(function (scene) {
+                self.getPatternsByScene(scene.id).forEach(function (pattern) {
+                    let part = ToneObjs.parts.find(p => p.id === pattern.id).obj;
+                    part.dispose();
+
+                    pattern.initPart();
+
+                    pattern.getSortedNotesAsc().forEach(function (note) {
+                        note.setPartNote();
+                    })
+                });
+            });
+        }
+        function duplicateScene(sceneId) {
+            //add to end of song
+            let start = Tone.Time(self.getSongLength()).toBarsBeatsSixteenths();
+            let end = Tone.Time(Tone.Time(start) + Tone.Time(self.getSceneLength(sceneId))).toBarsBeatsSixteenths();
+
+            let newId = 'scene_' + randomId();
+            self.addScene(newId, start, end);
+
+            self.getPatternsByScene(sceneId).forEach(function (pattern) {
+                let newPattern = self.getPatternByTrackScene(pattern.track.id, newId);
+
+                pattern.getSortedNotesAsc().forEach(function (note) {
+                    newPattern.addNote(note.time, note.mute, note.note, note.duration);
+                })
+            })
+
+            self.ui.selectScene(newId);
+        }
+        function addPattern(id, resolution, track, scene, notes) {
+            self.patterns.push(Pattern.create({ id: id, resolution: resolution, track: track, scene: scene, notes: notes }));
+        }
+        function delPattern(patternId) {
+            if(self.ui.selectedNote){
+                if(self.ui.selectedNote.getPattern().id === patternId)
+                    self.ui.selectNote(undefined);
+            }
+
+            destroy(self.getPattern(patternId));
+        }
+        function addMasterTracks() {
+            ['master', 'A', 'B', 'C', 'D'].forEach(function (group) {
+                const idTrack = 'track_' + group;
+
+                if (group === 'master')
+                    self.tracks.push(Track.create({ id: idTrack, type: 'master', mute: false, solo: false, sample: undefined, region: undefined, group: 'M' }));
+                else
+                    self.tracks.push(Track.create({ id: idTrack, type: 'master', mute: false, solo: false, sample: undefined, region: undefined, group: group }));
+
+                const idPanvol = 'panvol_' + group;
+                store.components.add("panvol", { id: idPanvol, track: idTrack });
+
+                const idSplit = "mix_split_" + idTrack;
+                store.components.add("split", { id: idSplit, track: idTrack });
+
+                const idMeterL = "mix_meter_L_" + idTrack;
+                store.components.add("meter", { id: idMeterL, track: idTrack });
+
+                const idMeterR = "mix_meter_R_" + idTrack;
+                store.components.add("meter", { id: idMeterR, track: idTrack });
+
+                //add connections
+                if (group === "master") {
+                    //panvol_master -> panvol_master_out
+                    const idPanvolOut = 'panvol_' + group + '_out';
+                    store.components.add("panvol", { id: idPanvolOut, track: idTrack });
+                    store.addConnection('connection_' + randomId(), idTrack, idPanvol, idPanvolOut, "component", "component")
+
+                    //panvol_master_out -> limiter -> master
+                    const idLimiter = 'mix_limiter_master';
+                    store.components.add('limiter', { id: idLimiter, track: idTrack, threshold: 0 });
+                    store.addConnection('connection_' + randomId(), idTrack, idPanvolOut, idLimiter, "component", "component")
+                    store.addConnection('connection_' + randomId(), idTrack, idLimiter, "master", "component", "master");
+
+                    //limiter -> split -> meters
+                    store.addConnection('connection_' + randomId(), idTrack, idLimiter, idSplit, "component", "component");
+                    store.addConnection("connection_" + randomId(), idTrack, idSplit, idMeterL, "component", "component", 0);
+                    store.addConnection("connection_" + randomId(), idTrack, idSplit, idMeterR, "component", "component", 1);
+                }
+                else {
+                    const idSolo = "mix_solo_" + group;
+                    store.components.add("solo", { id: idSolo, track: idTrack });
+
+                    const idPanvolOut = 'panvol_' + group + '_out';
+                    store.components.add("panvol", { id: idPanvolOut, track: idTrack });
+
+                    //solo -> panvol -> panvol_out -> master panvol
+                    store.addConnection('connection_' + randomId(), idTrack, idSolo, idPanvol, "component", "component");
+                    store.addConnection('connection_' + randomId(), idTrack, idPanvol, idPanvolOut, "component", "component");
+                    store.addConnection('connection_' + randomId(), idTrack, idPanvolOut, "panvol_master", "component", "component");
+
+                    //panvol_out -> split -> meters
+                    store.addConnection('connection_' + randomId(), idTrack, idPanvolOut, idSplit, "component", "component");
+                    store.addConnection("connection_" + randomId(), idTrack, idSplit, idMeterL, "component", "component", 0);
+                    store.addConnection("connection_" + randomId(), idTrack, idSplit, idMeterR, "component", "component", 1);
+                }
+
+            })
+        }
+        function addTrack(id, type, mute, solo, sample, region) {
+            self.tracks.push(Track.create({ id: id, type: type, mute: mute, solo: solo, sample: sample, region: region, group: self.ui.selectedGroup }));
+
+            let panvolId = 'panvol_' + randomId();
+            self.components.panvols.push(PanVol.create({ id: panvolId, track: id }));
+
+            //panvol -> master group solo
+            store.addConnection('connection_' + randomId(), id, panvolId, 'mix_solo_' + self.ui.selectedGroup, "component", "component");
+
+            //panvol -> split -> meters
+            let idSplit = "mix_split_" + id;
+            store.components.add("split", { id: idSplit, track: id });
+            store.addConnection("connection_" + randomId(), id, panvolId, idSplit, "component", "component");
+
+            let idMeterL = "mix_meter_L_" + id;
+            store.components.add("meter", { id: idMeterL, track: id });
+            store.addConnection("connection_" + randomId(), id, idSplit, idMeterL, "component", "component", 0);
+
+            let idMeterR = "mix_meter_R_" + id;
+            store.components.add("meter", { id: idMeterR, track: id });
+            store.addConnection("connection_" + randomId(), id, idSplit, idMeterR, "component", "component", 1);
+
+            if (type === "audio") {
+                let playerId = 'player_' + randomId();
+                store.instruments.add('player', { id: playerId, track: id, sample: sample, region: region });
+                store.addConnection('connection_' + randomId(), id, playerId, panvolId, "instrument", "component");
+            }
+
+            self.scenes.forEach(function (scene) {
+                self.addPattern('pattern_' + randomId(), 16, id, scene.id, []);
+            })
+
+            store.ui.selectTrack(id);
+        }
+        function duplicateTrack(id){
+            let track = self.getTrack(id);
+
+            //add new track
+            let newTrackId = 'track_' + randomId();
+            self.addTrack(newTrackId, track.type, track.mute, track.solo, track.sample, track.region);
+
+            //function to set new id's for all deep level props
+            const setObjPropVal = (obj, prop, val) => {
+                Object.keys(obj).forEach(key => {
+                    if(key === prop){
+                        let tokens = obj[key].split('_');
+                        if(val)
+                            tokens[tokens.length-1] = val;
+                        else
+                            tokens[tokens.length-1] = randomId();
+
+                        obj[key] = tokens.toString().replace(/,/g, '_');
+                    }
+                    else if(typeof obj[key] === 'object'){
+                        setObjPropVal(obj[key], prop, val);
+                    }
+                })
+            }
+
+            //save a copy of orig track connections to modify during obj loop
+            let conns = self.getConnectionsByTrack(id)
+                .filter(c => c.src.split('_')[0] !== 'mix' && c.dest.split('_')[0] !== 'mix')
+                    .map(conn => ({...getSnapshot(conn)}))
+            
+            //copy orig track models
+            self.getObjsByTrackObj(track).sort((a,b) => {return a-b}).forEach(obj => {
+                let type = obj.id.split('_')[0];
+
+                //addtrack already connected default track objs
+                if(type !== 'mix'){
+                    //copy and apply snapshots of obj models, update id's and track id's
+                    let snapshot = cloneDeep(getSnapshot(obj));
+                    snapshot.track = newTrackId;
+
+                    if(type === 'panvol'){
+                        let panvol = self.components.panvols.find(pv => pv.track.id === newTrackId);
+                        snapshot.id = panvol.id;
+                        applySnapshot(panvol, snapshot);
+                    }
+                    else if(type === 'player'){
+                        let player = self.instruments.players.find(pv => pv.track.id === newTrackId);
+                        snapshot.id = player.id;
+                        applySnapshot(player, snapshot);
+
+                        //remove default connection by addTrack()
+                        self.delConnectionsByObj(player.id);
+                    }
+                    else{
+                        if(type !== 'tinysynth'){
+                            setObjPropVal(snapshot, 'id');
+                            let baseType = self.getObjTypeByIdTrack(obj.id, track.id) + 's';
+                            self[baseType].add(type, snapshot);
+                        }
+                        else if(type === "tinysynth" && obj.id.split('_')[1] === "panvol"){
+                            //add panvol
+                            setObjPropVal(snapshot, 'id');
+                            self.components.add('panvol', snapshot);
+
+                            //now add tinysynth using panvol id above
+                            let tinysynth = self.instruments.getInstrumentByTypeId('tinysynth', 'tinysynth_' + obj.id.split('_')[2]);
+                            let tsCopy = {...getSnapshot(tinysynth)};
+
+                            tsCopy.track = newTrackId;
+                            setObjPropVal(tsCopy, 'id', snapshot.id.split('_')[2]);
+                            setObjPropVal(tsCopy, 'panvol', snapshot.id.split('_')[2]);
+
+                            self.instruments.add('tinysynth', tsCopy);
+                        }
+                    }
+
+                    //update new model id's in connections
+                    conns.filter(c => c.src === obj.id || c.dest === obj.id).forEach(c => {
+                        if(c.src === obj.id)
+                            c.src = snapshot.id;
+                        else if(c.dest === obj.id)
+                            c.dest = snapshot.id;
+                    })
+                }
+            });
+            
+            //copy connections to new track
+            conns.forEach(c => {
+                store.addConnection('connection_' + randomId(), newTrackId, c.src, c.dest, c.srcType, c.destType, c.numOut, c.numIn);
+            })
+            
+            //copy patterns
+            self.getPatternsByTrack(track.id).forEach(p => {
+                self.getPatternByTrackScene(newTrackId, p.scene.id).pastePattern(p);
+            })
+        }
+        function delTrack(id) {
+            let track = self.getTrack(id);
+
+            if(track.type !== "audio")
+                store.ui.selectObj('');
+            else if(track.type === "audio" && !track.region)
+                store.ui.selectObj('');
+            
+            if(store.ui.selectedTrack){
+                if(store.ui.selectedTrack === track){
+                    store.ui.selectTrack(undefined);
+                }
+            }
+    
+            if(store.ui.selectedNote){
+                if(store.ui.selectedNote.getPattern().track === track){
+                    store.ui.selectNote(undefined);
+                }
+            }
+
+            self.components.getAllByTrack(id).forEach(function (component) {
+                let type = component.id.split('_');
+                if (self.components.isHidden(component.id))
+                    self.components.delete(type[1], component.id);
+                else
+                    self.components.delete(type[0], component.id);
+            })
+            self.effects.getAllByTrack(id).forEach(function (effect) {
+                self.effects.delete(effect.id.split('_')[0], effect.id);
+            })
+            self.instruments.getAllByTrack(id).forEach(function (instrument) {
+                self.instruments.delete(instrument.id.split('_')[0], instrument.id);
+            })
+            self.sources.getAllByTrack(id).forEach(function(source){
+                self.sources.delete(source.id.split('_')[0], source.id);
+            })
+
+            self.patterns.filter(p => p.track.id === id).forEach(pattern => self.delPattern(pattern.id));
+
+            if (track.type === "audio") {
+                if(track.region)
+                    self.getSample(track.sample.id).delRegion(track.region.id);
+                
+                //delete sample if no regions exist and no other tracks reference it
+                if(track.sample.regions.length === 0 
+                    && !self.tracks.filter(t => t.type === "audio" && t.sample).find(t => t.sample.id === track.sample.id && t.id !== track.id))
+                        destroy(self.getSample(track.sample.id));
+            }
+
+            destroy(self.getTrack(id));
+        }
+        function addConnection(id, track, src, dest, srcType, destType, numOut, numIn) {
+            self.connections.push(Connection.create({ id: id, track: track, src: src, dest: dest, srcType: srcType, destType: destType, numOut: numOut, numIn: numIn }))
+        }
+        function delConnectionsByObj(id) {
+            self.getConnectionsByObjId(id).forEach(function (connection) {
+                destroy(connection);
+            })
+        }
+        function delConnection(id) {
+            destroy(self.getConnection(id));
+        }
+        function addSample(id, url, length, regions, duration) {
+            self.samples.push(Sample.create({ id: id, url: url, length: length, regions: regions, duration: duration }));
+        }
+        function delSample(id) {
+            destroy(self.getSample(id));
+        }
+        function DBLoadStore(id) {
+            var db;
+            var openRequest = indexedDB.open('propadb', 1);
+
+            openRequest.onsuccess = function (e) {
+                console.log('DB Load - running onsuccess');
+                db = e.target.result;
+
+                var transaction = db.transaction(['songs'], 'readwrite');
+                var objectStore = transaction.objectStore('songs');
+                var request = objectStore.get(id);
+
+                request.onerror = function (e) {
+                    console.log('Error loading database', e.target.error.name);
+                };
+                request.onsuccess = function (e) {
+                    console.log('opened database. loading song...')
+
+                    //we maunally load all toneobjs before applying snapshot coz it's more reliable       
+                    setToneObjs(e.target.result);
+
+                    applySnapshot(store, e.target.result);
+                    
+                    //attach all patterns and notes
+                    store.patterns.forEach(function(p){
+                        p.getSortedNotesAsc().forEach(function(n){})
+                    })
+                    //attach all connections manually
+                    store.refreshConnections();
+
+                    //attach all players manually;
+                    store.instruments.players.forEach(() => {});
+
+                    e.target.result.samples.forEach(s => {
+                        fileTree.children[4].children.push({name: s.url, id: s.id , type: 'sample'});
+                    })
+
+                    //console.log(JSON.stringify(store));
+                };
+            };
+            openRequest.onerror = function (e) {
+                console.log('DB Load - onerror!');
+                console.dir(e);
+            };
+        }
+        async function DBLoadAudioFile(id) {
+            let db = await idb.open('propadb', 1, upgradeDB => upgradeDB.createObjectStore('audio', { keyPath: 'id' }));
+            let tx = db.transaction('audio', 'readwrite');
+            let objStore = tx.objectStore('audio');
+
+            let obj = await objStore.get(id);
+            await tx.complete;
+
+            db.close();
+
+            return obj;
+        }
+        async function DBSaveAudioFile(obj) {
+            let db = await idb.open('propadb', 1, upgradeDB => upgradeDB.createObjectStore('audio', { keyPath: 'id' }));
+            let tx = db.transaction('audio', 'readwrite');
+            let objStore = tx.objectStore('audio');
+
+            await objStore.put(obj);
+            await tx.complete;
+
+            db.close();
+        }
+        async function DBGetAllSongs(){
+            let db = await idb.open('propadb', 1, upgradeDB => upgradeDB.createObjectStore('songs', { keyPath: 'id' }));
+            let tx = db.transaction('songs', 'readonly');
+            let objStore = tx.objectStore('songs');
+
+            let allSavedItems = await objStore.getAll();
+            await tx.complete;
+
+            db.close();
+
+            let obj = [];
+            allSavedItems.forEach(function(song){
+                obj.push({id: song.id, title: song.settings.title, modified: song.settings.modified})
+            });
+            return obj;
+        }
+        function DBSaveStore(bSaveSong) {
+            let db;
+            let openRequest = indexedDB.open('propadb', 1);
+
+            openRequest.onupgradeneeded = function (e) {
+                let db = e.target.result;
+                console.log('DB Save - running onupgradeneeded');
+                if (!db.objectStoreNames.contains('songs')) {
+                    //console.log('DB Save - creating songs object store');
+                    let storeOS = db.createObjectStore('songs',
+                        { keyPath: 'id' });
+                }
+                if (!db.objectStoreNames.contains('audio')) {
+                    //console.log('DB Save - creating audio object store')
+                    let audioOS = db.createObjectStore('audio',
+                        { keyPath: 'id' });
+                }
+            };
+
+            openRequest.onsuccess = function (e) {
+                if(bSaveSong){
+                    //console.log('DB Save - running onsuccess & saving store');
+                    db = e.target.result;
+
+                    let transaction = db.transaction(['songs'], 'readwrite');
+                    let objectStore = transaction.objectStore('songs');
+                    //put will replace and 'add' will check if exist
+                    let request = objectStore.put(getSnapshot(store));
+
+                    request.onerror = function (e) {
+                        //console.log('DB Save Object - Error', e.target.error.name);
+                        db.close();
+                    };
+                    request.onsuccess = function (e) {
+                        //console.log('DB Save Object - Success');
+                        db.close();
+                    };
+                }
+            };
+
+            openRequest.onerror = function (e) {
+                //console.log('DB Save Error!');
+                console.dir(e);
+            };
+        }
+        function DBDelete() {
+            let DBDeleteRequest = indexedDB.deleteDatabase("propadb");
+
+            DBDeleteRequest.onerror = function (event) {
+                console.log("Error deleting database.");
+            };
+
+            DBDeleteRequest.onsuccess = function (event) {
+                console.log("Database deleted successfully");
+
+                console.log(event.result); // should be undefined
+            };
+        }
+        function setSongId(id){
+            self.id = id;
+        }
+        function afterCreate(){
+            //console.log('root store aftercreate called')
+            //DBDelete();
+
+            //open DB without saving
+            // console.log('save');
+            //self.setSongId('emptysong')
+            //self.setSongTitle('empty_' + self.id)
+            //DBSaveStore(true);
+            DBSaveStore(false);
+        }
+        return { afterCreate, setSongId, DBGetAllSongs, DBSaveStore, DBLoadStore, DBSaveAudioFile, DBLoadAudioFile, DBDelete, addPattern, delPattern, addMasterTracks, addTrack, duplicateTrack, delTrack, addScene, delScene, shiftSceneTimes, swapScenes, duplicateScene, addConnection, delConnectionsByObj, delConnection, addSample, delSample };
+    });
+
+/*
+export let undoManager = {}
+export const setUndoManager = targetStore => {
+    undoManager = UndoManager.create({}, { targetStore })
+}
+
+export const undo = () => undoManager.canUndo && undoManager.undo()
+export const redo = () => undoManager.canRedo && undoManager.redo()
+*/
