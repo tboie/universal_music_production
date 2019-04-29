@@ -22,35 +22,27 @@ export function toggleFullScreen() {
   }
 }
 
-
 export function applyDraggableGrid() {
-  let startPos = {x:0, y:0};
-  let mouseDown = false, bFlag = false;
+  let mStartPos = {}, origData = {};
+  let bFlag = false, bMoving = false;
 
-  //remember to unset this
-  interact(document.querySelector('body'))
-    .on('up', e => {
-      mouseDown = false;
-      startPos = null;
-    }).on('move', e => { 
-      if(mouseDown){
-        if(!startPos){
-          startPos = {x: e.x, y: e.y};
+  if(!interact.isSet(document.querySelector('body'))){
+    interact(document.querySelector('body'))
+      .on('down', e => {
+        mStartPos = { x: e.x, y: e.y };
+      })
+      .on('move', e => {
+        if(mStartPos && bMoving){
+          let mDragDist = Math.sqrt(Math.pow(e.x - mStartPos.x, 2) + Math.pow(e.y - mStartPos.y, 2) | 0).toFixed(3);
+          if(mDragDist > 60)
+            bFlag = true;
         }
-        let mDragDist = Math.sqrt(Math.pow(e.x - startPos.x, 2) + Math.pow(e.y - startPos.y, 2) | 0).toFixed(2);
-        if(mDragDist > 30){
-          bFlag = true;
-        }
-      }
-  });
+      });
+  }
 
   interact('#gridContainer')
     .draggable({
-      inertia: {
-        resistance: 7,
-        // minSpeed: 200,
-        // endSpeed: 100
-      },
+      inertia: true,
       restrict: {
         restriction: "parent",
         endOnly: true,
@@ -58,77 +50,73 @@ export function applyDraggableGrid() {
       },
       autoScroll: false,
       ignoreFrom: 'input',
-      onmove: dragMoveListener,
+      onmove: e => {
+        dragMoveListener(e)
+      },
       onstart: e => {
-        mouseDown = true;
-        bFlag = false;
+        origData.x = parseFloat(e.target.getAttribute('data-x')) || 0;
+        origData.y = parseFloat(e.target.getAttribute('data-y')) || 0;
+        bMoving = true;
       },
       onend: e => {
+        dragMoveListener(e, true);
+
+        bMoving = false;
         bFlag = false;
-        dragMoveListener(e);
+        mStartPos = undefined;
       }
     })
 
-  function dragMoveListener(event) {
-    let target = event.target,
-      x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx,
-      y = (parseFloat(target.getAttribute('data-y')) || 0);
+  function dragMoveListener(event, end) {
+    let target = event.target;
 
-    if (store.ui.viewMode === 'sequencer')
-      y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
+    let x = parseFloat(target.getAttribute('data-x')) || 0;
+    let y = parseFloat(target.getAttribute('data-y')) || 0;
 
-    if(!isNaN(x))
-      target.setAttribute('data-x', x);
-    if(!isNaN(y))
-      target.setAttribute('data-y', y);
+    if(event.dx)
+      x += event.dx;
+    if(event.dy && store.ui.viewMode === "sequencer")
+      y += event.dy;
 
-    //x,y are NaN when interact fire called manually
-    //bflag = drag threshold met in conditions above in mousemove
-    if(bFlag || isNaN(x) || isNaN(y)){
-      if (!x)
-        x = (parseFloat(target.getAttribute('data-x')) || 0);
-      if (!y)
-        y = (parseFloat(target.getAttribute('data-y')) || 0);
+    target.setAttribute('data-x', x);
+    target.setAttribute('data-y', y);
 
-      if(x > 0){
-        x = 0;
-      }
-
-      //Grid rows
+    if(bFlag){
       target.style.webkitTransform = target.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
 
-      //timeline
-      let timeline = document.getElementById("divGridTimeline");
-      if (timeline) {
-        let top = parseInt(document.getElementById('gridParent').style.top.replace('px', ''), 10);
-
-        if (!isNaN(top)) {
-          if (top === 40) {
-            timeline.style.webkitTransform = timeline.style.transform = 'translateY(' + (y * -1) + 'px)';
+      if(store.ui.mixMode){
+        let elements = document.getElementsByClassName('track-rowmix');
+        if (elements.length > 0) {
+          for (let i = 0; i < elements.length; i++) {
+              elements[i].style.webkitTransform = elements[i].style.transform = 'translate(' + (x * -1) + 'px)';
           }
-          else {
-            let diff = 40 - top - y;
-            timeline.style.webkitTransform = timeline.style.transform = 'translateY(' + diff + 'px)';
-          }
-        } else {
-          timeline.style.webkitTransform = timeline.style.transform = 'translateY(' + (y * -1) + 'px)';
-        }
-
-      }
-
-      //Mix rows
-      let elements = document.getElementsByClassName('track-rowmix');
-      if (!x) {
-        //TODO: mixrows are mounting after this is getting called....
-        //console.log('x === NAN   #elements: ' + elements.length);
-      }
-      if (elements.length > 0) {
-        for (let i = 0; i < elements.length; i++) {
-          //no Y drag  elements[i].style.webkitTransform = elements[i].style.transform = 'translate(' + (x * -1) + 'px,' + (y * -1) + 'px)';
-          elements[i].style.webkitTransform = elements[i].style.transform = 'translate(' + (x * -1) + 'px)';
         }
       }
     }
+    else if(end && !bFlag){
+      target.setAttribute('data-x', origData.x);
+      target.setAttribute('data-y', origData.y);
+    }
+    
+    //timeline
+    /*
+    let timeline = document.getElementById("divGridTimeline");
+    if (timeline) {
+      let top = parseInt(document.getElementById('gridParent').style.top.replace('px', ''), 10);
+
+      if (!isNaN(top)) {
+        if (top === 40) {
+          timeline.style.webkitTransform = timeline.style.transform = 'translateY(' + (y * -1) + 'px)';
+        }
+        else {
+          let diff = 40 - top - y;
+          timeline.style.webkitTransform = timeline.style.transform = 'translateY(' + diff + 'px)';
+        }
+      } else {
+        timeline.style.webkitTransform = timeline.style.transform = 'translateY(' + (y * -1) + 'px)';
+      }
+    }
+    */
   }
 }
 
@@ -151,7 +139,7 @@ export function audioBufferToWav(buffer, opt) {
       result = buffer.getChannelData(0)
     }
 
-    let worker = new Worker(process.env.PUBLIC_URL + "/worker.js");
+    let worker = new Worker(process.env.PUBLIC_URL + "/Worker_RenderBuffer.js");
 
     worker.onmessage = function (e) {
       let blob = new Blob([e.data], { type: "audio/wav" });
@@ -163,68 +151,64 @@ export function audioBufferToWav(buffer, opt) {
 }
 
 export function renderSVG(data, id, width, height) {
-  let summary = summarizeFaster(data, width); //width * 2 when w = 0.5 below
-  let multiplier = 50;
-  let w = 1; //0.5
-  d3.select(id)
-    .append('svg')
-    .attr('width', width)
-    .attr('height', height)
-    .selectAll('circle')
-    .data(summary)
-    .enter()
-    .append('rect')
-    .style('fill', '#ff6000')
-    .attr('x', function (d, i) {
-      return (i * w) /* + 25 */;
-    })
-    .attr('y', function (d, i) {
-      return (height / 2) - (multiplier * d[1]);
-    })
-    .attr('width', w)
-    .attr('height', function (d) {
-      let h = multiplier * (d[1] - d[0]);
-      if (!isNaN(h))
-        return h;
-      else
-        return 0;
-    });
-}
+  return new Promise(function (resolve, reject) {
+    let worker = new Worker(process.env.PUBLIC_URL + "/Worker_DrawBuffer.js");
 
-//WEB WORKER?
-export function summarizeFaster(data, pixels) {
-  let pixelLength = Math.round(data.length / pixels);
-  let vals = [];
+    worker.onmessage = function (e) {
+      let summary = e.data;
+      let multiplier = 50;
+      let w = 1;
 
-  // Define a minimum sample size per pixel
-  let maxSampleSize = 1000;
-  let sampleSize = Math.min(pixelLength, maxSampleSize);
-
-  // For each pixel we display
-  for (let i = 0; i < pixels; i++) {
-    let posSum = 0,
-      negSum = 0;
-
-    // Cycle through the data-points relevant to the pixel
-    // Don't cycle through more than sampleSize frames per pixel.
-    for (let j = 0; j < sampleSize; j++) {
-      let val = data[i * pixelLength + j];
-
-      // Keep track of positive and negative values separately
-      if (val > 0) {
-        posSum += val;
-      } else {
-        negSum += val;
-      }
+      resolve(d3.select(id)
+        .append('svg')
+        .attr('xmlns', 'http://www.w3.org/2000/svg')
+        .attr('width', width)
+        .attr('height', height)
+        .selectAll('circle')
+        .data(summary)
+        .enter()
+        .append('rect')
+        .style('fill', '#ff6000')
+        .attr('x', function (d, i) {
+          return (i * w) /* + 25 */;
+        })
+        .attr('y', function (d, i) {
+          return (height / 2) - (multiplier * d[1]);
+        })
+        .attr('width', w)
+        .attr('height', function (d) {
+          let h = multiplier * (d[1] - d[0]);
+          if (!isNaN(h))
+            return h;
+          else
+            return 0;
+        })
+      );
     }
-    vals.push([negSum / sampleSize, posSum / sampleSize]);
-  }
-  return vals;
+
+    worker.postMessage({ buffer: data, width: width });
+  })
 }
 
+export async function renderSong(track, pattern){
+  console.time('renderSong');
 
-export function renderSong(){
-  Tone.Offline(function(Transport){
+  let tLength, player, playerPart;
+  if(pattern){
+    player = ToneObjs.parts.find(row => row.id === pattern.id).player;
+    playerPart = ToneObjs.parts.find(row => row.id === pattern.id).playerPart;
+    tLength = store.getSceneLength(pattern.scene.id);
+  }
+  else{
+    tLength = store.getSongLength();
+  }
+
+  await Tone.Offline(function(Transport){
+
+      Transport.bpm.value = store.settings.bpm;
+      Transport.swing = store.settings.swing;
+      Transport.swingSubdivision = store.settings.swingSubdivision;
+
       let offlineToneObjs = {
           instruments: [],
           effects: [],
@@ -234,13 +218,40 @@ export function renderSong(){
           custom: []
       }
 
-      setToneObjs(store, offlineToneObjs)
+      setToneObjs(store, offlineToneObjs, track);
       
-      store.connections.forEach(c => {
-          c.addConnection(offlineToneObjs);
-      })
+      let patterns = [];
+      if(track){
+        if(pattern){
+          //all track connections except ones going to track panvol and split/meters
+          let trackConns = store.getConnectionsByTrack(track.id).filter(c => c.dest.split('_')[1] !== 'split' && c.dest.split('_')[1] !== 'meter');
 
-      store.patterns.forEach(p => {
+          trackConns.filter(c => c.dest !== c.track.getPanVol.id).forEach(c => c.addConnection(offlineToneObjs));
+
+          //trackObj -> master instead of track panvol
+          trackConns.filter(c => c.dest === c.track.getPanVol().id).forEach(c => {
+                                            offlineToneObjs[c.srcType + 's'].find(o => o.id === c.src).obj.connect(Tone.Master) 
+                                          });
+                                          
+          patterns.push(pattern);
+        }
+        else{
+          //ALL track connections
+          store.connections.filter(c => (c.track.id === track.id || c.track.id === 'track_master'
+                                      //master group connections
+                                      || (c.track.group === track.group && c.track.type === 'master'))
+                                      && c.dest.split('_')[1] !== 'split' && c.dest.split('_')[1] !== 'meter')
+                                          .forEach(c => c.addConnection(offlineToneObjs));
+          
+          patterns = store.getPatternsByTrack(track.id);
+        }
+      }
+      else{
+        store.connections.forEach(c => c.addConnection(offlineToneObjs))
+        patterns = store.getAllPatterns();
+      }
+      
+      patterns.forEach(p => {
           offlineToneObjs.parts.push({
               id: p.id,
               track: p.track.id
@@ -256,96 +267,124 @@ export function renderSong(){
           })
       })
 
-      Transport.bpm.value = store.settings.bpm;
-      Transport.swing = store.settings.swing;
-      Transport.swingSubdivision = store.settings.swingSubdivision;
-      Transport.start();
-      
-  }, store.getSongLength()).then(function(buffer){
-      audioBufferToWav(buffer._buffer).then(blob => {
-          Microphone.forceDownload(blob, store.settings.title + '.wav');
+      /* set reverb buffers */
+      offlineToneObjs.effects.filter(r => r.id.split('_')[0] === 'reverb').forEach(row => { 
+        row.obj._convolver.buffer = ToneObjs.effects.find(o => o.id === row.id).obj._convolver.buffer;
       });
+
+      if(pattern){
+        Transport.start(undefined, pattern.scene.start);
+      }
+      else
+        Transport.start()
+      
+  }, tLength).then(function(buffer){
+      console.timeEnd('renderSong')
+      if(pattern){
+        ToneObjs.parts.find(row => row.id === pattern.id).obj.mute = true;
+
+        console.log('setting buffer and starting player')
+        player.buffer.set(buffer);
+        playerPart.mute = false;
+        if(Tone.Transport.state === "started"){
+          if(Tone.Time(Tone.Transport.position) >= Tone.Time(pattern.scene.start) && Tone.Time(Tone.Transport.position) < Tone.Time(pattern.scene.end))
+            player.start(undefined, Tone.Time(Tone.Transport.position) - Tone.Time(pattern.scene.start));
+        }
+      }
+      else {
+        audioBufferToWav(buffer._buffer).then(blob => {
+            Microphone.forceDownload(blob, store.settings.title + '.wav');
+        });
+      }
   })
 }
 
-export function setToneObjs(data, offline){
-  let tObjs = ToneObjs;
+export function setToneObjs(data, offline, selTrack){
+  let tObjs; 
 
   if(offline)
-      tObjs = offline;
-  
-  for(let toneClass in tObjs){
-      if(tObjs.hasOwnProperty(toneClass)){
-          if(toneClass !== "parts" && toneClass !== "custom"){
-              let resultObj = data[toneClass];
+    tObjs = offline;
+  else
+    tObjs = ToneObjs;
 
-              for(let oArray in resultObj){
-                  if (resultObj.hasOwnProperty(oArray)) {
-                      if(resultObj[oArray].length > 0){
-                          resultObj[oArray].forEach(item => {
-                              let args = {};
-                      
-                              for (let key in item) {
-                                  if (item.hasOwnProperty(key)) {
-                                      if(key !== 'track' && key !== 'id' && key !== 'ui')
-                                          args[key] = item[key];
-                                  }
-                              }
+  Object.keys(tObjs).forEach(toneClass => {
+    if(toneClass !== "parts" && toneClass !== "custom"){
+      let resultObj = data[toneClass];
 
-                              let type = item.id.split('_')[0];
-                              if(type === 'mix')
-                                  type = item.id.split('_')[1];
-                              else if(type === "tinysynth")
-                                  if(toneClass === "components")
-                                      type = item.id.split('_')[1];
-
-                              if(type !== "tinysynth"){
-                                  toneObjNames.some(function(title){
-                                      if(title.toLowerCase() === type){
-                                          type = title;
-                                          return true;
-                                      }
-                                  })
-
-                                  let trackId = item.track;
-                                  if(offline)
-                                      trackId = item.track.id
-                                  
-                                  if(type === "Synth" || type === "AMSynth" || type === "DuoSynth" || type === "Sampler" || type === "FMSynth" || type === "MonoSynth")
-                                      tObjs.instruments.push({ id: item.id, track: trackId, obj: new Tone.PolySynth(8, Tone[type]).set(args) });
-                                  else
-                                      tObjs[toneClass].push({ id: item.id, track: trackId, obj: new Tone[type](args) });
-
-                                  //set player buffer during render
-                                  if(offline && type === "Player"){
-                                      let srcPlayer = ToneObjs.instruments.find(i => i.id === item.id).obj;
-                                      tObjs.instruments.find(p => p.id === item.id).obj.buffer = srcPlayer.buffer;
-                                  }
-                              }
-                          })
-                      }
-                  }
-              }
+      Object.keys(resultObj).forEach(oArray => {
+        if(resultObj[oArray].length && oArray !== 'splits' && oArray !== 'meters'){
+          let itemArray;
+          if(selTrack){
+            itemArray = resultObj[oArray].filter(o => o.track.id === selTrack.id 
+                              || (o.track.group === selTrack.group && o.track.type === 'master') 
+                              || o.track.id === 'track_master')
           }
-          else if(toneClass === "custom"){
-              //tinysynth only custom obj now... and the panvol it's bundled with should already be loaded
-              
-              data.instruments.tinysynths.forEach(function(row){                               
-                  let outId = 'tinysynth_panvol_' + row.id.split('_')[1];
-                  let outObj = tObjs.components.find(c => c.id === outId).obj;
+          else{
+            itemArray = resultObj[oArray];
+          }
+                            
+          itemArray.forEach(item => {
+            let args = {};
+          
+            Object.keys(item).forEach(key => {
+              if(key !== 'track' && key !== 'id' && key !== 'ui')
+                args[key] = item[key];
+            })
 
-                  let trackId = row.track;
-                  if(offline){
-                      trackId = row.track.id
+            let type = item.id.split('_')[0];
+            if(type === 'mix')
+                type = item.id.split('_')[1];
+            else if(type === "tinysynth" && toneClass === "components")
+                type = item.id.split('_')[1];
+            
+
+            if(type !== "tinysynth"){
+              toneObjNames.some(function(title){
+                  if(title.toLowerCase() === type){
+                      type = title;
+                      return true;
                   }
-                  
-                  tObjs.custom.push({id: row.id, track: trackId, obj: new window.WebAudioTinySynth({internalcontext:0, useReverb:0})})
-
-                  let tinySynth = tObjs.custom.find(t => t.id === row.id).obj;
-                  tinySynth.setAudioContext(Tone.context, outObj);
-                  tinySynth.send([0xc0, row.instrument]);      
+                  return false;
               })
-          }
-      }
-  }
+
+              let trackId = item.track;
+              if(offline)
+                  trackId = item.track.id
+              
+              if(type === "Synth" || type === "AMSynth" || type === "DuoSynth" || type === "Sampler" || type === "FMSynth" || type === "MonoSynth")
+                  tObjs.instruments.push({ id: item.id, track: trackId, obj: new Tone.PolySynth(8, Tone[type]).set(args) });
+              else
+                  tObjs[toneClass].push({ id: item.id, track: trackId, obj: new Tone[type](args) });
+              
+              //set player buffer during render
+              if(offline && type === "Player"){
+                  let srcPlayer = ToneObjs.instruments.find(i => i.id === item.id).obj;
+                  tObjs.instruments.find(p => p.id === item.id).obj.buffer = srcPlayer.buffer;
+              }
+            }
+          })
+        }
+      })
+    }
+    else if(toneClass === "custom"){
+      let itemArray = data.instruments.tinysynths;
+      if(selTrack)
+        itemArray = itemArray.filter(o => o.track.id === selTrack.id);
+      
+      itemArray.forEach(function(row){                               
+        let outId = 'tinysynth_panvol_' + row.id.split('_')[1];
+        let outObj = tObjs.components.find(c => c.id === outId).obj;
+
+        let trackId = row.track;
+        if(offline)
+            trackId = row.track.id
+        
+        tObjs.custom.push({id: row.id, track: trackId, obj: new window.WebAudioTinySynth({internalcontext:0, useReverb:0})})
+
+        let tinySynth = tObjs.custom.find(t => t.id === row.id).obj;
+        Tone.connect(tinySynth.setAudioContext(Tone.context), outObj);
+        tinySynth.send([0xc0, row.instrument]); 
+      })
+    }
+  })
 }

@@ -13,7 +13,8 @@ export const store = RootStore.create({
     "loopStart" : "0:0:0",
     "loopEnd" : "1:0:0",
     "scale" : Scale.names()[Math.floor(Math.random()*Scale.names().length)],
-    "key" : ["C","C#","Db","D","D#","Eb","E","E#","Fb","F","F#","Gb","G","G#","Ab","A","A#","Bb","B","B#","Cb"][Math.floor(Math.random()*21)]
+    "key" : ["C","C#","Db","D","D#","Eb","E","E#","Fb","F","F#","Gb","G","G#","Ab","A","A#","Bb","B","B#","Cb"][Math.floor(Math.random()*21)],
+    "partRender": false,
   },
   "tracks": [],
   "patterns" : [],
@@ -35,6 +36,7 @@ export const store = RootStore.create({
     "viewLength" : "1:0:0",
     "windowHeight" : 0,
     "windowWidth" : 0,
+    "selectedToolbar" : undefined,
     "selectedScene" : firstSceneId,
     "selectedTrack" : undefined,
     "selectedPattern" : undefined,
@@ -44,7 +46,16 @@ export const store = RootStore.create({
     "selectedKey" : undefined,
     "selectedChord" : undefined,
     "device" : undefined,
-    "showSideBar" : undefined
+    "browser1" : {
+      "selectedDir" : "/",
+    },
+    "browser2" : {
+      "selectedDir" : "/",
+    },
+    "browser3": {
+      "selectedDir" : "/"
+    },
+    "showSideBar" : undefined,
   },
   "sources" : {
     "amoscillators": [],
@@ -109,7 +120,12 @@ export const store = RootStore.create({
     "frequencyenvelopes": [],
     "lfos": [],
     "feedbackcombfilters": [],
-    "multibandcompressors": []
+    "lowpasscombfilters": [],
+    "multibandcompressors": [],
+    "midsidecompressors": [],
+    "multibandsplits": [],
+    "volumes": [],
+    "panners": []
   },
   "connections" : []
 });

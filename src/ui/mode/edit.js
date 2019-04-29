@@ -13,13 +13,16 @@ export const EditView = observer(class EditView extends Component {
     mousePosY;
     drawingLine;
     activeObj;
+    hoverObj;
+    //hardcoded css styles for width/height/top/bottom/
+    objSize = {width: this.props.windowWidth * 0.07, height: (this.props.windowHeight - 150 - 80) * 0.1 };
   
     componentDidMount(){
       applyDraggableGrid();
-      this.props.store.ui.calibrateSizes();
-  
+      //this.props.store.ui.calibrateSizes();
       this.drawingLine = false;
-  
+      
+      //TODO: replace with interact event for divEditViewBG only
       document.addEventListener('mouseup', this.mouseUp);
       document.addEventListener('touchend', this.mouseUp);
       document.addEventListener('mousedown', this.mouseDown);
@@ -27,18 +30,30 @@ export const EditView = observer(class EditView extends Component {
       document.addEventListener('mousemove', this.mouseMove);
       document.addEventListener('touchmove', this.touchMove);
   
-      this.refreshConnections();
-      this.toggleDeleteButtons();
-  
       if(!store.ui.editMode)
         store.ui.toggleEditMode();
-    }
-  
-    componentDidUpdate(prevProps, prevState, snapshot){
+
+      this.objSize.width = this.props.windowWidth * 0.07;
+      //diveditbg has top and bottom set
+      this.objSize.height = (this.props.windowHeight - 150 - 80) * 0.1;
+
       this.refreshConnections();
       this.toggleDeleteButtons();
+    }
   
-      //store.ui.calibrateSizes();
+    componentDidUpdate(prevProps){
+      if(prevProps.windowHeight !== this.props.windowHeight || prevProps.windowWidth !== this.props.windowWidth){
+        this.objSize.width = this.props.windowWidth * 0.07;
+        this.objSize.height = (this.props.windowHeight - 150 - 80) * 0.1;
+
+        //call element drag event to refresh positions
+        document.querySelectorAll('#divEditViewBG > div').forEach(ele => {
+          interact('#' + ele.id).fire({ type: 'dragmove', target: ele });
+        });
+      }
+
+      this.refreshConnections();
+      this.toggleDeleteButtons();
     }
   
     toggleDeleteButtons = () => {
@@ -67,6 +82,17 @@ export const EditView = observer(class EditView extends Component {
       this.drawingLine = false;
       if(document.getElementById('canvasLineBG'))
         document.getElementById('canvasLineBG').remove();
+
+
+      store.getObjsByTrackObj(this.props.track).forEach(o => {
+        let ele = document.getElementById(o.id);
+        if(ele){
+          if(ele.classList.contains('divEditViewObjEnabled'))
+            ele.classList.remove('divEditViewObjEnabled');
+          if(ele.classList.contains('divEditViewObjHover'))
+            ele.classList.remove('divEditViewObjHover');
+        }
+      })
     }
   
     mouseDown = (evt) => {
@@ -84,11 +110,17 @@ export const EditView = observer(class EditView extends Component {
         this.mousePosX = evt.pageX;
         this.mousePosY = evt.pageY;
         this.drawConnection();
+
+        if(this.hoverObj){
+          let ele = document.elementFromPoint(this.mousePosX, this.mousePosY);
+          if(ele)
+            this.activateObj(ele.id, 'over')
+        }
       }
     }
   
     touchMove = (evt) => {
-      evt.preventDefault(); //prevents offset on ios safari
+      evt.preventDefault(); //prevents position offset on ios safari
   
       if(this.drawingLine){
         this.mousePosX = evt.touches[0].pageX;
@@ -100,6 +132,7 @@ export const EditView = observer(class EditView extends Component {
     componentWillUnmount(){
       interact(document.querySelector('body')).unset();
       interact('#gridContainer').unset();
+
       document.removeEventListener('mouseup', this.mouseUp);
       document.removeEventListener('touchend', this.mouseUp);
       document.removeEventListener('mousemove', this.mouseMove);
@@ -109,12 +142,24 @@ export const EditView = observer(class EditView extends Component {
     }
   
     activateObj = (id, action) => {
-      id = id.replace('canvas_',"");
-      id = id.replace('label_',"");
+      let self = this;
+
+      //remove tags from nested elements if part of id
+      id = id.replace('canvas_','');
+      id = id.replace('label_','');
   
       if(id && action === "down"){
         this.drawingLine = true;
         this.activeObj = id;
+
+        store.getObjsByTrackObj(this.props.track).filter(o => o.id.split('_')[0] !== 'mix' && o.id !== id).forEach(o => {
+          let type = store.getObjTypeByIdTrack(o.id, self.props.track.id);
+          if((type === "effect" || type === "component") && o.id.split('_')[0] !== "tinysynth"){
+
+            if(!store.getConnectionsByObjId(this.activeObj).find(c => c.src === this.activeObj && c.dest === o.id))
+              document.getElementById(o.id).classList.add('divEditViewObjEnabled');
+          }
+        })
       }
       else if(id !== this.activeObj && action === "up" 
         && store.getObjsByTrackObj(this.props.track).find(o => o.id === id)){
@@ -123,13 +168,48 @@ export const EditView = observer(class EditView extends Component {
           let destType = store.getObjTypeByIdTrack(id, this.props.track.id);
   
           //dest must be component or effect
-          if(destType === "effect" || destType === "component"){
+          if((destType === "effect" || destType === "component") && id.split('_')[0] !== "tinysynth"){
             //is there already a connection?
             if(!store.getConnectionsByObjId(this.activeObj).find(c => c.src === this.activeObj && c.dest === id)){
               let connId = 'connection_' + randomId();
               store.addConnection(connId, this.props.track.id, this.activeObj, id, srcType, destType);
             }
           }
+      }
+      //hover on connect mode
+      else if(action === "over" && id !== this.hoverObj && id !== this.activeObj && this.drawingLine){
+        let ele = document.getElementById(id);
+        if(ele){
+          //hover id is tone obj && not connected
+          let destType = store.getObjTypeByIdTrack(id, this.props.track.id);
+          if((destType === "effect" || destType === "component") && id.split('_')[0] !== "tinysynth"
+            && !store.getConnectionsByObjId(this.activeObj).find(c => c.src === this.activeObj && c.dest === id)){
+
+              //remove hover style from prev ele
+              let elePrev = document.getElementById(this.hoverObj);
+              if(elePrev){
+                if(elePrev.classList.contains('divEditViewObjHover'))
+                  elePrev.classList.remove('divEditViewObjHover');
+              }
+
+              if(!ele.classList.contains('divEditViewObjHover'))
+                document.getElementById(id).classList.add('divEditViewObjHover');
+
+              this.hoverObj = id;
+          }
+          //hover id is not tone obj
+          else{
+            //remove hover class from prev ele
+            let elePrev = document.getElementById(this.hoverObj);
+            if(elePrev){
+              if(elePrev.classList.contains('divEditViewObjHover'))
+                elePrev.classList.remove('divEditViewObjHover');
+            }
+
+            this.hoverObj = undefined;
+          }
+        
+        }
       }
     }
   
@@ -152,8 +232,8 @@ export const EditView = observer(class EditView extends Component {
           document.getElementById('divEditViewBG').appendChild(eleDelete);
         }
         
-        hw = ele1.offsetWidth / 2;
-        hh = ele1.offsetHeight / 2;
+        hw = this.objSize.width / 2;
+        hh = this.objSize.height / 2;
   
         x1 = (parseFloat(ele1.getAttribute('data-x')) || 0);
         x2 = (parseFloat(ele2.getAttribute('data-x')) || 0);
@@ -174,11 +254,14 @@ export const EditView = observer(class EditView extends Component {
         hw = 0;
         hh = 0;
   
-        x1 = (parseFloat(ele1.getAttribute('data-x')) || 0) + (ele1.offsetWidth / 2);
-        x2 = this.mousePosX - eleBG.offsetLeft;
-        y1 = (parseFloat(ele1.getAttribute('data-y')) || 0) + (ele1.offsetHeight / 2);
-        // apply Y offset here ( -150 ) 
-        y2 = this.mousePosY - eleBG.offsetTop - 150;
+        x1 = (parseFloat(ele1.getAttribute('data-x')) || 0) + (this.objSize.width / 2);
+        y1 = (parseFloat(ele1.getAttribute('data-y')) || 0) + (this.objSize.height / 2);
+
+        //x2 = this.mousePosX - eleBG.offsetLeft;
+        //y2 = this.mousePosY - eleBG.offsetTop - 150;
+        //ugly, fast, sloppy... but better than a redraw
+        x2 = this.mousePosX - (store.ui.windowWidth * 0.45);
+        y2 = this.mousePosY - ((store.ui.windowHeight - 150 - 80) * 0.3) - 150;
       }
       
       x1 = Math.round(x1);
@@ -194,7 +277,7 @@ export const EditView = observer(class EditView extends Component {
           drawY1 = parseInt(eleBG.style.height.replace('px',''), 10);
           drawY2 = 0;
         }
-        else if(y1 < y2){
+        else if(y1 <= y2){
           eleBG.style.height = (y2 - y1) + 'px';
           eleBG.style.webkitTransform = eleBG.style.transform = 'translate(' + (x2 + hw) + 'px, ' + (y1 + hh) + 'px)';
           drawY1 = 0;
@@ -211,7 +294,7 @@ export const EditView = observer(class EditView extends Component {
           drawY1 = parseInt(eleBG.style.height.replace('px',''), 10);
           drawY2 = 0;
         }
-        else if(y1 < y2){
+        else if(y1 <= y2){
           eleBG.style.height = (y2 - y1) + 'px';
           eleBG.style.webkitTransform = eleBG.style.transform = 'translate(' + (x1 + hw) + 'px, ' + (y1 + hh) + 'px)';
           drawY1 = 0;
@@ -221,19 +304,22 @@ export const EditView = observer(class EditView extends Component {
         drawX2 = parseInt(eleBG.style.width.replace('px',''), 10);
       }
   
-      //show line when 1 px height or width
       if(x1 === x2 || y1 === y2){
-        eleBG.style.backgroundColor = 'white';
+       eleBG.style.backgroundColor = 'white';
+
+        if(y1 === y2)
+          eleBG.style.height = '1px';
+        if(x1 === x2)
+          eleBG.style.width = '1px';
       }
       else{
         if(eleBG.style.backgroundColor === 'white')
           eleBG.style.backgroundColor = 'transparent';
       }
   
-  
       //center delete button over BG using transform
       // change to regex
-      if(connection){
+      if(connection && !this.props.edit){
         let strTrans = eleBG.style.transform.replace("translate(","");
         strTrans = strTrans.replace(")","");
         strTrans = strTrans.trim();
@@ -245,43 +331,33 @@ export const EditView = observer(class EditView extends Component {
           strTrans[0] = strTrans[0].replace('px','');
         if(strTrans[1])
           strTrans[1] = strTrans[1].replace('px','');
-  
-        let hWidth = (eleBG.offsetWidth / 2) ,
-            hHeight = (eleBG.offsetHeight / 2);
-  
+        
+        let hWidth = (eleBG.style.width.replace('px','') / 2) - 13;
+        let hHeight = (eleBG.style.height.replace('px','') / 2) - 13;
+
         eleDelete.style.webkitTransform = eleDelete.style.transform = 'translate(' + (parseInt(strTrans[0], 10) + hWidth) + 'px, ' + (parseInt(strTrans[1], 10) + hHeight) + 'px)';
       }
   
-      if(eleBG){
+      if(eleBG && !isNaN(drawX1) && !isNaN(drawY1) && !isNaN(drawX2) && !isNaN(drawY2)){
         ctx = eleBG.getContext("2d");
-        //ctx.canvas.width = eleBG.style.width.replace('px','');
-        //ctx.canvas.height = eleBG.style.height.replace('px', '');
         ctx.canvas.width = eleBG.style.width.replace('px','');
         ctx.canvas.height = eleBG.style.height.replace('px', '');
         ctx.clearRect(0, 0, eleBG.width, eleBG.height);
-  
-        ctx.strokeStyle = '#ffffff';
+
+        let grad = ctx.createLinearGradient(drawX1, drawY1, drawX2, drawY2);
+        grad.addColorStop(0, "white");
+        grad.addColorStop(1, "#202020");
+        
+        ctx.strokeStyle = grad;
         ctx.lineWidth = 1.5;
+
         ctx.beginPath();
         ctx.moveTo(drawX1, drawY1);
         ctx.lineTo(drawX2, drawY2);
-       // this.drawArrow(ctx, drawX1, drawY1, drawX2, drawY2);
         ctx.stroke();
       }
     }
-  
-    // this doesn't look good. not using for now, but keeping for later
-    drawArrow = (context, fromx, fromy, tox, toy) => {
-      let headlen = 10;   // length of head in pixels
-      let angle = Math.atan2(toy-fromy,tox-fromx);
-      context.strokeStyle = '#ffffff';
-      context.moveTo(fromx, fromy);
-      context.lineTo(tox, toy);
-      context.lineTo(tox-headlen*Math.cos(angle-Math.PI/6),toy-headlen*Math.sin(angle-Math.PI/6));
-      context.moveTo(tox, toy);
-      context.lineTo(tox-headlen*Math.cos(angle+Math.PI/6),toy-headlen*Math.sin(angle+Math.PI/6));
-    }
-  
+
     btnDeleteConnection = (e) => {
       //remove connection and button
       let connId = e.target.id.replace("delete_","");
@@ -331,7 +407,9 @@ export const EditView = observer(class EditView extends Component {
           selectedPattern={this.props.store.ui.selectedPattern} 
           selectedPatternRes={this.props.store.ui.getSelectedPatternProp('resolution')} 
           selectedPatternNotes={this.props.store.ui.getSelectedPatternProp('notes')}
-          selectedKey={this.props.store.ui.selectedKey}/>
+          selectedKey={this.props.store.ui.selectedKey}
+          windowWidth={this.props.store.ui.windowWidth}
+          />
       }
   
       let sizes = store.ui.getGridSizes();
@@ -383,12 +461,11 @@ export const EditView = observer(class EditView extends Component {
   })
   
   const EditViewObj = observer(class EditViewObj extends Component {
-    objId;
+    x;
+    y;
   
     componentDidMount(){
-      this.props.edit ? this.enableDrag() : this.enableConnect();
-      this.objId = this.props.obj.id;
-  
+      this.setInteract();
       this.applyObjCoords();
     }
   
@@ -398,10 +475,10 @@ export const EditView = observer(class EditView extends Component {
   
       //convert relative to abs
       //bg div is separated into 4 quadrants
-      if(relY < 0){
+      if(relY <= 0){
         absY = (ele.offsetTop * (relY * -1) / 100) - ele.offsetTop;
       }
-      else if(relY >= 0){
+      else if(relY > 0){
         absY = (relY * (document.getElementById('divEditViewBG').offsetHeight - ele.offsetTop - ele.offsetHeight)) / 100;
       }
   
@@ -418,90 +495,108 @@ export const EditView = observer(class EditView extends Component {
     }
   
     componentWillUnmount(){
-      if(interact.isSet('#' +  this.objId))
-        interact('#' +  this.objId).unset();
+      if(interact.isSet('#' +  this.props.obj.id))
+        interact('#' +  this.props.obj.id).unset();
     }
   
     componentDidUpdate(prevProps, prevState, snapshot){
-      this.props.edit ? this.enableDrag() : this.enableConnect();
+      if(prevProps.edit !== this.props.edit)
+        interact('#' + this.props.obj.id).styleCursor(this.props.edit);
     }
-  
-    enableDrag = () => {
+    
+    setInteract = () => {
       let self = this;
-      let relX, relY;
-      if(interact.isSet('#' +  this.props.obj.id))
-        interact('#' +  this.props.obj.id).unset();
-  
+
       interact('#' + this.props.obj.id).draggable({
-        onmove: function(event) {
-          let target = event.target,
-              x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx,
-              y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
-  
-          target.style.webkitTransform = target.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
-  
-          target.setAttribute('data-x', x);
-          target.setAttribute('data-y', y);
-  
-          //save relative coordinates
-          //BG div is separated into 4 quadrants
-          relX = 0;
-          relY = 0;
-  
-          if(y < 0){
-            relY = ((target.offsetTop - Math.round(y * -1)) / target.offsetTop) * (100 * -1);
-          }
-          else if(y >= 0){
-            relY = (Math.round(y) / (document.getElementById('divEditViewBG').offsetHeight - target.offsetTop - target.offsetHeight)) * 100;
-          }
-  
-          if(x < 0){
-            relX = (((Math.round(x) - (target.offsetWidth / 2)) / (store.ui.windowWidth / 2))) * 100;
-          }
-          else if(x >= 0){
-            relX = (Math.round(x) / (store.ui.windowWidth / 2)) * 100;
-          }
-  
-          store.getConnectionsByObjId(self.props.obj.id)
-            .filter(c => (c.src !== "master" && c.dest !== "master"  
-              && c.src.split('_')[0] !== "mix" && c.dest.split('_')[0] !== "mix"
-              && c.dest !== 'panvol_master'))
-                .forEach(function(connection){
-                  self.props.drawConnection(connection);
-          })
-        },
-        onend: function (event) {
-          //update UI model
-          self.props.obj.ui.setCoords(relX, relY)
-        },
+        onmove: self.dragObj,
+        onend: self.dragEnd,
         restrict: {
           restriction: 'parent',
           elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
         },
-      }).on('down', function (event) {
-        store.ui.selectObj(self.props.obj.id);
-        event.preventDefault();
-      })
+      }).on('down', function(event) {
+        if(self.props.edit){
+          store.ui.selectObj(self.props.obj.id);
+          event.preventDefault();
+        }
+        else{
+          store.ui.selectObj(self.props.obj.id);
+
+          //ignore panvols except for master group panvols
+          if(self.props.obj.id.split('_')[0] === 'panvol'){
+            ['master','A','B','C','D'].some(group => {
+              if(self.props.obj.id === 'panvol_' + group){
+                self.props.active(self.props.obj.id, 'down');
+                return true;
+              }
+              return false;
+            })
+          }
+          else
+            self.props.active(self.props.obj.id, 'down');
+        }
+      }).on('move', function (event){
+          if(!self.props.edit)
+            self.props.active(event.target.id, 'over');
+      });
+
+      interact('#' + this.props.obj.id).styleCursor(this.props.edit);
     }
-  
-    enableConnect = () => {
+    
+    dragObj = (event) => {
       let self = this;
-      let id = this.props.obj.id;
-  
-      if(interact.isSet('#' + id))
-        interact('#' + id).unset();
-  
-      interact('#' + id).on('down', function (event) {
-        store.ui.selectObj(id);
-        self.props.active(id, 'down');
-        //event.preventDefault(); // this mucks up line drawing
-      })/*
-        MOVED TO LISTENERS ABOVE
-        .on('up', function (event) {
-        console.log(event)
-        self.props.active(event.target.id, 'up');
-        //event.preventDefault();
-      })*/
+      let target = event.target;
+
+      this.x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
+      this.y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
+      
+      //fire event called on window resize in parent
+      if(isNaN(this.x) || isNaN(this.y)){
+        this.applyObjCoords();
+        return;
+      }
+      
+      if(this.props.edit){
+        target.style.webkitTransform = target.style.transform = 'translate(' + this.x + 'px, ' + this.y + 'px)';
+        
+        target.setAttribute('data-x', this.x);
+        target.setAttribute('data-y', this.y);
+
+        store.getConnectionsByObjId(self.props.obj.id)
+          .filter(c => (c.src !== "master" && c.dest !== "master"  
+            && c.src.split('_')[0] !== "mix" && c.dest.split('_')[0] !== "mix"
+            && c.dest !== 'panvol_master'))
+              .forEach(function(connection){
+                self.props.drawConnection(connection);
+        })
+      }
+    }
+
+    dragEnd = (event) => {
+      if(this.props.edit){
+        let target = event.target;
+
+        //save relative coordinates
+        //BG div is separated into 4 quadrants
+        let relX = 0, relY = 0;
+
+        if(this.y < 0){
+          relY = ((target.offsetTop - Math.round(this.y * -1)) / target.offsetTop) * (100 * -1);
+        }
+        else if(this.y >= 0){
+          relY = (Math.round(this.y) / (document.getElementById('divEditViewBG').offsetHeight - target.offsetTop - target.offsetHeight)) * 100;
+        }
+
+        if(this.x < 0){
+          relX = (((Math.round(this.x) - (target.offsetWidth / 2)) / (store.ui.windowWidth / 2))) * 100;
+        }
+        else if(this.x >= 0){
+          relX = (Math.round(this.x) / (store.ui.windowWidth / 2)) * 100;
+        }
+
+        //update UI model
+        this.props.obj.ui.setCoords(relX, relY)
+      }
     }
   
     render() {

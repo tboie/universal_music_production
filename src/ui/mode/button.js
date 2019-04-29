@@ -20,7 +20,7 @@ export const GridButtonView = observer(class ButtonView extends Component {
       interact('#gridContainer').unset();
     }
   
-    componentDidUpdate(prevProps, prevState, snapshot){
+    componentDidUpdate(prevProps){
       //store.ui.calibrateSizes();
     }
   
@@ -62,7 +62,9 @@ export const GridButtonView = observer(class ButtonView extends Component {
             selectedPattern={this.props.store.ui.selectedPattern} 
             selectedPatternRes={this.props.store.ui.getSelectedPatternProp('resolution')} 
             selectedPatternNotes={this.props.store.ui.getSelectedPatternProp('notes')}
-            selectedKey={this.props.store.ui.selectedKey}/>
+            selectedKey={this.props.store.ui.selectedKey}
+            windowWidth={this.props.store.ui.windowWidth}
+            />
         }
       }
   
@@ -76,7 +78,7 @@ export const GridButtonView = observer(class ButtonView extends Component {
             {  trackRow }
           </div>
           <div id="divGridButtonViewBG">
-            { tracks.map((track, index) => <GridButton key={track.id} keyValue={track.id} store={this.props.store} sample={track.sample} region={this.returnRegion(track.region)}
+            { tracks.map((track, index) => <GridButton key={track.id} keyValue={track.id} store={this.props.store} sample={track.sample} region={track.returnRegion(track.region)}
               patterns={this.props.store.getPatternsByTrack(track.id)} scenes={this.props.store.scenes} rowIndex={index} mixMode={this.props.store.ui.mixMode}
               viewLength={this.props.store.ui.viewLength} bpm={this.props.store.settings.bpm} editNote={this.noteEdited} selectedTrack={this.props.selectedTrack}
               editMode={this.props.editMode}/>)
@@ -90,6 +92,8 @@ export const GridButtonView = observer(class ButtonView extends Component {
   const GridButton = observer(class GridButton extends Component {
     player;
     track;
+    divProgress;
+    tStart;
   
     componentDidMount(){
       this.track = store.getTrack(this.props.keyValue);
@@ -97,12 +101,16 @@ export const GridButtonView = observer(class ButtonView extends Component {
       this.player = ToneObjs.instruments.find(i => i.id === playerId).obj;
       let player = this.player;
       let self = this;
-  
+
       this.drawWave();
-  
+
+      let divGridButton = document.getElementById('divGridButton_' + this.props.keyValue);
+      this.divProgress = divGridButton.querySelector('.divGridButtonProgress');
+      this.divProgress.addEventListener('animationend', this.animationEnded); 
+
       interact('#divGridButton_' + this.props.keyValue)
         .draggable({
-          onmove: function(event){
+          onmove: event => {
             let dx = (event.dx === undefined) ? 0 : event.dx;
             let dy = (event.dy === undefined) ? 0 : event.dy;
   
@@ -120,9 +128,32 @@ export const GridButtonView = observer(class ButtonView extends Component {
             elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
           },
         })
-        .on('tap', function (event) {
-          if(player && !self.props.store.ui.editMode){
+        .on('down', event => {
+          if(player && !this.props.store.ui.editMode){
             player.start(Tone.context.currentTime);
+
+            let tNow = new Date().getTime(), percent = 0;
+            let tDelta = ((this.tStart - tNow) / 1000) * -1;
+            
+            if(tDelta < player.buffer.duration)
+              percent = (tDelta / player.buffer.duration) * 100
+
+            this.tStart = new Date().getTime();
+
+            //restarting animation after % played of duration seems to fix problems with animations not starting after ~80% complete
+            if(player.state === 'started' || (percent > 80 && percent < 99)){
+              this.divProgress.style.animation = 'none';
+              window.requestAnimationFrame(time => {
+                window.requestAnimationFrame(time => {
+                  this.divProgress.style.animation = 'progressWidth ' + player.buffer.duration + 's linear';
+                });
+              });
+            }
+            else{
+              this.divProgress.style.animation = 'progressWidth ' + player.buffer.duration + 's linear';
+            }
+
+            
           }
   
           //testing recording shizzzz.  check latencyHint for responsiveness?
@@ -145,19 +176,17 @@ export const GridButtonView = observer(class ButtonView extends Component {
             }
           }
         
-  
+
           if(self.props.store.ui.selectedTrack !== self.track)
             self.props.store.ui.selectTrack(self.props.keyValue);
   
           event.preventDefault();
         });
+
+        interact('#divGridButton_' + this.props.keyValue).draggable(this.props.editMode);
     }
   
-    componentWillUnmount(){
-      interact('#divGridButton_' + this.props.keyValue).unset();
-    }
-  
-    componentDidUpdate(prevProps, prevState, snapshot){
+    componentDidUpdate(prevProps){
       if(prevProps.region && this.props.region){
         if(prevProps.region.start !== this.props.region.start 
           || prevProps.region.end !== this.props.region.end){
@@ -165,26 +194,26 @@ export const GridButtonView = observer(class ButtonView extends Component {
         }
       }
   
-      if(this.props.editMode){
-        interact('#divGridButton_' + this.props.keyValue).draggable(true);
-      }
-      else{
-        interact('#divGridButton_' + this.props.keyValue).draggable(false);
-      }
+      if(prevProps.editMode !== this.props.editMode)
+        interact('#divGridButton_' + this.props.keyValue).draggable(this.props.editMode);
+    }
+
+    componentWillUnmount(){
+      interact('#divGridButton_' + this.props.keyValue).unset();
+      this.divProgress.removeEventListener('animationend', this.animationEnded);
+    }
+
+    animationEnded = (e) => {
+      e.target.style.animation = 'none';
+      //browsePlayer.stop();
     }
   
     drawWave = () => {
-      let self = this;
-      let eleButton = document.getElementById('divGridButton_' + self.props.keyValue);
-      let svgs = eleButton.getElementsByTagName("svg");
+      let eleButton = document.getElementById('divGridButton_' + this.props.keyValue);
       
-      this.ensureBufferIsLoaded(self.player.buffer).then(function(){
-        // remove previous svgs's
-        for(let i=svgs.length-1; i>=0; i--){
-          eleButton.removeChild(svgs[i]);
-        }
-        interact('#divGridButton_' + self.props.keyValue).fire({type: 'dragmove', target: eleButton});
-        renderSVG(self.player.buffer.getChannelData(0), eleButton, eleButton.offsetWidth, eleButton.offsetHeight);
+      this.ensureBufferIsLoaded(this.player.buffer).then(() => {
+        interact('#divGridButton_' + this.props.keyValue).fire({type: 'dragmove', target: eleButton});
+        renderSVG(this.player.buffer.toArray(0), eleButton, 100, 100);
       });
     }
   
@@ -196,17 +225,17 @@ export const GridButtonView = observer(class ButtonView extends Component {
         })();
       });
     }
-  
+
+    /*
     handleClick = (e) => {
-      /*
       if(this.player)
         this.player.start(Tone.context.currentTime);
       
         //e.stopPropagation();
         //e.preventDefault();
-        */
     }
-  
+    */
+
     render() {
       let strClass = "divGridButton";
       if(this.props.selectedTrack){
@@ -216,7 +245,7 @@ export const GridButtonView = observer(class ButtonView extends Component {
   
       return(
         <div id={'divGridButton_' + this.props.keyValue} className={strClass}>
-          <canvas id={'canvasGridButton_' + this.props.keyValue} className="canvasGridButton"/>
+          <div className={'divGridButtonProgress'}></div>
         </div>
       )
     }

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { observer } from "mobx-react";
 
 import { UIAutoFilter, UIAutoPanner, UIAutoWah, UIBitCrusher, UIChebyshev, UIChorus, UIConvolver, UIDistortion, UIFeedbackDelay, UIFreeverb, UIJCReverb, UIPhaser, UIPingPongDelay, UIPitchShift, UIReverb, UIStereoWidener, UITremolo, UIVibrato } from './panels/effects.js';
-import { UIAmplitudeEnvelope, UICompressor, UIEQ3, UIFilter, UILFO, UIFrequencyEnvelope, UILimiter, UIGate, UIMono, UIPanVol, UIFeedbackCombFilter, UIMultibandCompressor } from './panels/components.js';
+import { UIAmplitudeEnvelope, UICompressor, UIEQ3, UIFilter, UILFO, UIFrequencyEnvelope, UILimiter, UIGate, UIMono, UIPanVol, UIFeedbackCombFilter, UILowpassCombFilter, UIMultibandCompressor, UIMidSideCompressor, UIMultibandSplit, UIVolume, UIPanner } from './panels/components.js';
 import { UISynth, UIAMSynth, UIFMSynth, UIMonoSynth, UIMetalSynth, UIMembraneSynth, UIPluckSynth, UINoiseSynth, UIDuoSynth, UITinySynth } from './panels/instruments.js';
 import { UIOscillator, UIAMOscillator, UIFMOscillator, UIFatOscillator, UIPWMOscillator, UIPulseOscillator, UINoise } from './panels/sources.js';
 
@@ -108,8 +108,23 @@ export const ToolObjEditor = observer(class ToolObjEditor extends Component {
         case "feedbackcombfilter":
           display = <UIFeedbackCombFilter objId={this.props.objId} type="component"/>
           break;
+        case "lowpasscombfilter":
+          display = <UILowpassCombFilter objId={this.props.objId} type="component"/>
+          break;
         case "multibandcompressor":
           display = <UIMultibandCompressor objId={this.props.objId} type="component"/>
+          break;
+        case "midsidecompressor":
+          display = <UIMidSideCompressor objId={this.props.objId} type="component"/>
+          break;
+        case "multibandsplit":
+          display = <UIMultibandSplit objId={this.props.objId} type="component"/>
+          break;
+        case "volume":
+          display = <UIVolume objId={this.props.objId} type="component"/>
+          break;
+        case "panner":
+          display = <UIPanner objId={this.props.objId} type="component"/>
           break;
   
         //instruments

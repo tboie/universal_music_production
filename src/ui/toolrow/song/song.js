@@ -164,7 +164,7 @@ export const ToolSong = observer(class ToolSong extends Component {
       //update tracks
       songTree.children[1].name = 'Tracks [' + store.tracks.filter(t => t.type !== 'master').length + ']';
       ['A','B','C','D'].forEach((group, idx) => {
-        let tracks = store.getTracksByGroup(group).filter(t => t.type !== 'master');
+        let tracks = store.getTracksByGroup(group);
         let gObj = {};
   
         gObj.name = group + ' [' + tracks.length + ']';
@@ -235,7 +235,7 @@ export const ToolSong = observer(class ToolSong extends Component {
       }
   
       return(
-        <div id="divToolSong" style={{height:'100%', width:'100%', backgroundColor:'rgb(33, 37, 43)', overflowY:'scroll'}}>
+        <div id="divToolSong" className="divToolRowPanelContainer" style={{backgroundColor:'rgb(33, 37, 43)', overflowY:'scroll'}}>
           { header }
           <div className="divToolSongBody" style={{marginTop:'38px'}}>
             <Treebeard

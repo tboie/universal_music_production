@@ -113,11 +113,21 @@ export const ToolSynth = observer(class ToolSynth extends Component {
             }
           }
         });
+        //Sources are monophonic. this interrupts pattern events, so patterns are muted while playing
+        let bPatternsMuted = false;
         ToneObjs.sources.filter(o => o.track === this.props.selectedTrack.id).forEach(function(row){
+          if(!bPatternsMuted){
+            ToneObjs.parts.filter(p => p.track === self.props.selectedTrack.id).forEach(o => {
+              if(!o.obj.mute)
+                o.obj.mute = true;
+            });
+            bPatternsMuted = true;
+          }
+
           if(row.obj){
             if(row.id.split('_')[0] !== 'noise')
               row.obj.frequency.value = Note.freq(notes[0]);
-  
+
             row.obj.start();
           }
         });
@@ -207,15 +217,26 @@ export const ToolSynth = observer(class ToolSynth extends Component {
               row.obj.triggerRelease();
             }
             else if(type !== "player" && type !== "plucksynth"){
-              row.obj.releaseAll();
+              //row.obj.releaseAll();
+              row.obj.triggerRelease(notes.map(n => Note.freq(n)));
             }
           }
         });
+        
         ToneObjs.sources.filter(o => o.track === this.props.selectedTrack.id).forEach(function(row){
           if(row.obj){
             row.obj.stop();
           }
         });
+        //now unmute patterns that were muted on press
+        if(!this.mouseDown){
+          ToneObjs.parts.filter(p => p.track === self.props.selectedTrack.id).forEach(o => {
+            if(o.obj.mute)
+              o.obj.mute = false; 
+          });
+        }
+
+
         ToneObjs.custom.filter(o => o.track === this.props.selectedTrack.id).forEach(function(row){
           if(row.obj){ 
             let ch = store.instruments.getInstrumentByTypeId("tinysynth", row.id).channel;
@@ -261,8 +282,9 @@ export const ToolSynth = observer(class ToolSynth extends Component {
       //e.preventDefault();
   
       if(this.mouseDown && !this.bTouched){
-        this.keyUp(e, true);
         this.mouseDown = false;
+        this.keyUp(e, true);
+        //this.mouseDown = false;
       }
     }
   
@@ -422,7 +444,7 @@ export const ToolSynth = observer(class ToolSynth extends Component {
       }
   
       return(
-        <div id="divSynthContainer" style={{width:'100%', height:'100%'}}>
+        <div id="divToolSynth" className="divToolRowPanelContainer">
           <div id="divToolSynthHeader" style={{height:'30px', width:'100%', backgroundColor:'darkgray'}}>
             <div id='sliderToolChorus'></div>
           </div>

@@ -90,4 +90,7 @@ export const toneObjNames = [
     "Oscillator",
     "PulseOscillator",
     "FMOscillator",
+
+    //Custom
+    "TinySynth",
 ]

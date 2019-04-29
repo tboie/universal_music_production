@@ -1,15 +1,11 @@
-import React, { Component } from 'react';
-import { observer } from "mobx-react";
+import React from 'react';
 
-
-export const ToolHome = observer(class ToolHome extends Component {
-    componentDidMount(){}
-    componentWillUnmount(){}
-  
-    render(){
-      return(
-        <div style={{color:'white'}}></div>
-        //<iframe src="https://www.patreon.com/propa" style={{width:'100%', height:'100%'}}/>
-      )
-    }
-  })
+export const ToolHome = props => {
+    return(
+      <div id="divToolHome" className="divToolRowPanelContainer" style={{color:'white', height:'100%', width:'100%'}}>
+        <iframe title="MainVideo" src="https://www.youtube.com/embed/KgZAsfYck1g" 
+          frameBorder="0" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowFullScreen 
+            style={{height:'100%', width:'100%', display:'table', margin:'0 auto'}}></iframe>
+      </div>
+    )
+  }

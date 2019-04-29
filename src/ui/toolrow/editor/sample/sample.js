@@ -41,8 +41,10 @@ export const ToolSampleEditor = observer(class ToolSampleEditor extends Componen
   
     drawAudio = () => {
       let sampleId;
-  
-      if(this.props.objId === "player_" || this.props.objId.split('_')[0] === 'record')
+      
+      if(this.props.objId.split('_')[0] === 'sample')
+        sampleId = this.props.objId;
+      else if(this.props.objId === "player_" || this.props.objId.split('_')[0] === 'record')
         sampleId = this.props.file;
       else
         sampleId = store.instruments.getInstrumentByTypeId('player', this.props.objId).sample.id;
@@ -57,7 +59,7 @@ export const ToolSampleEditor = observer(class ToolSampleEditor extends Componen
           responsive: true,
           waveColor: '#ff3c00',
           progressColor: '#ff6000',
-          audioContext: Tone.context,
+          //audioContext: Tone.context,
           partialRender: true,
           scrollParent: true,
           //forceDecode: true,
@@ -75,7 +77,6 @@ export const ToolSampleEditor = observer(class ToolSampleEditor extends Componen
           
         });
   
-        let blobUrl;
        // let sampleLength = 0;
         let storeSample = null;
         let self = this;
@@ -101,15 +102,11 @@ export const ToolSampleEditor = observer(class ToolSampleEditor extends Componen
         })
   
         this.ensureWaveIsReady(this.sample).then(function(){
-          document.getElementById('lbl_waveStatus').style.display = 'none';
+          document.getElementById('divEditorSampleLoading').style.display = 'none';
         });
   
         this.sample.on('ready', function () {
           self.sample.isReady = true;
-  
-          if(blobUrl){
-            window.URL.revokeObjectURL(blobUrl);
-          }
   
           storeSample = store.getSample(sampleId);
           storeSample.regions.forEach(function(region){
@@ -122,6 +119,8 @@ export const ToolSampleEditor = observer(class ToolSampleEditor extends Componen
   
           if(!self.bSelect)
             self.toggleSelect();
+          else
+            self.sample.enableDragSelection({})
         });
   
         this.sample.on('region-created', function(region) {
@@ -194,7 +193,9 @@ export const ToolSampleEditor = observer(class ToolSampleEditor extends Componen
             region.element.className = "wavesurfer-region-selected";
             document.getElementById('btnDelRegion').disabled = false;
             document.getElementById('iconSampleDelete').style.opacity = "1";
-            store.ui.selectTrack(store.getTrackBySampleRegion(self.sampleId, region.id).id);
+            let track = store.getTrackBySampleRegion(self.sampleId, region.id);
+            if(track)
+              store.ui.selectTrack(track.id);
           }
           else{
             self.selectedRegion = null;
@@ -218,18 +219,7 @@ export const ToolSampleEditor = observer(class ToolSampleEditor extends Componen
           }
         })
   
-        //let lblProgress= document.getElementById('lbl_waveprogress');
         this.sample.on('loading', function(progress, obj){
-          /*
-          lblProgress.style.display = 'block';
-          if(progress < 100){
-            lblProgress.innerHTML = progress;
-          }
-          else{
-            lblProgress.innerHTML = '';
-            lblProgress.style.display = 'none';
-          }
-          */
         })
   
         this.sample.on('finish', function () {
@@ -343,19 +333,15 @@ export const ToolSampleEditor = observer(class ToolSampleEditor extends Componen
   
     ensureWaveIsReady = (sample) => {
       return new Promise(function (resolve, reject) {
-        let label = document.getElementById('lbl_waveStatus');
+        let label = document.getElementById('divEditorSampleLoading');
         (function waitForReady(){
-            if(label)
-              label.innerHTML += '.';
+            if(label.style.display !== 'table')
+              label.style.display = 'table';
   
-            if(sample.isReady){
-              if(label)
-                label.innerHTML = 'Loading';
-  
+            if(sample.isReady)
               return resolve();
-            }
   
-            setTimeout(waitForReady, 50);
+            setTimeout(waitForReady, 15);
         })();
       });
     }
@@ -376,13 +362,26 @@ export const ToolSampleEditor = observer(class ToolSampleEditor extends Componen
   
       return(
         <div style={{height:'100%', width:'100%', position:'absolute'}}>
-          <label id="lbl_waveStatus" style={{position:'absolute', width:'100%', top:'22px', textAlign:'center', overflowWrap:'break-word'}}>Loading</label>
+          <div id="divEditorSampleLoading" style={{width:'100%', height:'100%', display:'none'}}>
+            <div style={{display:'table-cell', verticalAlign:'middle'}}>
+              <div className="la-ball-spin-clockwise-fade-rotating la-lg" style={{margin:'auto'}}>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+              </div>
+            </div>
+          </div>
           <div id="samplezoom">
           { /*
             <button onClick={this.zoomIn} style={{position:'absolute', left:'5px'}}>+</button>
             <button onClick={this.zoomOut} style={{position:'absolute', left:'50px'}}>-</button>
           */ }
-            <div style={{marginLeft:'25px', marginRight:'225px', position:'relative', top:'6px'}}>
+            <div style={{marginLeft:'25px', marginRight:'225px', position:'relative'}}>
               <input type="range" min="1" max="200" onInput={this.zoomChange} style={{width:'100%'}}></input>
             </div>
             <button onClick={this.delRegion} id="btnDelRegion" style={{position:'absolute',right:'5px', backgroundColor:'transparent', top:'4px', border:0}}>

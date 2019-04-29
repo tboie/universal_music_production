@@ -76,8 +76,8 @@ export const SequencerView = observer(class SequencerView extends Component {
     }
   
     componentDidUpdate(prevProps, prevState, snapshot){
-      if(this.props.mixMode)
-        interact('#gridContainer').fire({type: 'dragmove', target: document.getElementById('gridContainer')});
+     // if(this.props.mixMode)
+        //interact('#gridContainer').fire({type: 'dragmove', target: document.getElementById('gridContainer')});
   
       if(prevProps.numTracks !== this.props.numTracks || prevProps.windowHeight !== this.props.windowHeight){
         store.ui.calibrateSizes(true);
@@ -88,13 +88,13 @@ export const SequencerView = observer(class SequencerView extends Component {
 
     
     render() {
-  
       let tracks;
       if(this.props.selectedGroup === "M"){
         tracks = this.props.store.tracks.filter(t => t.type === 'master')
       }
       else{
-        tracks = this.props.store.tracks.filter(t => (t.group === this.props.selectedGroup && t.type !== 'master'));
+        //tracks = this.props.store.tracks.filter(t => (t.group === this.props.selectedGroup && t.type !== 'master'));
+        tracks = this.props.store.getTracksByGroup(this.props.selectedGroup);
       }
   
       let sizes = store.ui.getGridSizes();
@@ -125,7 +125,9 @@ export const SequencerView = observer(class SequencerView extends Component {
                   selectedPattern={this.props.store.ui.selectedPattern} 
                   selectedPatternRes={this.props.store.ui.getSelectedPatternProp('resolution')} 
                   selectedPatternNotes={this.props.store.ui.getSelectedPatternProp('notes')}
-                  selectedKey={this.props.store.ui.selectedKey}/>) 
+                  selectedKey={this.props.store.ui.selectedKey}
+                  windowWidth={this.props.store.ui.windowWidth}
+                  />) 
               }
           </div>
         </div>

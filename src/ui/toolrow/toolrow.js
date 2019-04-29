@@ -5,42 +5,37 @@ import { store } from "../../data/store.js";
 import interact from 'interactjs';
 import { randomId } from "../../models/models.js";
 
-import { ToolBrowse } from "./browse/browse.js";
+import { ListBrowser } from "./browse/browse.js";
 import { ToolHome } from "./home/home.js";
 import { ToolSynth } from "./synth/synth.js";
 import { ToolSong } from "./song/song.js";
-import { ToolSearch } from "./search/search.js";
-import { ToolSideBar } from "./sidebar/sidebar.js";
 import { ToolEditor } from "./editor/editor.js";
 
 export const ToolRow = observer(class ToolRow extends Component {
     activeTool;
     selectedFile;
-    toolRowHeight;
+    toolRowHeight = '200px'; //set in css 
     action;
     songList;
   
     componentDidMount(){
-      let self = this;
-  
       this.applyResizable();
-  
-      //show home on initial load
-      this.toolRowHeight = (window.innerHeight - 240) + 'px';
-      document.getElementById('btnToolHome').click();
-  
+
+      if(this.props.selectedToolbar !== 'home')
+        document.getElementById('btnToolHome').click();
+
       window.addEventListener("wheel", e => {
         //don't zoom if curosr over bottom tool window
         let bottom = store.ui.windowHeight - 80;
-        if(self.activeTool)
-          bottom -= self.toolRowHeight.replace('px','');
+        if(this.activeTool)
+          bottom -= this.toolRowHeight.replace('px','');
         
         if(e.pageY < bottom && e.pageX < store.ui.windowWidth){
           let dir = Math.sign(e.deltaY);
           if(dir > 0)
-            self.UIZoomIn();
+            this.UIZoomIn();
           else
-            self.UIZoomOut();
+            this.UIZoomOut();
         }
       })
   
@@ -49,15 +44,15 @@ export const ToolRow = observer(class ToolRow extends Component {
           onstart: e => {},
           onmove: e => {
             if(e.ds > 0)
-              self.UIZoomIn();
+              this.UIZoomIn();
             else
-              self.UIZoomOut();
+              this.UIZoomOut();
           },
           onend: e => {}
         })
     }
   
-    componentDidUpdate(prevProps, prevState, snapshot){
+    componentDidUpdate(prevProps){
       if(prevProps.windowHeight !== this.props.windowHeight){
         let ele = document.getElementById('divToolRow');
         if(ele){
@@ -65,6 +60,9 @@ export const ToolRow = observer(class ToolRow extends Component {
           if(eleHeight > this.props.windowHeight - 140)
             ele.style.height = (this.props.windowHeight - 140) + 'px';
         }
+      }
+      if(prevProps.selectedToolbar !== this.props.selectedToolbar){
+        this.displayTool(this.props.selectedToolbar)
       }
     }
   
@@ -94,17 +92,18 @@ export const ToolRow = observer(class ToolRow extends Component {
           handleBG[0].style.backgroundColor = "#19937a";
           handleBG[1].style.backgroundColor = "#19937a";
       }).on('resizemove', function (event) {
-        if(event.rect.height < (store.ui.getWindowSizes().height - 140))
-          event.target.style.height = event.rect.height + 'px';
+        if(event.rect){
+          if(event.rect.height < (store.ui.getWindowSizes().height - 140))
+            event.target.style.height = event.rect.height + 'px';
+
+          handleBG[0].style.backgroundColor = "gray";
+          handleBG[1].style.backgroundColor = "gray";
+        }
   
-        self.toolRowHeight = event.target.style.height;
+        if(event.target.style.height)
+          self.toolRowHeight = event.target.style.height;
   
-        handleBG[0].style.backgroundColor = "gray";
-        handleBG[1].style.backgroundColor = "gray";
-  
-        //store.ui.calibrateSizes();
-  
-        if(self.activeTool === "btnToolSynth"){
+        if(store.ui.selectedToolbar === 'synth'){
           self.forceUpdate();
         }
       })
@@ -123,11 +122,20 @@ export const ToolRow = observer(class ToolRow extends Component {
     }
   
     toggleTool = (e) => {
-      if(this.activeTool === e.target.id)
-        this.activeTool = null;
+      let selection = e.target.id.substr(7).toLowerCase();
+      if(store.ui.selectedToolbar === selection)
+        store.ui.selectToolbar(undefined);
       else
-        this.activeTool = e.target.id;
-  
+        store.ui.selectToolbar(selection)
+    }
+
+    displayTool = (tool) => {
+      if(tool)
+        tool = 'btnTool' + tool.charAt(0).toUpperCase() + tool.slice(1);
+
+      this.activeTool = tool;
+
+      //toggle nav button class
       let btns = document.getElementsByClassName('btnToolRowNav');
       for(let i=0; i < btns.length; i++){
         if(btns[i].id === this.activeTool && !btns[i].classList.contains('btnToolRowNavSelected'))
@@ -135,8 +143,34 @@ export const ToolRow = observer(class ToolRow extends Component {
         else
           btns[i].classList.remove('btnToolRowNavSelected');
       }
-  
-      this.forceUpdate();
+
+      //main container 
+      if(this.activeTool)
+        document.getElementById('divToolRow').style.display = 'block';
+      else
+        document.getElementById('divToolRow').style.display = 'none';
+
+      //individual panels
+      let panels = document.getElementsByClassName('divToolRowPanelContainer');
+      for(let k=0; k < panels.length; k++){
+        if(this.activeTool){
+          if(this.activeTool.substr(3) === panels[k].id.substr(3)){
+            panels[k].classList.remove('hidden');
+          }
+          else if(!panels[k].classList.contains('hidden')){
+            panels[k].classList.add('hidden');
+          }
+        }
+        else if(!panels[k].classList.contains('hidden')){
+          panels[k].classList.add('hidden')
+        }
+      }
+
+      //update height for synth panel
+      //TODO: observable toolRowHeight?
+      if(store.ui.selectedToolbar === 'synth'){
+        interact('#divToolRow').fire({ type: 'resizemove', target: document.getElementById('divToolRow')});
+      }
     }
   
     selectBrowserFile = (e, node) => {
@@ -167,114 +201,72 @@ export const ToolRow = observer(class ToolRow extends Component {
           document.getElementById('btnToolEditor').click();
       }
     }
-  
+
     render(){
-      let toolComponent = null;
-  
-      switch(this.activeTool) {
-        case "btnToolHome":
-          toolComponent = <ToolHome store={this.props.store}/>
-          break;
-        case "btnToolBrowse":
-          if(this.props.store.ui.windowWidth >= 480)
-            toolComponent = <div style={{height:'100%', width:'100%'}}>
-                              <ToolBrowse store={this.props.store} funcSelectFile={this.selectBrowserFile} halfWindow={true} 
-                                viewMode={this.props.store.ui.viewMode} selectedGroup={this.props.store.ui.selectedGroup} 
-                                numSamples={this.props.store.getAllSamples().length} numRegions={this.props.store.getAllRegions().length} />
-                              <ToolBrowse store={this.props.store} funcSelectFile={this.selectBrowserFile} halfWindow={true}
-                                viewMode={this.props.store.ui.viewMode} selectedGroup={this.props.store.ui.selectedGroup} 
-                                numSamples={this.props.store.getAllSamples().length} numRegions={this.props.store.getAllRegions().length} />
-                            </div>
-          else
-            toolComponent = <ToolBrowse store={this.props.store} funcSelectFile={this.selectBrowserFile} halfWindow={false} viewMode={this.props.store.ui.viewMode} selectedGroup={this.props.store.ui.selectedGroup}/>
-          break;
-        case "btnToolEditor":
-          toolComponent = <ToolEditor store={this.props.store} file={this.selectedFile} tracks={this.props.store.tracks} objId={this.props.store.ui.selectedObj}/>
-          break;
-        case "btnToolSearch":
-          toolComponent = <ToolSearch store={this.props.store}/>
-          break;
-        case "btnToolSong":
-          toolComponent = <ToolSong store={this.props.store} bpm={this.props.store.settings.bpm}/>
-          break;
-        case "btnToolSynth":
-          toolComponent = <ToolSynth store={this.props.store} selectedTrack={this.props.store.ui.selectedTrack} height={this.toolRowHeight} 
-                            scale={this.props.store.settings.scale} scaleKey={this.props.store.settings.key} chord={this.props.store.ui.selectedChord}/>
-          break;
-        case null:
-          toolComponent = null;
-          break;
-        default:
-          toolComponent = null;
-      }
-  
-      let styleToolRow = null;
-      if(!this.activeTool){
-        styleToolRow = {height:0, display:'none'};
+      let toolBrowse;
+      if(this.props.store.ui.windowWidth >= 480){
+        toolBrowse =  <div id="divToolBrowse" className="divToolRowPanelContainer">
+                        <div style={{width:'50%', height:'100%', float:'left', position:'relative'}}>
+                          <ListBrowser selectedDir={this.props.store.ui.browser1.selectedDir} id={'browser1'}
+                              numSamples={this.props.store.numSamples} numRegions={this.props.store.numRegions}/>
+                        </div>
+                        <div style={{width:'50%', height:'100%', float:'left', position:'relative'}}>
+                          <ListBrowser selectedDir={this.props.store.ui.browser2.selectedDir} id={'browser2'}
+                              numSamples={this.props.store.numSamples} numRegions={this.props.store.numRegions}/>
+                        </div>
+                      </div>
       }
       else{
-        styleToolRow = {height:this.toolRowHeight, display:'block'};
+        toolBrowse = <div id="divToolBrowse" className="divToolRowPanelContainer">
+                        <ListBrowser selectedDir={this.props.store.ui.browser1.selectedDir} id={'browser1'}
+                            numSamples={this.props.store.numSamples} numRegions={this.props.store.numRegions}/>
+                      </div>
       }
-  
-      let toolSideBar = null;
-      if(this.props.store.ui.showSideBar)
-        toolSideBar = <ToolSideBar content={<ToolBrowse store={this.props.store} sidebar={true} funcSelectFile={this.selectBrowserFile} 
-                        viewMode={this.props.store.ui.viewMode} selectedGroup={this.props.store.ui.selectedGroup} 
-                        numSamples={this.props.store.getAllSamples().length} numRegions={this.props.store.getAllRegions().length} /> }/>
-  
+      
       return(
         <div id="divToolRowContainer" style={{width: this.props.store.ui.windowWidth + 'px'}}>
-          <ToggleModeIcons store={this.props.store} windowWidth={this.props.store.ui.windowWidth}/>
+          <ToggleModeIcons store={this.props.store} windowWidth={this.props.store.ui.windowWidth} viewMode={this.props.store.ui.viewMode} 
+                              selectedGroup={this.props.store.ui.selectedGroup} mixMode={this.props.store.ui.mixMode} editMode={this.props.store.ui.editMode}/>
           <div id="divZoom">
             <button id="btnUIZoomOut" className="btnUIZoom" onClick={this.UIZoomOut}><i className="material-icons i-36" style={{marginLeft: '-4px'}}>remove_circle</i></button>
             <button id="btnUIZoomIn" className="btnUIZoom" onClick={this.UIZoomIn}><i className="material-icons i-36" style={{marginLeft: '-4px'}}>add_circle</i></button>
           </div>
-          <div id="divToolRow" style={styleToolRow}>
+          <div id="divToolRow">
             <div id="divToolRowHandle" className="divToolRowHandleBG">
               <div id="divToolRowHandleThumb" className="divToolRowHandleBG">
                 <i className="material-icons i-28" style={{marginLeft:'11px', marginTop:'4px', color:'#12121e'}}>swap_vert</i>
               </div>
             </div>
-            { toolComponent }
+            <ToolHome store={this.props.store}/>
+            { toolBrowse }
+            <ToolEditor store={this.props.store} file={this.selectedFile} tracks={this.props.store.tracks} objId={this.props.store.ui.selectedObj}/>
+            <ToolSong store={this.props.store} bpm={this.props.store.settings.bpm}/>
+            <ToolSynth store={this.props.store} selectedTrack={this.props.store.ui.selectedTrack} height={this.toolRowHeight} 
+                            scale={this.props.store.settings.scale} scaleKey={this.props.store.settings.key} chord={this.props.store.ui.selectedChord}/>
           </div>
           <div id="divToolRowNav">
             <button id="btnToolHome" className="btnToolRowNav" onClick={this.toggleTool}>Main</button>
             <button id="btnToolBrowse" className="btnToolRowNav" onClick={this.toggleTool}>Lib</button>
             <button id="btnToolEditor" className="btnToolRowNav" onClick={this.toggleTool}>Edit</button>
             <button id="btnToolSong" className="btnToolRowNav" onClick={this.toggleTool}>Song</button>
-            { /*<button id="btnToolSearch" className="btnToolRowNav" onClick={this.toggleTool}>Search</button> */ }
             <button id="btnToolSynth" className="btnToolRowNav" onClick={this.toggleTool}>Keys</button> 
-            {/*
-            <button id="btnToolRecord" className="btnToolRowNav" onClick={this.toggleTool} disabled>Record</button>
-            */}
-            { toolSideBar }
           </div>
-          
         </div>
       )
     }
   })
 
 
-const ToggleModeIcons = observer(class ToggleModeIcons extends Component {
-  componentDidMount(){
-  }
-
-  componentWillUnmount(){
-  }
-
-  componentDidUpdate(prevProps, prevState, snapshot){
-  }
-
-  setEditIcon = () => {
-    if(this.props.store.ui.viewMode === "edit"){
-      if(this.props.store.ui.editMode)
+const ToggleModeIcons = props => {
+  const setEditIcon = () => {
+    if(props.viewMode === "edit"){
+      if(props.editMode)
         return "open_with";
       else
         return "arrow_right_alt";
     }
-    else if(this.props.store.ui.viewMode === "button"){
-      if(this.props.store.ui.editMode)
+    else if(props.viewMode === "button"){
+      if(props.editMode)
         return "open_with";
       else
         return "volume_up";
@@ -284,81 +276,76 @@ const ToggleModeIcons = observer(class ToggleModeIcons extends Component {
     }
   }
 
-
-  toggleGroup = (e, next) => {
+  const toggleGroup = (e, next) => {
     let group = undefined;
 
     if(next){
-      if(this.props.store.ui.selectedGroup === "M"){
+      if(props.selectedGroup === "M")
         group = 'A'
-      }
-      else if(this.props.store.ui.selectedGroup === 'A'){
+      else if(props.selectedGroup === 'A')
         group = 'B'
-      }
-      else if(this.props.store.ui.selectedGroup === 'B'){
+      else if(props.selectedGroup === 'B')
         group = 'C'
-      }
-      else if(this.props.store.ui.selectedGroup === 'C'){
+      else if(props.selectedGroup === 'C')
         group = 'D'
-      }
-      else if(this.props.store.ui.selectedGroup === 'D'){
+      else if(props.selectedGroup === 'D')
         group = 'M'
-      }
     }
     else {
-       group = e.target.children[0].innerHTML;
+      if(!e.target.id)
+        group = e.target.innerHTML;
+      else
+        group = e.target.children[0].innerHTML;
     }
 
     store.ui.selectGroup(group);
   }
 
-  toggleMode = () => {
-    if(this.props.store.ui.viewMode === "edit" || this.props.store.ui.viewMode === "button"){
+  const toggleMode = () => {
+    if(props.viewMode === "edit" || props.viewMode === "button"){
       store.ui.toggleEditMode();
     }
-    else if(this.props.store.ui.viewMode === "sequencer"){
+    else if(props.viewMode === "sequencer" && props.selectedGroup !== 'M'){
       store.ui.toggleMixMode();
     }
   }
 
-
-  render(){
-    let iconOpacity = 1;
-    if(this.props.store.ui.viewMode === "sequencer" && !this.props.store.ui.mixMode)
-        iconOpacity = 0.3;
-    
-    let showGroupIcon = 'block';
-    if(this.props.store.ui.viewMode === "edit"){
-      showGroupIcon = 'none';
-    }
-
-    let showEditIcon = 'visible';
-    if(this.props.store.ui.viewMode === "button"){
-      showEditIcon = 'hidden';
-    }
-
-    let groupIcons =  <button id="btnToggleGroup" className="btnUIZoom" onClick={e => this.toggleGroup(e, true)} style={{visibility: showGroupIcon, float:'left', position:'relative', top:'-6px'}}>
-                        <i className="material-icons i-36">{this.props.store.ui.selectedGroup}</i>
-                      </button>
-    
-    
-    if(this.props.windowWidth > 550){
-      groupIcons = ['A','B','C','D','M'].map((group, idx) => {
-                    let opacity = 0.3;
-                    if(store.ui.selectedGroup === group)
-                      opacity = 1;
-
-                    return <button key={idx} id="btnToggleGroup" className="btnUIZoom" onClick={this.toggleGroup} style={{display:showGroupIcon, float:'left', position:'relative', top:'-6px', opacity:opacity}}>
-                              <i key={idx} className="material-icons i-36">{group}</i>
-                            </button>
-                  });
-    }
-   
-    return (
-      <div id="divToggleMode">
-        { groupIcons }
-        <button id="btnToggleMode" className="btnUIZoom" onClick={this.toggleMode} style={{visibility: showEditIcon, float:'left', opacity:iconOpacity}}><i id="iconEdit" className="material-icons i-36">{this.setEditIcon()}</i></button>
-      </div>
-    )
+  let iconOpacity = 1;
+  if(props.viewMode === "sequencer" && !props.mixMode)
+      iconOpacity = 0.3;
+  
+  let showGroupIcon = 'block';
+  if(props.viewMode === "edit"){
+    showGroupIcon = 'none';
   }
-})
+
+  let showEditIcon = 'visible';
+  if(props.viewMode === "button"){
+    showEditIcon = 'hidden';
+  }
+
+  let groupIcons =  <button id="btnToggleGroup" className="btnUIZoom" onClick={e => toggleGroup(e, true)} style={{visibility: showGroupIcon, float:'left', position:'relative', top:'-6px'}}>
+                      <i className="material-icons i-36">{props.selectedGroup}</i>
+                    </button>
+  
+  if(props.windowWidth > 550){
+    groupIcons = ['A','B','C','D','M'].map((group, idx) => {
+                  let opacity = 0.3;
+                  if(props.selectedGroup === group)
+                    opacity = 1;
+
+                  return <button key={idx} id={"btnToggleGroup_" + group} className="btnUIZoom" onClick={toggleGroup} style={{display:showGroupIcon, float:'left', position:'relative', top:'-6px', opacity:opacity}}>
+                            <i key={idx} className="material-icons i-36">{group}</i>
+                          </button>
+                });
+  }
+  
+  return (
+    <div id="divToggleMode">
+      { groupIcons }
+      <button id="btnToggleMode" className="btnUIZoom" onClick={toggleMode} style={{visibility: showEditIcon, float:'left', opacity:iconOpacity}}>
+        <i id="iconEdit" className="material-icons i-36">{setEditIcon()}</i>
+      </button>
+    </div>
+  )
+}

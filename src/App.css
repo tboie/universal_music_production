@@ -1,6 +1,15 @@
 html {
   overflow: hidden;
   background-color: #0c0b1b;
+  touch-action: none;
+  -ms-touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
 }
 
 #container {
@@ -12,14 +21,22 @@ html {
   height: 100%; 
   position: fixed;
   display:none;
-  z-index: 1;
+  z-index: 2;
   background-color: #181f87;
   opacity: 0.5;
 }
 
 .drop-active {
   background-color: #2671ea !important;
-  opacity: 0.5 !important;
+}
+
+@keyframes dropZoneFadeOut {
+  0% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 .track-row {
@@ -100,10 +117,8 @@ html {
 }
 
 #gridContainer {
-  -ms-touch-action: none;
-  touch-action: none;
   background-color:#0c0b1b;
-  transition: width .25s linear;
+  transition: width .2s linear;
 }
 
 #gridParent {
@@ -205,8 +220,6 @@ wave {
   border-bottom: 4px solid #19937a;
   position: absolute;
   top: 0px;
-  touch-action: none;
-  -ms-touch-action: none;
   box-sizing: border-box;
   /*pointer-events: none;*/
 }
@@ -224,10 +237,11 @@ wave {
   width:100%;
   height:40px;
   border: 1px solid #19937a;
+  image-rendering: pixelated;
 }
 
 .svgdiv {
-  visibility: hidden;
+  display:none;
 }
 
 #divZoom {
@@ -285,6 +299,11 @@ wave {
   position: relative;
 }
 
+.divToolRowPanelContainer {
+  width:100%;
+  height:100%;
+}
+
 .divToolRowEditorContainer { 
   width:100%;
   height:100%;
@@ -292,21 +311,47 @@ wave {
   overflow-y:scroll;
 }
 
-/* remove parent node 'all' from filebrowser tree */
+#divToolRowContainer {
+  position:fixed;
+  bottom:40px;
+  z-index: 2;
+  background-color:#0c0b1b;
+}
+
+#divToolRowHandle {
+  width:100%;
+  height:6px;
+  top:-6px;
+  position:absolute;
+}
+
+#divToolRowHandleThumb {
+  width: 50px;
+  height: 40px;
+  border-top-left-radius: 14px;
+  border-top-right-radius: 14px;
+  bottom: 34px;
+  position: relative;
+  margin: auto;
+}
+
+.divToolRowHandleBG {
+  background-color: #19937a;
+}
+
+/*
 .divToolBrowseBody > ul:first-child > li:first-child > div:first-of-type  {
   display: none !important;
 }
 
-/* remove padding in browse main ul */
 .divToolBrowseBody > ul > li > div > ul {
   padding-left: 0px !important;
 }
 
-/* lower padding for child ul elements in browse */
 .divToolBrowseBody > ul > li > div > ul ul {
   padding-left: 7px !important;
 }
-
+*/
 
 .divToolSongBody > ul > li > div > ul {
   padding-left: 7px !important;
@@ -315,7 +360,6 @@ wave {
 .divToolSongBody > ul > li > div > ul ul {
   padding-left: 13px !important;
 }
-
 
 .noUi-connect {
   background-color: #181f87 !important;
@@ -337,41 +381,20 @@ wave {
   outline: 0 !important;
 }
 
+.noUi-marker-large, .noUi-marker-sub { 
+  height: 5px !important;
+}
+
+.noUi-value-large, .noUi-value-sub { 
+  color: #ccc;
+  font-size: 12px !important;
+}
+
 #samplezoom {
   width:100%;
   height:26px;
   z-index:4;
   background-color:#0c0b1b;
-}
-
-#divToolRowContainer {
-  position:fixed;
-  bottom:40px;
-  z-index: 2;
-  background-color:#0c0b1b;
-}
-
-#divToolRowHandle {
-  width:100%;
-  height:6px;
-  top:-6px;
-  position:absolute;
-  touch-action: none;
-  -ms-touch-action: none;
-}
-
-#divToolRowHandleThumb {
-  width: 50px;
-  height: 40px;
-  border-top-left-radius: 14px;
-  border-top-right-radius: 14px;
-  bottom: 34px;
-  position: relative;
-  margin: auto;
-}
-
-.divToolRowHandleBG {
-  background-color: #19937a;
 }
 
 #divHeaderTimeline { 
@@ -397,8 +420,8 @@ wave {
   height:100%;
   width:100%;
   background-color:transparent;
-  position:relative; 
-  top:100px; 
+  position:fixed; 
+  top:150px; 
   left:0;
   display: flex;
   flex-wrap: wrap;
@@ -409,8 +432,6 @@ wave {
   height:100px;
   width:100px;
   background-color: transparent;
-  touch-action: none;
-  -ms-touch-action: none;
   float:left;
   border-radius:2px;
   border:1px solid #19937a;
@@ -427,8 +448,6 @@ wave {
   height:100px;
   width:100px;
   background-color: transparent;
-  touch-action: none;
-  -ms-touch-action: none;
   float:left;
   border-radius:2px;
   border:1px solid #2671ea;
@@ -439,11 +458,14 @@ wave {
 .divGridButtonSelected svg{
   position:absolute;
   left:0;
+  pointer-events:none;
 }
 
-.canvasGridButton {
-  width:100%;
+.divGridButtonProgress {
   height:100%;
+  background-color:blue;
+  position:absolute;
+  pointer-events:none;
 }
 
 #divEditViewBG {
@@ -461,11 +483,11 @@ wave {
   background-color:transparent;
   position: absolute;
   z-Index:3;
-  touch-action: none;
-  -ms-touch-action: none;
 }
 
 .divEditViewObj {
+  min-height:24px;
+  min-width:40px;
   height:10%;
   width:7%;
   top:30%;
@@ -473,12 +495,20 @@ wave {
   background-color:#0c0b1b;
   position: absolute;
   z-Index:3;
-  touch-action: none;
-  -ms-touch-action: none;
   border: 1px solid #19937a;
 }
 
+.divEditViewObjEnabled {
+  border: 4px solid #19937a !important;
+}
+
+.divEditViewObjHover { 
+  border: 4px solid white !important;
+}
+
 .divEditViewObjSelected {
+  min-height:24px;
+  min-width:40px;
   height:10%;
   width:7%;
   top:30%;
@@ -486,8 +516,6 @@ wave {
   background-color:#0c0b1b;
   position: absolute;
   z-Index:3;
-  touch-action: none;
-  -ms-touch-action: none;
   border: 2px solid #2671ea;
 }
 
@@ -506,16 +534,8 @@ wave {
   z-index:3; 
   width:26px; 
   height:26px;
-}
-
-html {
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  -o-user-select: none;
-  user-select: none;
+  color:red;
+  border-radius:13px;
 }
 
 .wavesurfer-handle-start {
@@ -569,6 +589,9 @@ html {
   font-size: 72px !important;
 }
 
+.hidden {
+  display:none !important;
+}
 
 .colorRed {
   color: red !important;
@@ -580,8 +603,14 @@ label {
 }
 
 /* remove blue outline on button click */
-button:focus {outline:0;}
+button:focus {
+  outline:0;
+}
 
+/* firefox rounds buttons */
+button {
+  border-radius: 0;
+}
 
 /* The Modal (background) */
 .modal {
@@ -619,8 +648,7 @@ button:focus {outline:0;}
   z-index: 999;
 }
 
-.close:hover,
-.close:focus {
+.close:hover, .close:focus {
   color: black;
   text-decoration: none;
   cursor: pointer;
@@ -663,7 +691,7 @@ input {
   display:inline-block;
 }
 
-#divHeaderSectionContainer {
+#divEditorHdrSectionContainer {
   position: absolute;
   width: 100%;
   height: 31px;
@@ -672,6 +700,7 @@ input {
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
+  border-bottom: 1px solid gray
 }
 
 #imgBGLogo {
@@ -682,6 +711,404 @@ input {
   bottom:40px;
   left:0;
   right:0;
-  opacity:0.15;
+  opacity:0;
   pointer-events: none;
 }
+
+.logoFade {
+  animation: fadeLogo 6s forwards;
+}
+
+@keyframes fadeLogo {
+  0% {
+    opacity:0
+  }
+  85% {
+    opacity:1
+  }
+  100% {
+    opacity:0.15
+  }
+}
+
+.divEditorSliderContainer {
+  height: 58px;
+  margin-top: 22px;
+}
+
+
+/******* new list stuff *********/
+
+.List label {
+  color: rgb(157, 165, 171);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.lblMain {
+  font-size: 12pt;
+  width: 100%;
+  position: absolute;
+  margin-top: 8px;
+  margin-left: 4px;
+}
+
+.lblArtist {
+  margin-top:3px;
+  position: absolute;
+  font-size: 10pt;
+  font-weight: bold;
+  margin-left:4px;
+}
+
+.lblSong {
+  position: absolute;
+  font-size: 10pt;
+  margin-top: 18px;
+  margin-left: 4px;
+}
+
+.ListItem{
+  color: rgb(157, 165, 171);
+  display: flex;
+  overflow: hidden;
+  touch-action: pan-y;
+}
+
+.divBrowseListContainer {
+  width:100%;
+  height:calc(100% - 40px);
+  border-top:1px solid gray;
+  border-left:1px solid gray;
+}
+
+.itemSelected {
+  background-color: rgb(19, 62, 131);
+}
+
+.menuIcon {
+  font-size: 14pt !important;
+  margin-top:6px;
+  margin-left:3px;
+  color: lightgray!important;
+  pointer-events: none;
+}
+
+.menuFade {
+  animation: fadeMenu 0.5s forwards;
+}
+
+@keyframes fadeMenu {
+  0% {
+    opacity:1
+  }
+  35% {
+    opacity:0
+  }
+  65% {
+    opacity:0
+  }
+  100% {
+    opacity:1
+  }
+}
+
+.divBrowseMainContainer {
+  height:100%;
+  width:100%;
+  background-color:rgb(33, 37, 43);
+}
+
+.divListBrowseHdrContainer {
+  height:40px;
+  width:100%;
+  background-color:rgb(33, 37, 43);
+  border-left:1px solid gray;
+  position:relative;
+  z-index:1;
+}
+
+.btnBrowseHdrIcon {
+  position:absolute;
+  height:40px;
+  width:50px;
+  color: rgb(157, 165, 171);
+  margin-top:2px;
+  background-color:transparent;
+  border:0;
+  font-size: 20pt;
+}
+
+.btnBrowseLoad {
+  left:0;
+  right:0;
+  margin:auto;
+  top:1px;
+  opacity:0.5;
+}
+
+.btnBrowseHome {
+  right:5%;
+  opacity:0.5;
+}
+
+.btnBrowseBack {
+  left:5%;
+  opacity:0.5;
+}
+
+.btnBrowseSearch {
+  right:5%;
+}
+
+@keyframes progressWidth {
+  0% {
+    width:0%
+  }
+  100% {
+    width:100%
+  }
+}
+
+.divRowAudioPlaying {
+  position: absolute;
+  height: 100%;
+  background-color:blue;
+  pointer-events:none;
+}
+
+.divListItemLoadingIcon {
+  right:6px;
+  top:8px;
+  pointer-events:none;
+  position:absolute;
+  display:none;
+}
+
+/***************************/
+
+/*!
+ * Load Awesome v1.1.0 (http://github.danielcardoso.net/load-awesome/)
+ * Copyright 2015 Daniel Cardoso <@DanielCardoso>
+ * Licensed under MIT
+ */
+ 
+ .la-ball-spin-clockwise-fade-rotating,
+ .la-ball-spin-clockwise-fade-rotating > div {
+     position: relative;
+     -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+             box-sizing: border-box;
+ }
+ .la-ball-spin-clockwise-fade-rotating {
+     display: block;
+     font-size: 0;
+     color: #fff;
+ }
+ .la-ball-spin-clockwise-fade-rotating.la-dark {
+     color: #333;
+ }
+ .la-ball-spin-clockwise-fade-rotating > div {
+     display: inline-block;
+     float: none;
+     background-color: currentColor;
+     border: 0 solid currentColor;
+ }
+ .la-ball-spin-clockwise-fade-rotating {
+     width: 32px;
+     height: 32px;
+     -webkit-animation: ball-spin-clockwise-fade-rotating-rotate 6s infinite linear;
+        -moz-animation: ball-spin-clockwise-fade-rotating-rotate 6s infinite linear;
+          -o-animation: ball-spin-clockwise-fade-rotating-rotate 6s infinite linear;
+             animation: ball-spin-clockwise-fade-rotating-rotate 6s infinite linear;
+ }
+ .la-ball-spin-clockwise-fade-rotating > div {
+     position: absolute;
+     top: 50%;
+     left: 50%;
+     width: 8px;
+     height: 8px;
+     margin-top: -4px;
+     margin-left: -4px;
+     border-radius: 100%;
+     -webkit-animation: ball-spin-clockwise-fade-rotating 1s infinite linear;
+        -moz-animation: ball-spin-clockwise-fade-rotating 1s infinite linear;
+          -o-animation: ball-spin-clockwise-fade-rotating 1s infinite linear;
+             animation: ball-spin-clockwise-fade-rotating 1s infinite linear;
+ }
+ .la-ball-spin-clockwise-fade-rotating > div:nth-child(1) {
+     top: 5%;
+     left: 50%;
+     -webkit-animation-delay: -.875s;
+        -moz-animation-delay: -.875s;
+          -o-animation-delay: -.875s;
+             animation-delay: -.875s;
+ }
+ .la-ball-spin-clockwise-fade-rotating > div:nth-child(2) {
+     top: 18.1801948466%;
+     left: 81.8198051534%;
+     -webkit-animation-delay: -.75s;
+        -moz-animation-delay: -.75s;
+          -o-animation-delay: -.75s;
+             animation-delay: -.75s;
+ }
+ .la-ball-spin-clockwise-fade-rotating > div:nth-child(3) {
+     top: 50%;
+     left: 95%;
+     -webkit-animation-delay: -.625s;
+        -moz-animation-delay: -.625s;
+          -o-animation-delay: -.625s;
+             animation-delay: -.625s;
+ }
+ .la-ball-spin-clockwise-fade-rotating > div:nth-child(4) {
+     top: 81.8198051534%;
+     left: 81.8198051534%;
+     -webkit-animation-delay: -.5s;
+        -moz-animation-delay: -.5s;
+          -o-animation-delay: -.5s;
+             animation-delay: -.5s;
+ }
+ .la-ball-spin-clockwise-fade-rotating > div:nth-child(5) {
+     top: 94.9999999966%;
+     left: 50.0000000005%;
+     -webkit-animation-delay: -.375s;
+        -moz-animation-delay: -.375s;
+          -o-animation-delay: -.375s;
+             animation-delay: -.375s;
+ }
+ .la-ball-spin-clockwise-fade-rotating > div:nth-child(6) {
+     top: 81.8198046966%;
+     left: 18.1801949248%;
+     -webkit-animation-delay: -.25s;
+        -moz-animation-delay: -.25s;
+          -o-animation-delay: -.25s;
+             animation-delay: -.25s;
+ }
+ .la-ball-spin-clockwise-fade-rotating > div:nth-child(7) {
+     top: 49.9999750815%;
+     left: 5.0000051215%;
+     -webkit-animation-delay: -.125s;
+        -moz-animation-delay: -.125s;
+          -o-animation-delay: -.125s;
+             animation-delay: -.125s;
+ }
+ .la-ball-spin-clockwise-fade-rotating > div:nth-child(8) {
+     top: 18.179464974%;
+     left: 18.1803700518%;
+     -webkit-animation-delay: 0s;
+        -moz-animation-delay: 0s;
+          -o-animation-delay: 0s;
+             animation-delay: 0s;
+ }
+ .la-ball-spin-clockwise-fade-rotating.la-sm {
+     width: 16px;
+     height: 16px;
+ }
+ .la-ball-spin-clockwise-fade-rotating.la-sm > div {
+     width: 4px;
+     height: 4px;
+     margin-top: -2px;
+     margin-left: -2px;
+ }
+ .la-ball-spin-clockwise-fade-rotating.la-2x {
+     width: 64px;
+     height: 64px;
+ }
+ .la-ball-spin-clockwise-fade-rotating.la-2x > div {
+     width: 16px;
+     height: 16px;
+     margin-top: -8px;
+     margin-left: -8px;
+ }
+ .la-ball-spin-clockwise-fade-rotating.la-3x {
+     width: 96px;
+     height: 96px;
+ }
+ .la-ball-spin-clockwise-fade-rotating.la-3x > div {
+     width: 24px;
+     height: 24px;
+     margin-top: -12px;
+     margin-left: -12px;
+ }
+ /*
+  * Animations
+  */
+ @-webkit-keyframes ball-spin-clockwise-fade-rotating-rotate {
+     100% {
+         -webkit-transform: rotate(-360deg);
+                 transform: rotate(-360deg);
+     }
+ }
+ @-moz-keyframes ball-spin-clockwise-fade-rotating-rotate {
+     100% {
+         -moz-transform: rotate(-360deg);
+              transform: rotate(-360deg);
+     }
+ }
+ @-o-keyframes ball-spin-clockwise-fade-rotating-rotate {
+     100% {
+         -o-transform: rotate(-360deg);
+            transform: rotate(-360deg);
+     }
+ }
+ @keyframes ball-spin-clockwise-fade-rotating-rotate {
+     100% {
+         -webkit-transform: rotate(-360deg);
+            -moz-transform: rotate(-360deg);
+              -o-transform: rotate(-360deg);
+                 transform: rotate(-360deg);
+     }
+ }
+ @-webkit-keyframes ball-spin-clockwise-fade-rotating {
+     50% {
+         opacity: .25;
+         -webkit-transform: scale(.5);
+                 transform: scale(.5);
+     }
+     100% {
+         opacity: 1;
+         -webkit-transform: scale(1);
+                 transform: scale(1);
+     }
+ }
+ @-moz-keyframes ball-spin-clockwise-fade-rotating {
+     50% {
+         opacity: .25;
+         -moz-transform: scale(.5);
+              transform: scale(.5);
+     }
+     100% {
+         opacity: 1;
+         -moz-transform: scale(1);
+              transform: scale(1);
+     }
+ }
+ @-o-keyframes ball-spin-clockwise-fade-rotating {
+     50% {
+         opacity: .25;
+         -o-transform: scale(.5);
+            transform: scale(.5);
+     }
+     100% {
+         opacity: 1;
+         -o-transform: scale(1);
+            transform: scale(1);
+     }
+ }
+ @keyframes ball-spin-clockwise-fade-rotating {
+     50% {
+         opacity: .25;
+         -webkit-transform: scale(.5);
+            -moz-transform: scale(.5);
+              -o-transform: scale(.5);
+                 transform: scale(.5);
+     }
+     100% {
+         opacity: 1;
+         -webkit-transform: scale(1);
+            -moz-transform: scale(1);
+              -o-transform: scale(1);
+                 transform: scale(1);
+     }
+ }
+ 

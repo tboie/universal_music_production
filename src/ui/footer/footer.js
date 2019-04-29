@@ -28,7 +28,6 @@ export const FooterView = observer(class FooterView extends Component{
   
     toggleMixMode = () => {
       store.ui.toggleMixMode();
-      //interact('#gridContainer').fire({type: 'dragmove', target: document.getElementById('gridContainer')});
     }
   
     toggleViewMode = (e) => {
@@ -100,8 +99,8 @@ export const FooterView = observer(class FooterView extends Component{
       }
       else{
         Tone.Transport.stop();
-  
-        ToneObjs.instruments.forEach(function(instrument){
+        
+        ToneObjs.instruments.forEach(instrument => {
           let name = instrument.id.split('_')[0];
           if(name === "player")
             instrument.obj.stop();
@@ -110,9 +109,10 @@ export const FooterView = observer(class FooterView extends Component{
           else
             instrument.obj.triggerRelease();
         })
-        ToneObjs.sources.forEach(function(source){
+        ToneObjs.sources.forEach(source => {
           source.obj.stop();
         })
+        
         //TODO: effect/components to stop? autofilter etc?
   
         icon.innerHTML = "play_arrow";

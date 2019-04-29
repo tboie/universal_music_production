@@ -1,15 +1,8 @@
 import React, { Component } from 'react';
 import { observer } from "mobx-react";
 import Tone from 'tone';
-import interact from 'interactjs';
+import { MixMeters } from './mixrow.js';
 
-
-const MixMeters = observer(props =>
-    <div>
-      <canvas id={"canvas-L-" + props.trackId} className="canvasMeterL"></canvas>
-      <canvas id={"canvas-R-" + props.trackId} className="canvasMeterR"></canvas>
-    </div>
-)
 
 export const MixRowViewEdit = observer(class MixRowViewEdit extends Component{
     player;
@@ -18,31 +11,23 @@ export const MixRowViewEdit = observer(class MixRowViewEdit extends Component{
     bPressed;
   
     componentDidMount(){
-      let self = this;
-  
-      interact('#btnMixNote_Vel')
-        .on('tap', function (event) { self.selectMixButton(event) });
-      
-      interact('#btnMixNote_Dur')
-        .on('tap', function (event) { self.selectMixButton(event) });
-  
-      interact('#btnMixNote_Dly')
-        .on('tap', function (event) { self.selectMixButton(event) });
-  
-      interact('#btnMixNote_Prb')
-        .on('tap', function (event) { self.selectMixButton(event) });
-      /*
-      interact('#btnMixNote_Spd')
-        .on('tap', function (event) { self.selectMixButton(event) });
-      */
+      this.applyTransformOffset();
     }
-  
-    componentWillUnmount(){
-      interact('#btnMixNote_Vel').unset();
-      interact('#btnMixNote_Dur').unset();
-      interact('#btnMixNote_Dly').unset();
-      interact('#btnMixNote_Prb').unset();
-      interact('#btnMixNote_Spd').unset();
+    
+    componentWillUnmount(){}
+
+    componentDidUpdate(prevProps){
+      if(prevProps.viewLength !== this.props.viewLength){
+        this.applyTransformOffset();
+      }
+    }
+
+    applyTransformOffset = () => {
+      let gridContainer = document.getElementById('gridContainer');
+      if(gridContainer){
+        let transformX = gridContainer.getAttribute('data-x') * -1;
+        document.getElementById('trackrowmixedit_' + this.props.track.id).style.transform = 'translateX(' + transformX + 'px)';
+      }
     }
   
     selectMixButton = (e) => {
@@ -182,17 +167,17 @@ export const MixRowViewEdit = observer(class MixRowViewEdit extends Component{
   
     render(){
       return (
-        <div className="track-rowmix" style={{width: + this.props.store.ui.windowWidth}}>
+        <div className="track-rowmix" id={'trackrowmixedit_' + this.props.track.id} style={{width: + this.props.store.ui.windowWidth}}>
           <div className="track-rowmix-left">
-            <button id="btnMixNote_Vel" className="btn-mix btnSelected">Vel</button>
-            <button id="btnMixNote_Dur" className="btn-mix">Dur</button>
-            <button id="btnMixNote_Dly" className="btn-mix">Dly</button>
-            <button id="btnMixNote_Prb" className="btn-mix">Prb</button>
-            <button id="btnMixNote_Spd" className="btn-mix" disabled={true}>Spd</button>
+            <button id="btnMixNote_Vel" className="btn-mix btnSelected" onClick={this.selectMixButton}>Vel</button>
+            <button id="btnMixNote_Dur" className="btn-mix" onClick={this.selectMixButton}>Dur</button>
+            <button id="btnMixNote_Dly" className="btn-mix" onClick={this.selectMixButton}>Dly</button>
+            <button id="btnMixNote_Prb" className="btn-mix" onClick={this.selectMixButton}>Prb</button>
+            <button id="btnMixNote_Spd" className="btn-mix" disabled={true} onClick={this.selectMixButton}>Spd</button>
           </div>
           <div className="track-rowmix-right">
-            <MixMeters trackId={this.props.trackId}/>
-            <div style={{marginLeft:'10px', marginRight:'34px'}}>
+            <MixMeters track={this.props.track}/>
+            <div style={{marginLeft:'10px', marginRight:'10px'}}>
               { this.getSlider() }
             </div>
           </div>
