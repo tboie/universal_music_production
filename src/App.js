@@ -226,6 +226,7 @@ const AppView = observer(class AppView extends Component {
                       edit={this.props.store.ui.editMode}
                       windowHeight={this.props.store.ui.windowHeight} 
                       windowWidth={this.props.store.ui.windowWidth}
+                      editGraph={this.props.store.ui.editGraph}
                     />
 
 
@@ -261,7 +262,8 @@ const AppView = observer(class AppView extends Component {
           numTracks={this.props.store.getTracksByGroup(this.props.store.ui.selectedGroup).length} 
           viewMode={this.props.store.ui.viewMode} 
           selectedTrack={this.props.store.ui.selectedTrack} 
-          objs={this.props.store.getObjsByTrackObj(this.props.store.ui.selectedTrack)} 
+          objs={this.props.store.getObjsByTrackObj(this.props.store.ui.selectedTrack)}
+          editGraph={this.props.store.ui.editGraph}
           />
         <DropZone 
           store={this.props.store} 

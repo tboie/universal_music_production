@@ -2,13 +2,124 @@ import React, { Component } from 'react';
 import { observer } from "mobx-react";
 import { store } from "../../data/store.js";
 import interact from 'interactjs';
+import Tone from 'tone';
 import { randomId } from '../../models/models.js';
 import { applyDraggableGrid } from '../utils.js';
 import { TrackRowView } from './trackrow/trackrow.js';
+import { MixRowView } from './trackrow/mixrow.js';
+import { MixRowViewEdit } from './trackrow/mixrowedit.js';
 import { GridTimeline } from './timeline/timeline.js';
 
 
 export const EditView = observer(class EditView extends Component {
+  componentDidMount(){}
+  componentDidUpdate(prevProps){}
+  componentWillUnmount(){}
+  
+  render(){
+    let content;
+    if(this.props.editGraph){
+      content = <EditViewGraph 
+                    store={this.props.store}
+                    track={this.props.track}
+                    edit={this.props.edit}
+                    windowHeight={this.props.windowHeight} 
+                    windowWidth={this.props.windowWidth}
+                  />
+    }
+    else {
+      content = <EditViewTrack 
+                    store={this.props.store}
+                    track={this.props.track}
+                    selectedNote={this.props.store.ui.selectedNote}
+                    viewLength={this.props.store.ui.viewLength}
+                    sceneLength={store.getSceneLength(this.props.store.ui.selectedScene.id)}
+                  />               
+    }
+
+    return (
+        <div>
+          { content }
+        </div>
+    )
+  }
+});
+
+const EditViewTrack = observer(class EditViewTrack extends Component {
+  componentDidMount(){
+    applyDraggableGrid();
+  }
+  componentDidUpdate(prevProps){
+
+  }
+  componentWillUnmount(){
+    interact(document.querySelector('body')).unset();
+    interact('#gridContainer').unset();
+  }
+
+  render(){
+    let mixRow;
+    if(this.props.selectedNote){
+      if(this.props.selectedNote.getPattern().track.id === this.props.track.id){
+        mixRow = <MixRowViewEdit trackId={this.props.track.id} store={this.props.store} track={this.props.track} note={this.props.selectedNote} viewLength={this.props.viewLength}/>
+      }
+    }
+    else{
+      mixRow = <MixRowView store={this.props.store} track={this.props.track} viewLength={this.props.viewLength}/>
+    }
+
+    let numMeasures = 0;
+    let tracks = [];
+    if(store.ui.selectedScene){
+      let sceneLength = Tone.Time(store.getSceneLength(this.props.store.ui.selectedScene.id)).toBarsBeatsSixteenths();
+      numMeasures = sceneLength.split(':')[0];
+    }
+    
+    let track = this.props.track;
+    for(let i=1; i<=numMeasures; i++){
+      tracks.push(<TrackRowView key={track.id + '_' + i} 
+          keyValue={track.id} store={this.props.store} 
+          sample={track.sample} 
+          region={track.returnRegion()} 
+          patterns={this.props.store.getPatternsByTrack(track.id)} 
+          scenes={this.props.store.getScenesAsc()} 
+          mixMode={this.props.store.ui.mixMode}
+          viewLength={this.props.store.ui.viewLength} 
+          songLength={this.props.store.getSongLength()} 
+          bpm={this.props.store.settings.bpm} 
+          /* notes={this.props.store.getNotesByTrack(track.id)} */
+          selectedScene={this.props.store.ui.selectedScene} 
+          track={track} 
+          selectedGroup={this.props.store.ui.selectedGroup} 
+          playbackRate={track.getPlaybackRate()} 
+          selectedTrack={this.props.store.ui.selectedTrack} 
+          selectedNote={this.props.store.ui.selectedNote} 
+          selectedNoteValue={this.props.store.ui.getSelectedNoteValue()}
+          selectedPattern={this.props.store.ui.selectedPattern} 
+          selectedPatternRes={this.props.store.ui.getSelectedPatternProp('resolution')} 
+          selectedPatternNotes={this.props.store.ui.getSelectedPatternProp('notes')}
+          selectedKey={this.props.store.ui.selectedKey}
+          windowWidth={this.props.store.ui.windowWidth}
+          bar={i}
+          selectedNoteDuration={this.props.store.ui.getSelectedNoteDuration()}
+          selectedNoteOffset={this.props.store.ui.getSelectedNoteOffset()}
+        />)
+    }
+
+    let sizes = store.ui.getGridSizes();
+    return(
+      <div id="gridParent" style={{width: sizes.parent.width, left: sizes.parent.left}}>
+        <div className="divBody" id="gridContainer" style={{width: sizes.container.width, left: sizes.container.left}}>
+          { mixRow }
+          <GridTimeline selectedScene={this.props.store.ui.selectedScene} ui={this.props.store.ui} windowWidth={this.props.store.ui.windowWidth}/>
+          { tracks.map(t => t) }
+        </div>
+      </div>
+    )
+  }
+})
+
+const EditViewGraph = observer(class EditViewGraph extends Component {
     mousePosX;
     mousePosY;
     drawingLine;
@@ -381,7 +492,7 @@ export const EditView = observer(class EditView extends Component {
       let trackRow = null;
   
       if(this.props.track){
-    
+        
         if(!this.props.store.ui.mixMode)
           this.props.store.ui.toggleMixMode();
   
@@ -409,7 +520,7 @@ export const EditView = observer(class EditView extends Component {
           selectedPatternNotes={this.props.store.ui.getSelectedPatternProp('notes')}
           selectedKey={this.props.store.ui.selectedKey}
           windowWidth={this.props.store.ui.windowWidth}
-          />
+        />
       }
   
       let sizes = store.ui.getGridSizes();

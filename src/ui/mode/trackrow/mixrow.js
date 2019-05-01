@@ -41,9 +41,9 @@ export const MixRowView = observer(class MixRowView extends Component{
     
     let firstButton = <MixRowButtonEdit track={this.props.track} />
     if(this.props.store.ui.viewMode === 'edit')
-      firstButton = <MixRowButtonDeleteTrack track={this.props.track} />
+      firstButton = <MixRowButtonToggleEditGraph track={this.props.track} editGraph={this.props.store.ui.editGraph} />
 
-    let secondButton = <MixRowButtonToggleRes track={this.props.track} toggleRes={this.props.toggleRes}/>
+    let secondButton = <MixRowButtonToggleRes track={this.props.track}/>
     if(this.props.track.type === 'master')
       secondButton = <MixRowButtonToggleGroup track={this.props.track}/>
       
@@ -315,7 +315,6 @@ const MixRowButtonToggleRes = observer(class MixRowButtonToggleRes extends Compo
       ele.innerHTML = '16';
 
     store.getPatternByTrackScene(this.props.track.id, store.ui.selectedScene.id).setResolution(parseInt(ele.innerHTML, 10));;
-    this.props.toggleRes();
   }
 
   render(){
@@ -346,6 +345,32 @@ const MixRowButtonEdit = observer(class MixRowButtonEditDelete extends Component
 
     return (
       <button id={this.id} className='btn-mix' onClick={this.toggleEditView}>Edt</button>
+    );
+  }
+});
+
+
+const MixRowButtonToggleEditGraph = observer(class MixRowButtonToggleEditGraph extends Component {
+  componentDidMount(){}
+  componentWillUnmount(){}
+
+  toggleEditGraph = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    store.ui.toggleEditGraph();
+  }
+
+  render(){
+    this.id = 'btnMixToggleEditGraph_' + this.props.track.id;
+    (this.props.track.type === 'master') ? this.disabled = true : this.disabled = false
+
+    let text = 'Grph';
+    if(this.props.editGraph)
+      text = 'Bars';
+    
+    return (
+      <button id={this.id} className='btn-mix' disabled={this.disabled} onClick={this.toggleEditGraph}>{text}</button>
     );
   }
 });

@@ -62,7 +62,6 @@ export const MixRowViewEdit = observer(class MixRowViewEdit extends Component{
       else if(this.mixSelection === "Dur"){
         if(this.props.track.type === "audio"){
           this.props.note.setDuration(parseFloat(e.target.value));
-          this.props.noteChanged();
         }
         else{
           let noteDelta = Tone.Time(this.props.note.getPattern().getLength()) - Tone.Time(this.props.note.time);
@@ -71,7 +70,6 @@ export const MixRowViewEdit = observer(class MixRowViewEdit extends Component{
   
           if(Tone.Time(notation) - Tone.Time(offsetTime) > 0){
             this.props.note.setDuration(notation);
-            this.props.noteChanged();
           }
         }
       }
@@ -80,7 +78,6 @@ export const MixRowViewEdit = observer(class MixRowViewEdit extends Component{
   
         if(Tone.Time(this.props.note.duration) > Tone.Time(offsetTime)){
           this.props.note.setOffset(parseFloat(e.target.value));
-          this.props.noteChanged();
         }
       }
   

@@ -45,6 +45,7 @@ html {
   display:inline-block;
   border-color:#181f87;
   width:100%;
+  position:relative;
 }
 
 .trackSelected {
@@ -107,7 +108,7 @@ html {
   background-color: white;
   width:2px;
   left:0;
-  top:-2px;
+  top:1px;
   position: absolute;
   z-index: 5;
 }

@@ -25,9 +25,14 @@ export const GridTimeline = observer(class GridTimeline extends Component{
       let start = 1;
   
       if(this.props.selectedScene){
-        len = store.getSceneLength(this.props.selectedScene.id);
-        start = parseInt(Tone.Time(this.props.selectedScene.start).toBarsBeatsSixteenths().split(':')[0] * 4, 10);
-        start += 1;
+        if(store.ui.viewMode === 'edit' && !store.ui.editGraph){
+          len = Tone.Time('1:0:0');
+        }
+        else{
+          len = store.getSceneLength(this.props.selectedScene.id);
+          start = parseInt(Tone.Time(this.props.selectedScene.start).toBarsBeatsSixteenths().split(':')[0] * 4, 10);
+          start += 1;
+        }
       }
   
       let total = Tone.Time(len).toBarsBeatsSixteenths().split(':');

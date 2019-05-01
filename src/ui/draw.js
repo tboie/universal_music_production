@@ -33,21 +33,28 @@ export const Draw = observer(class Draw extends Component {
       if((!prevProps.mixMode && this.props.mixMode) || prevProps.viewMode !== this.props.viewMode || prevProps.numTracks !== this.props.numTracks){
         this.initMeters();
       }
-  
-      if(this.props.viewMode === "edit" && (prevProps.objs.length !== this.props.objs.length || prevProps.viewMode !== 'edit')){
-        this.initEditObjs();
+      
+      if(this.props.viewMode === 'edit' && this.props.editGraph){
+        if(prevProps.objs.length !== this.props.objs.length || prevProps.viewMode !== 'edit' || !prevProps.editGraph){
+          this.initEditObjs();
+        }
       }
     }
   
     initPlayhead = () => {
       this.playhead = document.getElementById("playhead");
 
-      if(this.props.viewMode === "sequencer" && this.props.store.ui.selectedGroup === "M")
-        this.playhead.style.display = "none";
-      else if(this.props.viewMode === "sequencer" && this.props.store.ui.mixMode)
-        this.playhead.style.display = "none";
-      else
-        this.playhead.style.display = "block";
+      if(this.playhead){
+        if(this.props.viewMode === "sequencer" && this.props.store.ui.selectedGroup === "M"){
+          this.playhead.style.display = "none";
+        }
+        else if(this.props.viewMode === "sequencer" && this.props.store.ui.mixMode){
+          this.playhead.style.display = "none";
+        }
+        else{
+          this.playhead.style.display = "block";
+        }
+      }
   
       this.hdrPlayhead = document.getElementById("hdrPlayhead");
     }
@@ -207,17 +214,61 @@ export const Draw = observer(class Draw extends Component {
     }
   
     drawPlayhead = () => {
-      if(((this.props.viewMode === "sequencer" && !this.props.store.ui.mixMode) || this.props.viewMode === "button" || this.props.viewMode === "edit") 
-        && this.playhead){
-        if(store.ui.selectedScene){
-          this.pos = (Tone.Time(Tone.Transport.position) - Tone.Time(store.ui.selectedScene.start)) / Tone.Time(store.ui.viewLength) * store.ui.windowWidth;
-          this.playhead.style.tansform = this.playhead.style.webkitTransform  = 'translateX(' + this.pos + 'px)';
+      //individual track progress lines when editview bar mode
+      if(this.props.viewMode === 'edit' && !this.props.store.ui.editGraph){
+        if(Tone.Transport.state === 'started'){
+          let scenePos = (Tone.Time(Tone.Transport.position) - Tone.Time(store.ui.selectedScene.start));
+          let currBar = parseInt(Tone.Time(scenePos).toBarsBeatsSixteenths().split(':')[0], 10) + 1;
+
+          if(!this.playhead){
+            this.playhead = document.getElementById('playhead_' + this.props.selectedTrack.id + '_' + currBar)
+          }
+          if(this.playhead){
+            if(parseInt(this.playhead.id.split('_')[2], 10) !== currBar){
+              this.playhead.style.display = 'none';
+              this.playhead = document.getElementById('playhead_' + this.props.selectedTrack.id + '_' + currBar)
+              if(this.playhead)
+                this.playhead.style.display = 'block';
+            }
+
+            if(this.playhead){
+              this.pos = (scenePos - Tone.Time((currBar-1) + ':0:0')) / Tone.Time(store.ui.viewLength) * store.ui.windowWidth;
+              this.playhead.style.tansform = this.playhead.style.webkitTransform  = 'translateX(' + this.pos + 'px)';
+            }
+          }
+        }
+        else if(this.playhead){
+          if(this.playhead.display !== 'none'){
+            this.playhead.style.display = 'none';
+            this.playhead.style.transform = 'translateX(0px)';
+            this.playhead = undefined;
+          }
+        }
+      }
+      //all other views
+      else if((this.props.viewMode === "sequencer" && !this.props.store.ui.mixMode) || this.props.viewMode === "button" || this.props.viewMode === "edit") {
+        if(this.playhead){
+          if(Tone.Transport.state === 'started'){
+            if(store.ui.selectedScene){
+              let scenePos = (Tone.Time(Tone.Transport.position) - Tone.Time(store.ui.selectedScene.start));
+              this.pos = scenePos / Tone.Time(store.ui.viewLength) * store.ui.windowWidth;
+              this.playhead.style.tansform = this.playhead.style.webkitTransform  = 'translateX(' + this.pos + 'px)';
+            }
+          }
+          else{
+            this.playhead.style.transform = 'translateX(0px)';
+          }
         }
       }
   
       if(this.hdrPlayhead){
-        this.hdrPos = Tone.Time(Tone.Transport.position) / store.getSongLength() * this.props.store.ui.windowWidth;
-        this.hdrPlayhead.style.tansform = this.hdrPlayhead.style.webkitTransform  = 'translateX(' + this.hdrPos + 'px)';
+        if(Tone.Transport.state === 'started'){
+          this.hdrPos = Tone.Time(Tone.Transport.position) / store.getSongLength() * this.props.store.ui.windowWidth;
+          this.hdrPlayhead.style.tansform = this.hdrPlayhead.style.webkitTransform  = 'translateX(' + this.hdrPos + 'px)';
+        }
+        else{
+          this.hdrPlayhead.style.transform = 'translateX(0px)';
+        }
       }
     }
   

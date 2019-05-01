@@ -226,7 +226,8 @@ export const ToolRow = observer(class ToolRow extends Component {
       return(
         <div id="divToolRowContainer" style={{width: this.props.store.ui.windowWidth + 'px'}}>
           <ToggleModeIcons store={this.props.store} windowWidth={this.props.store.ui.windowWidth} viewMode={this.props.store.ui.viewMode} 
-                              selectedGroup={this.props.store.ui.selectedGroup} mixMode={this.props.store.ui.mixMode} editMode={this.props.store.ui.editMode}/>
+                              selectedGroup={this.props.store.ui.selectedGroup} mixMode={this.props.store.ui.mixMode} editMode={this.props.store.ui.editMode}
+                              editGraph={this.props.store.ui.editGraph}/>
           <div id="divZoom">
             <button id="btnUIZoomOut" className="btnUIZoom" onClick={this.UIZoomOut}><i className="material-icons i-36" style={{marginLeft: '-4px'}}>remove_circle</i></button>
             <button id="btnUIZoomIn" className="btnUIZoom" onClick={this.UIZoomIn}><i className="material-icons i-36" style={{marginLeft: '-4px'}}>add_circle</i></button>
@@ -310,6 +311,8 @@ const ToggleModeIcons = props => {
     }
   }
 
+  let bgVisibility= 'visible';
+
   let iconOpacity = 1;
   if(props.viewMode === "sequencer" && !props.mixMode)
       iconOpacity = 0.3;
@@ -322,6 +325,10 @@ const ToggleModeIcons = props => {
   let showEditIcon = 'visible';
   if(props.viewMode === "button"){
     showEditIcon = 'hidden';
+  }
+  else if(props.viewMode === 'edit' && !props.editGraph){
+    showEditIcon = 'hidden';
+    bgVisibility = 'hidden';
   }
 
   let groupIcons =  <button id="btnToggleGroup" className="btnUIZoom" onClick={e => toggleGroup(e, true)} style={{visibility: showGroupIcon, float:'left', position:'relative', top:'-6px'}}>
@@ -341,7 +348,7 @@ const ToggleModeIcons = props => {
   }
   
   return (
-    <div id="divToggleMode">
+    <div id="divToggleMode" style={{visibility: bgVisibility}}>
       { groupIcons }
       <button id="btnToggleMode" className="btnUIZoom" onClick={toggleMode} style={{visibility: showEditIcon, float:'left', opacity:iconOpacity}}>
         <i id="iconEdit" className="material-icons i-36">{setEditIcon()}</i>

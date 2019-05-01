@@ -3342,11 +3342,11 @@ const ListBrowser = types.model("ListBrowser", {
     }
 }))
 
-
 const UI = types.model("UI", {
     viewMode: types.optional(types.string, "sequencer"),
     mixMode: types.optional(types.boolean, false),
     editMode: types.optional(types.boolean, true),
+    editGraph: types.optional(types.boolean, false),
     recordMode: types.optional(types.boolean, false),
     settings: types.optional(types.boolean, false),
     viewLength: types.optional(types.string, "1:0:0"),
@@ -3391,12 +3391,35 @@ const UI = types.model("UI", {
         else
           return undefined;
     },
+    getSelectedNoteDuration(){
+        if(self.selectedNote){
+            if(self.selectedNote.duration)
+                return self.selectedNote.duration;
+            else
+                return undefined;
+        }
+        else
+          return undefined;
+    },
+    getSelectedNoteOffset(){
+        if(self.selectedNote){
+            if(self.selectedNote.offset)
+                return self.selectedNote.offset;
+            else
+                return undefined;
+        }
+        else
+          return undefined;
+    },
     getGridSizes(){
         //console.log('getGridSizesCalled')
         if(self.selectedScene){
             let windowWidth = self.windowWidth;
             let viewLength = Tone.Time(self.viewLength);
             let sceneLength = store.getSceneLength(self.selectedScene.id);
+
+            if(store.ui.viewMode === 'edit' && !store.ui.editGraph)
+                sceneLength = Tone.Time(Tone.Time('1:0:0'));
 
             if(sceneLength > viewLength) {
                 let scenePx = (sceneLength / viewLength) * windowWidth;
@@ -3414,25 +3437,26 @@ const UI = types.model("UI", {
         return {parent: {width: self.windowWidth + 'px', left: 0}, container:{width: self.windowWidth + 'px', left: 0}}
     },
     calibrateSizes(setupScroll) {
+        //TODO: verify when this should be called
         //console.log('calibrateSizes called')
         if(self.selectedScene){
             if (self.viewMode === "sequencer" || self.viewMode === "button" || self.viewMode === "edit") {
                 let windowWidth = self.windowWidth;
                 let viewLength = self.viewLength;
-                let songLength = store.getSceneLength(self.selectedScene.id);
+                let sceneLength = store.getSceneLength(self.selectedScene.id);
                 let gridParent = document.getElementById('gridParent');
                 let gridContainer = document.getElementById('gridContainer');
 
-                if (Tone.Time(songLength).toSeconds() >= Tone.Time(viewLength).toSeconds()) {
+                if (Tone.Time(sceneLength).toSeconds() >= Tone.Time(viewLength).toSeconds()) {
                     let viewSecs = Tone.Time(viewLength).toSeconds();
-                    let songSecs = Tone.Time(songLength).toSeconds();
-                    let songPx = windowWidth * (songSecs / viewSecs);
+                    let sceneSecs = Tone.Time(sceneLength).toSeconds();
+                    let scenePx = windowWidth * (sceneSecs / viewSecs);
 
-                    gridParent.style.width = ((songPx * 2) - windowWidth) + 'px';
-                    gridParent.style.left = ((songPx * -1) + windowWidth) + 'px';
+                    gridParent.style.width = ((scenePx * 2) - windowWidth) + 'px';
+                    gridParent.style.left = ((scenePx * -1) + windowWidth) + 'px';
 
-                    gridContainer.style.width = songPx + 'px';
-                    gridContainer.style.left = (songPx - windowWidth) + 'px';
+                    gridContainer.style.width = scenePx + 'px';
+                    gridContainer.style.left = (scenePx - windowWidth) + 'px';
                 }
 
                 if(self.viewMode === "sequencer" && setupScroll){
@@ -3483,7 +3507,10 @@ const UI = types.model("UI", {
             
             self.windowWidth = width;
         }
-    }   
+    }
+    function toggleEditGraph() {
+        self.editGraph = !self.editGraph;
+    }
     function toggleMixMode() {
         self.mixMode = !self.mixMode;
     }
@@ -3498,7 +3525,11 @@ const UI = types.model("UI", {
     }
     function setViewLength(val) {
         if(self.selectedScene){
-            if(Tone.Time(val) <= store.getSceneLength(self.selectedScene.id) && Tone.Time(val) > Tone.Time("0:1:0")){
+            if(self.viewMode === 'edit' && !self.editGraph){
+                if(Tone.Time(val) > Tone.Time('0:1:0') && Tone.Time(val) <= Tone.Time('1:0:0'))
+                    self.viewLength = val
+            }
+            else if(Tone.Time(val) <= store.getSceneLength(self.selectedScene.id) && Tone.Time(val) > Tone.Time("0:1:0")){
                 self.viewLength = val;
                 self.calibrateSizes();
             }
@@ -3643,6 +3674,13 @@ const UI = types.model("UI", {
                     self.selectNote(undefined);
                 }
             }
+
+            self.selectPattern(store.getPatternByTrackScene(self.selectedTrack.id, self.selectedScene.id).id)
+            
+            //set viewlength to 1m if editing notes
+            if(!self.editGraph)
+                self.setViewLength('1:0:0');
+            
             self.viewMode = "edit";
         }
         else if (mode === "sequencer") {
@@ -3657,7 +3695,7 @@ const UI = types.model("UI", {
     
         self.device = device;
     }
-    return { selectToolbar, setWindowWidthHeight, toggleMixMode, setViewLength, setViewScene, toggleSettings, selectScene, selectTrack, selectPattern, selectObj, selectGroup, selectNote, selectKey, selectChord, toggleViewMode, toggleEditMode, toggleRecordMode, setDevice }
+    return { selectToolbar, setWindowWidthHeight, toggleEditGraph, toggleMixMode, setViewLength, setViewScene, toggleSettings, selectScene, selectTrack, selectPattern, selectObj, selectGroup, selectNote, selectKey, selectChord, toggleViewMode, toggleEditMode, toggleRecordMode, setDevice }
 });
 
 const Settings = types.model("Settings", {

@@ -31,6 +31,7 @@ export const store = RootStore.create({
     "viewMode" : "sequencer",
     "mixMode" : false,
     "editMode" : false,
+    "editGraph" : false,
     "recordMode" : false,
     "settings" : false,
     "viewLength" : "1:0:0",

@@ -20,6 +20,7 @@ export const TrackRowView = observer(class TrackRowView extends Component {
   mStopPos;
   mouseHold;
   bSelectedNote;
+  id;
 
   componentDidMount(){
     if(this.props.track.type !== "master" && this.props.track.type === "audio"){
@@ -35,7 +36,7 @@ export const TrackRowView = observer(class TrackRowView extends Component {
 
     document.getElementById("gridContainer").addEventListener("transitionend", () => { this.init(true) });
 
-    interact("#canvas" + this.props.track.id).on('hold', event => {
+    interact("#canvas" + this.id).on('hold', event => {
       this.mouseHold = true;
       event.preventDefault();
       store.ui.selectNote(undefined);
@@ -109,9 +110,14 @@ export const TrackRowView = observer(class TrackRowView extends Component {
         */
       }
       
-      //updated blank selectednote to same selectedkey (select key, create new note, select same key)
+      //same selected note before and after update
       if(prevProps.selectedNote && this.props.selectedNote){
         if(prevProps.selectedNote.id === this.props.selectedNote.id){
+          if(prevProps.selectedNoteDuration !== this.props.selectedNoteDuration || prevProps.selectedNoteOffset !== this.props.selectedNoteOffset){
+            this.init();
+            return;
+          }
+          //updated blank selectednote to same selectedkey (select key, create new note, select same key)
           if(prevProps.selectedNoteValue !== this.props.selectedNoteValue && prevProps.selectedKey === this.props.selectedKey){
             this.init();
             return;
@@ -203,7 +209,7 @@ export const TrackRowView = observer(class TrackRowView extends Component {
 
   init = (update) => {
     //console.log('init ' + this.props.track.id)
-    this.c = document.getElementById("canvas" + this.props.keyValue);
+    this.c = document.getElementById("canvas" + this.id);
 
     if(this.c && this.props.track.type !== "master"){
       this.ctx = this.c.getContext("2d");
@@ -221,7 +227,7 @@ export const TrackRowView = observer(class TrackRowView extends Component {
   }
 
   componentWillUnmount(){
-    interact("#canvas" + this.props.track.id).unset();
+    interact("#canvas" + this.id).unset();
     document.getElementById("gridContainer").removeEventListener("transitionend", () => { this.init(true) });
   }
   
@@ -288,7 +294,17 @@ export const TrackRowView = observer(class TrackRowView extends Component {
         let scene = this.props.selectedScene;
         let pattern = store.getPatternByTrackScene(this.props.track.id, scene.id)
         let sceneStart = 0;
-        let sceneEnd = Tone.Time(store.getSceneLength(scene.id));
+        let sceneEnd;
+        
+        if(this.props.bar){
+          sceneStart = Tone.Time(this.props.bar-1 + ':0:0');
+          sceneEnd = sceneStart + Tone.Time('1:0:0');
+          clickSecs = (clickX / this.props.windowWidth) * Tone.Time(this.props.viewLength).toSeconds();
+          clickSecs += sceneStart;
+        }
+        else{
+          sceneEnd = Tone.Time(store.getSceneLength(scene.id));
+        }
 
         if(clickSecs >= sceneStart && clickSecs < sceneEnd){
           //Each part aka pattern starts at time 0 no matter where in transport timeline
@@ -393,10 +409,25 @@ export const TrackRowView = observer(class TrackRowView extends Component {
     let squareWidth = windowWidth / viewSquares;
 
     let sorted = pattern.getSortedNotesAsc();
+
+    let currBar = this.props.bar-1 + ':0:0';
+    let nextBar = this.props.bar + ':0:0';
+    if(this.props.bar){
+      sorted = sorted.filter(n => Tone.Time(n.time) >= Tone.Time(currBar) && Tone.Time(n.time) < Tone.Time(nextBar));
+    }
+
     sorted.forEach(note => {
       if(!note.mute && note.note){
         if(note.note[0] !== '' || this.props.selectedNote === note){
-          let x = Tone.Time(note.time) / Tone.Time(viewLength) * windowWidth;
+          let x;
+          if(this.props.bar){
+            let barOffset = Tone.Time(note.time) - Tone.Time(currBar);
+            x = barOffset / Tone.Time(viewLength) * windowWidth;
+          }
+          else{
+            x = Tone.Time(note.time) / Tone.Time(viewLength) * windowWidth;
+          }
+
           let noteWidth = Tone.Time(note.duration) / Tone.Time(viewLength) * windowWidth;
           let offsetWidth = squareWidth * note.offset;
           
@@ -423,8 +454,8 @@ export const TrackRowView = observer(class TrackRowView extends Component {
   }
 
   drawAudioNotes = (pattern, viewLength, update) => {
-    let svgId = 'svgimg' + this.props.track.id;
-    let trackId = this.props.track.id;
+    let svgId = 'svgimg' + this.id;
+    let trackId = this.id;
     let buffer = this.player.buffer;
     let duration = buffer.duration / this.props.playbackRate;
     let imgWidth = (duration/Tone.Time(viewLength)) * this.props.windowWidth;
@@ -463,11 +494,27 @@ export const TrackRowView = observer(class TrackRowView extends Component {
     let height = this.canvasHeight;
     let sorted = pattern.getSortedNotesAsc();
 
+    let currBar = this.props.bar-1 + ':0:0';
+    let nextBar= this.props.bar + ':0:0';
+    if(this.props.bar){
+      sorted = sorted.filter(n => Tone.Time(n.time) >= Tone.Time(currBar) && Tone.Time(n.time) < Tone.Time(nextBar));
+    }
+
     sorted.forEach(note => {
+      //console.log('track: ' + this.id + ' dealing with note: ' + Tone.Time(note.time).toBarsBeatsSixteenths())
       if(!note.mute){
         let noteOffset = Tone.Time(pattern.resolution + 'n') * note.offset;
-        let x = Tone.Time(note.time) / Tone.Time(viewLength) * this.props.windowWidth;
-        let xOffset = (Tone.Time(note.time) + noteOffset) / Tone.Time(viewLength) * this.props.windowWidth;
+        let x, xOffset;
+        
+        if(this.props.bar){
+          let barOffset = Tone.Time(note.time) - Tone.Time(currBar);
+          x = barOffset / Tone.Time(viewLength) * this.props.windowWidth;
+          xOffset = (barOffset + noteOffset) / Tone.Time(viewLength) * this.props.windowWidth;
+        }
+        else{
+          x = Tone.Time(note.time) / Tone.Time(viewLength) * this.props.windowWidth;
+          xOffset = (Tone.Time(note.time) + noteOffset) / Tone.Time(viewLength) * this.props.windowWidth;
+        }
 
         //Draw square
         if(this.props.selectedNote === note)
@@ -509,8 +556,9 @@ export const TrackRowView = observer(class TrackRowView extends Component {
             widthDelta = ((duration - cutDuration) / Tone.Time(viewLength)) * this.props.windowWidth;
             ctx.drawImage(img, 0, 0, img.width * note.duration, height, xOffset, 0, imgWidth - widthDelta, height);
           }
-          else
+          else{
             ctx.drawImage(img, xOffset, 0, imgWidth, height);
+          }
         }
       }
     })
@@ -519,7 +567,12 @@ export const TrackRowView = observer(class TrackRowView extends Component {
   drawGridLines = (ctx, pattern, scene, viewLength) => {
     let res = pattern.resolution;
     let sceneStart = 0;
-    let sceneEnd = (store.getSceneLength(scene.id) / Tone.Time(viewLength)) * this.props.windowWidth;
+    let sceneEnd;
+
+    if(this.props.bar)
+      sceneEnd = (Tone.Time('1:0:0') / Tone.Time(viewLength)) * this.props.windowWidth;
+    else
+      sceneEnd = (store.getSceneLength(scene.id) / Tone.Time(viewLength)) * this.props.windowWidth;
 
     ctx.fillStyle = '#12121e';
     ctx.fillRect(sceneStart, 0, sceneEnd - sceneStart, this.canvasHeight);
@@ -527,9 +580,16 @@ export const TrackRowView = observer(class TrackRowView extends Component {
     let viewSquares = Tone.Time(viewLength).toBarsBeatsSixteenths();
     viewSquares = parseInt(viewSquares.split(":")[0] * res, 10) + parseInt(viewSquares.split(":")[1] * (res/4), 10);
     let w = this.props.windowWidth / viewSquares;
-    
-    let squares = Tone.Time(store.getSceneLength(scene.id)) * res;
-    squares = Tone.Time(squares).toBarsBeatsSixteenths();
+
+    let squares;
+    if(this.props.bar){
+      squares = (1*res) + ':0:0';
+    }
+    else{
+      squares = Tone.Time(store.getSceneLength(scene.id)) * res;
+      squares = Tone.Time(squares).toBarsBeatsSixteenths();
+    }
+
     let total = parseInt(squares.split(":")[0], 10) + parseInt(squares.split(":")[1], 10);
 
     ctx.strokeStyle = "#133e83";
@@ -544,14 +604,6 @@ export const TrackRowView = observer(class TrackRowView extends Component {
     ctx.stroke();
   }
 
-  resToggled = () => {
-    this.init();
-  }
-
-  noteChanged = () => {
-    this.init();
-  }
-
   render(){
     let sDisplay = {display:'block'};
     if((this.props.store.ui.viewMode === "sequencer" && this.props.mixMode)
@@ -559,17 +611,20 @@ export const TrackRowView = observer(class TrackRowView extends Component {
       sDisplay = {display:'none'}
 
     let mixView = null;
+
     if(store.ui.viewMode === "edit" && this.props.track.type !== "master"){
-      if(this.props.selectedNote)
-        if(this.props.selectedNote.getPattern().track.id === this.props.track.id)
-          mixView = <MixRowViewEdit trackId={this.props.track.id} store={this.props.store} track={this.props.track} note={this.props.selectedNote} noteChanged={this.noteChanged} viewLength={this.props.viewLength}/>
+      if(store.ui.editGraph){
+        if(this.props.selectedNote)
+          if(this.props.selectedNote.getPattern().track.id === this.props.track.id)
+            mixView = <MixRowViewEdit trackId={this.props.track.id} store={this.props.store} track={this.props.track} note={this.props.selectedNote} viewLength={this.props.viewLength}/>
+          else
+            mixView = <MixRowView store={this.props.store}  track={this.props.track} viewLength={this.props.viewLength}/>
         else
-          mixView = <MixRowView store={this.props.store} toggleRes={this.resToggled} track={this.props.track} viewLength={this.props.viewLength}/>
-      else
-        mixView = <MixRowView store={this.props.store} toggleRes={this.resToggled} track={this.props.track} viewLength={this.props.viewLength}/>
+          mixView = <MixRowView store={this.props.store} track={this.props.track} viewLength={this.props.viewLength}/>
+      }
     }
     else if(this.props.mixMode || this.props.track.type === "master"){
-      mixView = <MixRowView store={this.props.store} toggleRes={this.resToggled} track={this.props.track} viewLength={this.props.viewLength}/>
+      mixView = <MixRowView store={this.props.store} track={this.props.track} viewLength={this.props.viewLength}/>
     }
 
     let strSelected = "";
@@ -579,12 +634,22 @@ export const TrackRowView = observer(class TrackRowView extends Component {
       }
     }
 
+    if(this.props.bar)
+      this.id = this.props.track.id + '_' + this.props.bar;
+    else
+      this.id = this.props.track.id;
+
+    let playhead = null;
+    if(this.props.bar)
+      playhead = <div className="progressLine" id={'playhead_' + this.id} style={{display:'none'}}></div>
+
     return (
       <div className="track-row">
-        <canvas id={"canvas" + this.props.track.id} className={"canvasTrack " + strSelected} onTouchStart={this.handleMouseDown} onTouchEnd={this.handleMouseUp} 
+        { playhead }
+        <canvas id={"canvas" + this.id} className={"canvasTrack " + strSelected} onTouchStart={this.handleMouseDown} onTouchEnd={this.handleMouseUp} 
         onMouseDown={this.handleMouseDown} onMouseUp={this.handleMouseUp}  style={sDisplay}></canvas>
         { mixView }
-        <div id={"svgimg" + this.props.track.id} className="svgdiv"></div>
+        <div id={"svgimg" + this.id} className="svgdiv"></div>
       </div>
     )
   }
