@@ -11,3 +11,5 @@ build/
 alpha226\.zip
 
 src/todo\.txt
+
+yarn-error\.log
