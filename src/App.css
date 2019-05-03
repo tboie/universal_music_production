@@ -66,6 +66,8 @@ html {
 .track-rowmix {
   position: relative;
   z-index: 10;
+  background-color:#0c0b1b;
+  height:40px;
 }
 
 .track-rowmix-right{
@@ -131,10 +133,10 @@ html {
 #divGridTimeline {
   width:100%;
   height:14px;
-  top:40px;
   background-color:#0c0b1b;
-  z-index:15;
+  z-index:2;
   overflow: hidden;
+  position:relative;
 }
 
 /* prevent last # from wrapping */

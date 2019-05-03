@@ -75,11 +75,15 @@ export function applyDraggableGrid() {
 
     if(event.dx)
       x += event.dx;
-    if(event.dy && store.ui.viewMode === "sequencer")
+    if(event.dy && (store.ui.viewMode === "sequencer" || (store.ui.viewMode === "edit" && !store.ui.editGraph)))
       y += event.dy;
 
     target.setAttribute('data-x', x);
     target.setAttribute('data-y', y);
+
+    //interact.fire called manually
+    if(event.dx === undefined && event.dy === undefined)
+      bFlag = true;
 
     if(bFlag){
       target.style.webkitTransform = target.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
@@ -88,35 +92,43 @@ export function applyDraggableGrid() {
         let elements = document.getElementsByClassName('track-rowmix');
         if (elements.length > 0) {
           for (let i = 0; i < elements.length; i++) {
+            if(store.ui.viewMode === 'edit' && !store.ui.editGraph){
+              //do nothing
+            }
+            else{
               elements[i].style.webkitTransform = elements[i].style.transform = 'translate(' + (x * -1) + 'px)';
+            }
           }
         }
       }
+
+      //keep timeline in position
+      let fixedTop = 40;
+      if(store.ui.viewMode === 'edit' && !store.ui.editGraph)
+        fixedTop = 80;
+      
+      let timeline = document.getElementById("divGridTimeline");
+      if (timeline) {
+        let top = parseInt(document.getElementById('gridParent').style.top.replace('px', ''), 10);
+
+        if (!isNaN(top)) {
+          if (top === fixedTop) {
+            timeline.style.webkitTransform = timeline.style.transform = 'translateY(' + (y * -1) + 'px)';
+          }
+          else {
+            let diff = fixedTop - top - y;
+            timeline.style.webkitTransform = timeline.style.transform = 'translateY(' + diff + 'px)';
+          }
+        } else {
+          timeline.style.webkitTransform = timeline.style.transform = 'translateY(' + (y * -1) + 'px)';
+        }
+      }
+    
     }
     else if(end && !bFlag){
       target.setAttribute('data-x', origData.x);
       target.setAttribute('data-y', origData.y);
     }
-    
-    //timeline
-    /*
-    let timeline = document.getElementById("divGridTimeline");
-    if (timeline) {
-      let top = parseInt(document.getElementById('gridParent').style.top.replace('px', ''), 10);
-
-      if (!isNaN(top)) {
-        if (top === 40) {
-          timeline.style.webkitTransform = timeline.style.transform = 'translateY(' + (y * -1) + 'px)';
-        }
-        else {
-          let diff = 40 - top - y;
-          timeline.style.webkitTransform = timeline.style.transform = 'translateY(' + diff + 'px)';
-        }
-      } else {
-        timeline.style.webkitTransform = timeline.style.transform = 'translateY(' + (y * -1) + 'px)';
-      }
-    }
-    */
   }
 }
 

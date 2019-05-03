@@ -23,10 +23,15 @@ export const MixRowViewEdit = observer(class MixRowViewEdit extends Component{
     }
 
     applyTransformOffset = () => {
-      let gridContainer = document.getElementById('gridContainer');
-      if(gridContainer){
-        let transformX = gridContainer.getAttribute('data-x') * -1;
-        document.getElementById('trackrowmixedit_' + this.props.track.id).style.transform = 'translateX(' + transformX + 'px)';
+      if(this.props.store.ui.viewMode === 'edit' && !this.props.store.ui.editGraph){
+        //do nothing
+      }
+      else{
+        let gridContainer = document.getElementById('gridContainer');
+        if(gridContainer){
+          let transformX = gridContainer.getAttribute('data-x') * -1;
+          document.getElementById('trackrowmixedit_' + this.props.track.id).style.transform = 'translateX(' + transformX + 'px)';
+        }
       }
     }
   

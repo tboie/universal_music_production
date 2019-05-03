@@ -48,9 +48,12 @@ export const EditView = observer(class EditView extends Component {
 const EditViewTrack = observer(class EditViewTrack extends Component {
   componentDidMount(){
     applyDraggableGrid();
+    store.ui.calibrateSizes(true);
   }
   componentDidUpdate(prevProps){
-
+    if(prevProps.sceneLength !== this.props.sceneLength){
+      store.ui.calibrateSizes(true)
+    }
   }
   componentWillUnmount(){
     interact(document.querySelector('body')).unset();
@@ -108,11 +111,13 @@ const EditViewTrack = observer(class EditViewTrack extends Component {
 
     let sizes = store.ui.getGridSizes();
     return(
-      <div id="gridParent" style={{width: sizes.parent.width, left: sizes.parent.left}}>
-        <div className="divBody" id="gridContainer" style={{width: sizes.container.width, left: sizes.container.left}}>
-          { mixRow }
-          <GridTimeline selectedScene={this.props.store.ui.selectedScene} ui={this.props.store.ui} windowWidth={this.props.store.ui.windowWidth}/>
-          { tracks.map(t => t) }
+      <div style={{top:'40px', position:'relative'}}>
+        { mixRow }
+        <div id="gridParent" style={{width: sizes.parent.width, left: sizes.parent.left}}>
+          <div className="divBody" id="gridContainer" style={{width: sizes.container.width, left: sizes.container.left}}>
+            <GridTimeline selectedScene={this.props.store.ui.selectedScene} ui={this.props.store.ui} windowWidth={this.props.store.ui.windowWidth}/>
+            { tracks.map(t => t) }
+          </div>
         </div>
       </div>
     )

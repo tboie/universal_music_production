@@ -9,6 +9,7 @@ import { store } from "../data/store.js";
 //import { UndoManager } from "mst-middlewares";
 import * as cloneDeep from 'lodash/cloneDeep';
 import { setToneObjs, renderSong } from '../ui/utils.js';
+import interact from 'interactjs';
 
 /*******************************************
 TODO: move to separate files. 
@@ -3412,12 +3413,12 @@ const UI = types.model("UI", {
           return undefined;
     },
     getGridSizes(){
-        //console.log('getGridSizesCalled')
         if(self.selectedScene){
             let windowWidth = self.windowWidth;
             let viewLength = Tone.Time(self.viewLength);
             let sceneLength = store.getSceneLength(self.selectedScene.id);
 
+            //only show 1 bar for editview track bars
             if(store.ui.viewMode === 'edit' && !store.ui.editGraph)
                 sceneLength = Tone.Time(Tone.Time('1:0:0'));
 
@@ -3437,8 +3438,6 @@ const UI = types.model("UI", {
         return {parent: {width: self.windowWidth + 'px', left: 0}, container:{width: self.windowWidth + 'px', left: 0}}
     },
     calibrateSizes(setupScroll) {
-        //TODO: verify when this should be called
-        //console.log('calibrateSizes called')
         if(self.selectedScene){
             if (self.viewMode === "sequencer" || self.viewMode === "button" || self.viewMode === "edit") {
                 let windowWidth = self.windowWidth;
@@ -3446,6 +3445,10 @@ const UI = types.model("UI", {
                 let sceneLength = store.getSceneLength(self.selectedScene.id);
                 let gridParent = document.getElementById('gridParent');
                 let gridContainer = document.getElementById('gridContainer');
+
+                //only show 1 bar for edit view track
+                if(store.ui.viewMode === 'edit' && !store.ui.editGraph)
+                    sceneLength = Tone.Time(Tone.Time('1:0:0'));
 
                 if (Tone.Time(sceneLength).toSeconds() >= Tone.Time(viewLength).toSeconds()) {
                     let viewSecs = Tone.Time(viewLength).toSeconds();
@@ -3459,18 +3462,24 @@ const UI = types.model("UI", {
                     gridContainer.style.left = (scenePx - windowWidth) + 'px';
                 }
 
-                if(self.viewMode === "sequencer" && setupScroll){
+                if(setupScroll && (self.viewMode === "sequencer" || (self.viewMode === "edit" && !self.editGraph))){
+                    //162 = header + footer + toolbar + gridtimeline + toolrow icons
+                    let top = 40, padding = 162;
+                    if(self.viewMode === "edit" && !self.editGraph){
+                        top = 80; //+ mixrow + gridtimeline
+                        padding = 202; //+ mixrow
+                    }
+
                     let gridContainerHeight = gridContainer.offsetHeight;
-                    let diff = gridContainerHeight - (self.windowHeight - 135); //135 = header + footer + toolbar + gridtimeline
+                    let diff = gridContainerHeight - (self.windowHeight - padding); 
                     if(diff > 0){
-                        gridParent.style.top = (40 - diff) + 'px';
+                        gridParent.style.top = (top - diff) + 'px';
                         gridParent.style.height = (gridContainerHeight + diff) + 'px';
                     } else {
-                        gridParent.style.top = 40 + 'px';
+                        gridParent.style.top = top + 'px';
                         gridParent.style.height = gridContainerHeight + 'px';
                         gridContainer.setAttribute('data-y', 0);
                     }
-                    //interact('#gridContainer').fire({ type: 'dragmove', target: gridContainer });
                 }
 
                 //align grid to right side if gap is created on size change
@@ -3480,8 +3489,9 @@ const UI = types.model("UI", {
                     let x = left * -1;
                     gridContainer.setAttribute('data-x', x);
                     gridContainer.style.webkitTransform = gridContainer.style.transform = 'translate(' + x + 'px, ' + 0 + 'px)';
-                    //interact('#gridContainer').fire({ type: 'dragmove', target: gridContainer });
                 }
+
+                interact('#gridContainer').fire({ type: 'dragmove', target: gridContainer });
             }
         }
     },
@@ -3526,8 +3536,10 @@ const UI = types.model("UI", {
     function setViewLength(val) {
         if(self.selectedScene){
             if(self.viewMode === 'edit' && !self.editGraph){
-                if(Tone.Time(val) > Tone.Time('0:1:0') && Tone.Time(val) <= Tone.Time('1:0:0'))
-                    self.viewLength = val
+                if(Tone.Time(val) > Tone.Time('0:1:0') && Tone.Time(val) <= Tone.Time('1:0:0')){
+                    self.viewLength = val;
+                    self.calibrateSizes();
+                }
             }
             else if(Tone.Time(val) <= store.getSceneLength(self.selectedScene.id) && Tone.Time(val) > Tone.Time("0:1:0")){
                 self.viewLength = val;
