@@ -419,6 +419,7 @@ class Row extends Component {
                       });
                     }
                     else if (Array.isArray(result.data) || result.data instanceof Float32Array) {
+                      browsePlayer.buffer.fromArray(result.data)
                       if(url === store.ui[this.browserId].selectedFile)  
                         browsePlayerStart(item, eleAnim, e.target);
                     }
