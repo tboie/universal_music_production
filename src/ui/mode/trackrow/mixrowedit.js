@@ -31,6 +31,10 @@ export const MixRowViewEdit = observer(class MixRowViewEdit extends Component{
         }
       }
     }
+
+    backButton = (e) => {
+      this.props.store.ui.selectNote(undefined);
+    }
   
     selectMixButton = (e) => {
       e.preventDefault();
@@ -168,11 +172,12 @@ export const MixRowViewEdit = observer(class MixRowViewEdit extends Component{
       return (
         <div className="track-rowmix" id={'trackrowmixedit_' + this.props.track.id} style={{width: + this.props.store.ui.windowWidth}}>
           <div className="track-rowmix-left">
+            <button id="btnMixBack" className="btn-mix" onClick={this.backButton}>{'<'}</button>
             <button id="btnMixNote_Vel" className="btn-mix btnSelected" onClick={this.selectMixButton}>Vel</button>
             <button id="btnMixNote_Dur" className="btn-mix" onClick={this.selectMixButton}>Dur</button>
             <button id="btnMixNote_Dly" className="btn-mix" onClick={this.selectMixButton}>Dly</button>
             <button id="btnMixNote_Prb" className="btn-mix" onClick={this.selectMixButton}>Prb</button>
-            <button id="btnMixNote_Spd" className="btn-mix" disabled={true} onClick={this.selectMixButton}>Spd</button>
+            { /* <button id="btnMixNote_Spd" className="btn-mix" disabled={true} onClick={this.selectMixButton}>Spd</button> */ }
           </div>
           <div className="track-rowmix-right">
             <MixMeters track={this.props.track}/>
