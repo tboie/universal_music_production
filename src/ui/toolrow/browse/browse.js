@@ -134,7 +134,7 @@ const procBrowseItem = (item, browserId) => {
 }
 
 const changeBrowseMenu = (dir, browserId) => {
-  if(!bBrowseMenuLoading && dir !== store.ui[browserId].selectedDir){
+  if(!bBrowseMenuLoading && dir !== store.ui.toolbar.browser[browserId].selectedDir){
     if(dir === '/'){
       document.getElementById('btnBrowseBack_' + browserId).style.opacity = 0.5;
       document.getElementById('btnBrowseHome_' + browserId).style.opacity = 0.5;
@@ -157,7 +157,7 @@ const changeBrowseMenu = (dir, browserId) => {
       if(eleSelected)
         eleSelected.classList.remove('itemSelected')
 
-      store.ui[browserId].selectDir(dir);
+      store.ui.toolbar.browser[browserId].selectDir(dir);
 
       bBrowseMenuLoading = false;
     }, 220);
@@ -368,13 +368,13 @@ class Row extends Component {
       }
       else if(item.type === 'instrument' || item.type === 'source' || item.type === 'effect' || item.type === 'component'){
         item.selected = true;
-        store.ui[this.browserId].selectFile(item.name);
+        store.ui.toolbar.browser[this.browserId].selectFile(item.name);
         toggleBrowseBtnLoad(item, this.browserId);
       }
       else if(item.type === 'sample'){
         if(item.name === '...Import' || item.name === '...Folder' || item.name === '...Record'){
           item.selected = true;
-          store.ui[this.browserId].selectFile(item.name);
+          store.ui.toolbar.browser[this.browserId].selectFile(item.name);
           toggleBrowseBtnLoad(item, this.browserId);
         }
         else{
@@ -391,7 +391,7 @@ class Row extends Component {
             }
             else{
               browsePlayer.load(url, () => {
-                if(url === store.ui[this.browserId].selectedFile)
+                if(url === store.ui.toolbar.browser[this.browserId].selectedFile)
                   browsePlayerStart(item, eleAnim, e.target);
               });
             }
@@ -399,7 +399,7 @@ class Row extends Component {
           //diff row selected
           else{
             item.selected = true;
-            store.ui[this.browserId].selectFile(item.name);
+            store.ui.toolbar.browser[this.browserId].selectFile(item.name);
 
             browsePlayerStop(item, e.target);
             browsePlayer.buffer.dispose();
@@ -412,7 +412,7 @@ class Row extends Component {
                     if(result.data instanceof Blob){
                       let blobUrl = window.URL.createObjectURL(result.data);
                       browsePlayer.load(blobUrl, function(){
-                        if(url === store.ui[this.browserId].selectedFile)
+                        if(url === store.ui.toolbar.browser[this.browserId].selectedFile)
                           browsePlayerStart(item, eleAnim, e.target);
                         
                         window.URL.revokeObjectURL(blobUrl);
@@ -420,7 +420,7 @@ class Row extends Component {
                     }
                     else if (Array.isArray(result.data) || result.data instanceof Float32Array) {
                       browsePlayer.buffer.fromArray(result.data)
-                      if(url === store.ui[this.browserId].selectedFile)  
+                      if(url === store.ui.toolbar.browser[this.browserId].selectedFile)  
                         browsePlayerStart(item, eleAnim, e.target);
                     }
                   }
@@ -437,7 +437,7 @@ class Row extends Component {
                     if(result.data instanceof Blob){
                       let blobUrl = window.URL.createObjectURL(result.data);
                       browsePlayer.load(blobUrl, () => {
-                        if(url === store.ui[this.browserId].selectedFile)
+                        if(url === store.ui.toolbar.browser[this.browserId].selectedFile)
                           browsePlayerStart(item, eleAnim, e.target);
 
                         window.URL.revokeObjectURL(blobUrl);
@@ -445,7 +445,7 @@ class Row extends Component {
                     }
                     else if (Array.isArray(result.data) || result.data instanceof Float32Array) {   
                       browsePlayer.buffer.fromArray(result.data);
-                      if(url === store.ui[this.browserId].selectedFile)
+                      if(url === store.ui.toolbar.browser[this.browserId].selectedFile)
                         browsePlayerStart(item, eleAnim, e.target);
                     }
                   }
@@ -460,7 +460,7 @@ class Row extends Component {
                         duration: browsePlayer.buffer.duration,
                         data: blob
                       }).then(() => {
-                        if(url === store.ui[this.browserId].selectedFile)
+                        if(url === store.ui.toolbar.browser[this.browserId].selectedFile)
                           browsePlayerStart(item, eleAnim, e.target);
                       });
                     });
@@ -484,7 +484,7 @@ class Row extends Component {
     let text, loadIcon, item = this.item;
 
     let classSelected = '', showLoadIcon = 'none';
-    if(item.dir + '/' + item.name === store.ui[this.browserId].selectedFile){
+    if(item.dir + '/' + item.name === store.ui.toolbar.browser[this.browserId].selectedFile){
       classSelected = ' itemSelected';
 
       if(item.type === 'sample' && !browsePlayer.loaded){
@@ -565,7 +565,7 @@ export const ListBrowser = observer(class ListBrowser extends Component {
   }
 
   btnBackClick = (e) => {
-    let tokens = store.ui[this.props.id].selectedDir.split('/').filter(t => t !== '');
+    let tokens = store.ui.toolbar.browser[this.props.id].selectedDir.split('/').filter(t => t !== '');
     let strDir = '';
 
     if(tokens.length > 0){

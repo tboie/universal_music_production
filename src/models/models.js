@@ -3336,6 +3336,7 @@ const Pattern = types.model("Pattern", {
 
 ********************************************/
 
+/****** Browser ******/
 
 const ListBrowser = types.model("ListBrowser", {
     selectedDir: types.optional(types.string, '/'),
@@ -3349,6 +3350,9 @@ const ListBrowser = types.model("ListBrowser", {
         self.selectedFile = (self.selectedDir + '/').replace('//','/') + file;
     }
 }))
+
+
+/****** Main Views *****/
 
 const UISequencerView = types.model("UISequencerView", {
 
@@ -3389,23 +3393,64 @@ const UIMainViews = types.model("UIMainViews", {
 
 }))
 
-/*
+
+/****** UI Toolbar *****/
+
+const UIToolbarMain = types.model("UIToolbarMain", {
+}).views(self => ({
+
+})).actions(self => ({
+
+}))
+
+const UIToolbarBrowser = types.model("UIToolbarBrowser", {
+    browser1: ListBrowser,
+    browser2: ListBrowser,
+    browser3: ListBrowser,
+}).views(self => ({
+
+})).actions(self => ({
+
+}))
+
+const UIToolbarEdit= types.model("UIToolbarEdit", {
+}).views(self => ({
+
+})).actions(self => ({
+
+}))
+
+const UIToolbarSong = types.model("UIToolbarSong", {
+}).views(self => ({
+
+})).actions(self => ({
+
+}))
+
+const UIToolbarKeys = types.model("UIToolbarKeys", {
+}).views(self => ({
+
+})).actions(self => ({
+
+}))
+
 const UIToolbar = types.model("UIToolbar", {
     main: UIToolbarMain,
     browser: UIToolbarBrowser,
     edit: UIToolbarEdit,
+    song: UIToolbarSong,
     keys: UIToolbarKeys
 }).views(self => ({
 
 })).actions(self => ({
 
 }))
-*/
+
 
 const UI = types.model("UI", {
     viewMode: types.optional(types.union(types.literal("sequencer"), types.literal("button"), types.literal("edit")), "sequencer"),
     views: UIMainViews,
-    //toolbar: UIToolbar,
+    toolbar: UIToolbar,
     mixMode: types.optional(types.boolean, false),
     editMode: types.optional(types.boolean, true),
     recordMode: types.optional(types.boolean, false),
@@ -3423,9 +3468,6 @@ const UI = types.model("UI", {
     selectedKey: types.optional(types.string, ''),
     selectedChord: types.maybe(types.string),
     device: types.maybe(types.union(types.literal("mobile"), types.literal("desktop"))),
-    browser1: ListBrowser,
-    browser2: ListBrowser,
-    browser3: ListBrowser,
     showSideBar: types.optional(types.boolean, false),
 }).views(self => ({
     getSelectedPatternProp(prop){

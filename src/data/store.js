@@ -30,10 +30,36 @@ export const store = RootStore.create({
   "ui" : {
     "viewMode" : "sequencer",
     "views": {
-      "sequencer": {},
-      "button" : {},
+      "sequencer": {
+      },
+      "button" : {
+      },
       "edit" : {
         "mode" : "graph"
+      }
+    },
+    "toolbar" : {
+      "main" : {
+      },
+      "browser" : {
+        "browser1" : {
+          "selectedDir" : "/",
+          "selectedFile" : undefined
+        },
+        "browser2" : {
+          "selectedDir" : "/",
+          "selectedFile" : undefined
+        },
+        "browser3" : {
+          "selectedDir" : "/",
+          "selectedFile" : undefined
+        }
+      },
+      "edit" : {
+      },
+      "song" : {
+      },
+      "keys" : {
       }
     },
     "mixMode" : false,
@@ -53,15 +79,6 @@ export const store = RootStore.create({
     "selectedKey" : undefined,
     "selectedChord" : undefined,
     "device" : undefined,
-    "browser1" : {
-      "selectedDir" : "/",
-    },
-    "browser2" : {
-      "selectedDir" : "/",
-    },
-    "browser3": {
-      "selectedDir" : "/"
-    },
     "showSideBar" : undefined,
   },
   "sources" : {

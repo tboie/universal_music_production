@@ -232,7 +232,7 @@ const AppView = observer(class AppView extends Component {
 
     let sideBar;
     if(this.props.store.ui.showSideBar)
-      sideBar = <ToolSideBar content={ <ListBrowser id={'browser3'} selectedDir={this.props.store.ui.browser3.selectedDir} 
+      sideBar = <ToolSideBar content={ <ListBrowser id={'browser3'} selectedDir={this.props.store.ui.toolbar.browser.browser3.selectedDir} 
                                             numSamples={this.props.store.numSamples} numRegions={this.props.store.numRegions}/> }/>
 
     return (
