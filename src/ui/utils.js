@@ -75,7 +75,7 @@ export function applyDraggableGrid() {
 
     if(event.dx)
       x += event.dx;
-    if(event.dy && (store.ui.viewMode === "sequencer" || (store.ui.viewMode === "edit" && !store.ui.editGraph)))
+    if(event.dy && (store.ui.viewMode === "sequencer" || (store.ui.viewMode === "edit" && store.ui.views.edit.mode === "bar")))
       y += event.dy;
 
     target.setAttribute('data-x', x);
@@ -92,10 +92,7 @@ export function applyDraggableGrid() {
         let elements = document.getElementsByClassName('track-rowmix');
         if (elements.length > 0) {
           for (let i = 0; i < elements.length; i++) {
-            if(store.ui.viewMode === 'edit' && !store.ui.editGraph){
-              //do nothing
-            }
-            else{
+            if(store.ui.viewMode !== 'edit' || (store.ui.viewMode === 'edit' && store.ui.views.edit.mode !== 'bar')){
               elements[i].style.webkitTransform = elements[i].style.transform = 'translate(' + (x * -1) + 'px)';
             }
           }
@@ -104,7 +101,7 @@ export function applyDraggableGrid() {
 
       //keep timeline in position
       let fixedTop = 40;
-      if(store.ui.viewMode === 'edit' && !store.ui.editGraph)
+      if(store.ui.viewMode === 'edit' && store.ui.views.edit.mode === 'bar')
         fixedTop = 80;
       
       let timeline = document.getElementById("divGridTimeline");

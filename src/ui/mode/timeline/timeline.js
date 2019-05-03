@@ -25,7 +25,7 @@ export const GridTimeline = observer(class GridTimeline extends Component{
       let start = 1;
   
       if(this.props.selectedScene){
-        if(store.ui.viewMode === 'edit' && !store.ui.editGraph){
+        if(store.ui.viewMode === 'edit' && store.ui.views.edit.mode === 'bar'){
           len = Tone.Time('1:0:0');
         }
         else{

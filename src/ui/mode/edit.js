@@ -18,7 +18,7 @@ export const EditView = observer(class EditView extends Component {
   
   render(){
     let content;
-    if(this.props.editGraph){
+    if(this.props.editViewMode === 'graph'){
       content = <EditViewGraph 
                     store={this.props.store}
                     track={this.props.track}
@@ -28,7 +28,7 @@ export const EditView = observer(class EditView extends Component {
                   />
     }
     else {
-      content = <EditViewTrack 
+      content = <EditViewBars
                     store={this.props.store}
                     track={this.props.track}
                     selectedNote={this.props.store.ui.selectedNote}
@@ -45,7 +45,7 @@ export const EditView = observer(class EditView extends Component {
   }
 });
 
-const EditViewTrack = observer(class EditViewTrack extends Component {
+const EditViewBars= observer(class EditViewBars extends Component {
   componentDidMount(){
     applyDraggableGrid();
     store.ui.calibrateSizes(true);

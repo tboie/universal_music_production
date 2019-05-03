@@ -20,10 +20,7 @@ export const MixRowView = observer(class MixRowView extends Component{
   }
 
   applyTransformOffset = () => {
-    if(this.props.store.ui.viewMode === 'edit' && !this.props.store.ui.editGraph){
-      //do nothing
-    }
-    else{
+    if(store.ui.viewMode !== 'edit' || (store.ui.viewMode === 'edit' && store.ui.views.edit.mode !== 'bar')){
       let gridContainer = document.getElementById('gridContainer');
       if(gridContainer){
         let transformX = gridContainer.getAttribute('data-x') * -1;
@@ -46,7 +43,7 @@ export const MixRowView = observer(class MixRowView extends Component{
     
     let firstButton = <MixRowButtonEdit track={this.props.track} />
     if(this.props.store.ui.viewMode === 'edit')
-      firstButton = <MixRowButtonToggleEditGraph track={this.props.track} editGraph={this.props.store.ui.editGraph} />
+      firstButton = <MixRowButtonToggleEditViewMode track={this.props.track} editViewMode={this.props.store.ui.views.edit.mode} />
 
     let secondButton = <MixRowButtonToggleRes track={this.props.track}/>
     if(this.props.track.type === 'master')
@@ -355,27 +352,27 @@ const MixRowButtonEdit = observer(class MixRowButtonEditDelete extends Component
 });
 
 
-const MixRowButtonToggleEditGraph = observer(class MixRowButtonToggleEditGraph extends Component {
+const MixRowButtonToggleEditViewMode = observer(class MixRowButtonToggleEditViewMode extends Component {
   componentDidMount(){}
   componentWillUnmount(){}
 
-  toggleEditGraph = (e) => {
+  toggleEditViewMode = (e) => {
     e.preventDefault();
     e.stopPropagation();
 
-    store.ui.toggleEditGraph();
+    store.ui.views.edit.toggleMode();
   }
 
   render(){
-    this.id = 'btnMixToggleEditGraph_' + this.props.track.id;
+    this.id = 'btnMixToggleEditViewMode_' + this.props.track.id;
     (this.props.track.type === 'master') ? this.disabled = true : this.disabled = false
 
     let text = 'Grph';
-    if(this.props.editGraph)
+    if(this.props.editViewMode === 'graph')
       text = 'Bars';
     
     return (
-      <button id={this.id} className='btn-mix' disabled={this.disabled} onClick={this.toggleEditGraph}>{text}</button>
+      <button id={this.id} className='btn-mix' disabled={this.disabled} onClick={this.toggleEditViewMode}>{text}</button>
     );
   }
 });

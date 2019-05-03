@@ -227,7 +227,7 @@ export const ToolRow = observer(class ToolRow extends Component {
         <div id="divToolRowContainer" style={{width: this.props.store.ui.windowWidth + 'px'}}>
           <ToggleModeIcons store={this.props.store} windowWidth={this.props.store.ui.windowWidth} viewMode={this.props.store.ui.viewMode} 
                               selectedGroup={this.props.store.ui.selectedGroup} mixMode={this.props.store.ui.mixMode} editMode={this.props.store.ui.editMode}
-                              editGraph={this.props.store.ui.editGraph}/>
+                              editViewMode={this.props.store.ui.views.edit.mode}/>
           <div id="divZoom">
             <button id="btnUIZoomOut" className="btnUIZoom" onClick={this.UIZoomOut}><i className="material-icons i-36" style={{marginLeft: '-4px'}}>remove_circle</i></button>
             <button id="btnUIZoomIn" className="btnUIZoom" onClick={this.UIZoomIn}><i className="material-icons i-36" style={{marginLeft: '-4px'}}>add_circle</i></button>
@@ -326,7 +326,7 @@ const ToggleModeIcons = props => {
   if(props.viewMode === "button"){
     showEditIcon = 'hidden';
   }
-  else if(props.viewMode === 'edit' && !props.editGraph){
+  else if(props.viewMode === 'edit' && props.editViewMode === 'bar'){
     showEditIcon = 'hidden';
     bgVisibility = 'hidden';
   }

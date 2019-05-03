@@ -3330,6 +3330,13 @@ const Pattern = types.model("Pattern", {
 });
 
 
+/*******************************************
+ 
+  UI STUFF
+
+********************************************/
+
+
 const ListBrowser = types.model("ListBrowser", {
     selectedDir: types.optional(types.string, '/'),
     selectedFile: types.maybe(types.string)
@@ -3343,11 +3350,64 @@ const ListBrowser = types.model("ListBrowser", {
     }
 }))
 
+const UISequencerView = types.model("UISequencerView", {
+
+}).views(self => ({
+
+})).actions(self => ({
+
+}))
+
+const UIButtonView = types.model("UIButtonView", {
+
+}).views(self => ({
+
+})).actions(self => ({
+
+}))
+
+const UIEditView = types.model("UIEditView", {
+    mode: types.optional(types.union(types.literal("graph"), types.literal("bar")), "graph"),
+}).views(self => ({
+
+})).actions(self => ({
+    toggleMode() {
+        if(self.mode === 'graph')
+            self.mode = 'bar';
+        else
+            self.mode = 'graph'
+    }
+}))
+
+const UIMainViews = types.model("UIMainViews", {
+    sequencer: UISequencerView,
+    button: UIButtonView,
+    edit: UIEditView
+}).views(self => ({
+
+})).actions(self => ({
+
+}))
+
+/*
+const UIToolbar = types.model("UIToolbar", {
+    main: UIToolbarMain,
+    browser: UIToolbarBrowser,
+    edit: UIToolbarEdit,
+    keys: UIToolbarKeys
+}).views(self => ({
+
+})).actions(self => ({
+
+}))
+*/
+
 const UI = types.model("UI", {
-    viewMode: types.optional(types.string, "sequencer"),
+    viewMode: types.optional(types.union(types.literal("sequencer"), types.literal("button"), types.literal("edit")), "sequencer"),
+    views: UIMainViews,
+    //toolbar: UIToolbar,
     mixMode: types.optional(types.boolean, false),
     editMode: types.optional(types.boolean, true),
-    editGraph: types.optional(types.boolean, false),
     recordMode: types.optional(types.boolean, false),
     settings: types.optional(types.boolean, false),
     viewLength: types.optional(types.string, "1:0:0"),
@@ -3419,7 +3479,7 @@ const UI = types.model("UI", {
             let sceneLength = store.getSceneLength(self.selectedScene.id);
 
             //only show 1 bar for editview track bars
-            if(store.ui.viewMode === 'edit' && !store.ui.editGraph)
+            if(store.ui.viewMode === 'edit' && store.ui.views.edit.mode === 'bar')
                 sceneLength = Tone.Time(Tone.Time('1:0:0'));
 
             if(sceneLength > viewLength) {
@@ -3447,7 +3507,7 @@ const UI = types.model("UI", {
                 let gridContainer = document.getElementById('gridContainer');
 
                 //only show 1 bar for edit view track
-                if(store.ui.viewMode === 'edit' && !store.ui.editGraph)
+                if(store.ui.viewMode === 'edit' && store.ui.views.edit.mode === 'bar')
                     sceneLength = Tone.Time(Tone.Time('1:0:0'));
 
                 if (Tone.Time(sceneLength).toSeconds() >= Tone.Time(viewLength).toSeconds()) {
@@ -3462,10 +3522,10 @@ const UI = types.model("UI", {
                     gridContainer.style.left = (scenePx - windowWidth) + 'px';
                 }
 
-                if(setupScroll && (self.viewMode === "sequencer" || (self.viewMode === "edit" && !self.editGraph))){
+                if(setupScroll && (self.viewMode === "sequencer" || (self.viewMode === "edit" && self.views.edit.mode === 'bar'))){
                     //162 = header + footer + toolbar + gridtimeline + toolrow icons
                     let top = 40, padding = 162;
-                    if(self.viewMode === "edit" && !self.editGraph){
+                    if(self.viewMode === "edit" && self.views.edit.mode === 'bar'){
                         top = 80; //+ mixrow + gridtimeline
                         padding = 202; //+ mixrow
                     }
@@ -3518,9 +3578,6 @@ const UI = types.model("UI", {
             self.windowWidth = width;
         }
     }
-    function toggleEditGraph() {
-        self.editGraph = !self.editGraph;
-    }
     function toggleMixMode() {
         self.mixMode = !self.mixMode;
     }
@@ -3535,7 +3592,7 @@ const UI = types.model("UI", {
     }
     function setViewLength(val) {
         if(self.selectedScene){
-            if(self.viewMode === 'edit' && !self.editGraph){
+            if(self.viewMode === 'edit' && self.views.edit.mode === 'bar'){
                 if(Tone.Time(val) > Tone.Time('0:1:0') && Tone.Time(val) <= Tone.Time('1:0:0')){
                     self.viewLength = val;
                     self.calibrateSizes();
@@ -3690,7 +3747,7 @@ const UI = types.model("UI", {
             self.selectPattern(store.getPatternByTrackScene(self.selectedTrack.id, self.selectedScene.id).id)
             
             //set viewlength to 1m if editing notes
-            if(!self.editGraph)
+            if(self.views.edit.mode === 'bar')
                 self.setViewLength('1:0:0');
             
             self.viewMode = "edit";
@@ -3707,7 +3764,7 @@ const UI = types.model("UI", {
     
         self.device = device;
     }
-    return { selectToolbar, setWindowWidthHeight, toggleEditGraph, toggleMixMode, setViewLength, setViewScene, toggleSettings, selectScene, selectTrack, selectPattern, selectObj, selectGroup, selectNote, selectKey, selectChord, toggleViewMode, toggleEditMode, toggleRecordMode, setDevice }
+    return { selectToolbar, setWindowWidthHeight, toggleMixMode, setViewLength, setViewScene, toggleSettings, selectScene, selectTrack, selectPattern, selectObj, selectGroup, selectNote, selectKey, selectChord, toggleViewMode, toggleEditMode, toggleRecordMode, setDevice }
 });
 
 const Settings = types.model("Settings", {

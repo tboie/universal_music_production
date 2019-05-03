@@ -34,8 +34,8 @@ export const Draw = observer(class Draw extends Component {
         this.initMeters();
       }
       
-      if(this.props.viewMode === 'edit' && this.props.editGraph){
-        if(prevProps.objs.length !== this.props.objs.length || prevProps.viewMode !== 'edit' || !prevProps.editGraph){
+      if(this.props.viewMode === 'edit' && this.props.editViewMode === 'graph'){
+        if(prevProps.objs.length !== this.props.objs.length || prevProps.viewMode !== 'edit' || prevProps.editViewMode === 'bar'){
           this.initEditObjs();
         }
       }
@@ -215,7 +215,7 @@ export const Draw = observer(class Draw extends Component {
   
     drawPlayhead = () => {
       //individual track progress lines when editview bar mode
-      if(this.props.viewMode === 'edit' && !this.props.store.ui.editGraph){
+      if(this.props.viewMode === 'edit' && this.props.editViewMode === 'bar'){
         if(Tone.Transport.state === 'started'){
           let scenePos = (Tone.Time(Tone.Transport.position) - Tone.Time(store.ui.selectedScene.start));
           let currBar = parseInt(Tone.Time(scenePos).toBarsBeatsSixteenths().split(':')[0], 10) + 1;

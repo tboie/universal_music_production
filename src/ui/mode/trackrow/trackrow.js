@@ -613,7 +613,7 @@ export const TrackRowView = observer(class TrackRowView extends Component {
     let mixView = null;
 
     if(store.ui.viewMode === "edit" && this.props.track.type !== "master"){
-      if(store.ui.editGraph){
+      if(store.ui.views.edit.mode === 'graph'){
         if(this.props.selectedNote)
           if(this.props.selectedNote.getPattern().track.id === this.props.track.id)
             mixView = <MixRowViewEdit trackId={this.props.track.id} store={this.props.store} track={this.props.track} note={this.props.selectedNote} viewLength={this.props.viewLength}/>

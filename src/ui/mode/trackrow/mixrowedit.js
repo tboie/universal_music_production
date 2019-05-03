@@ -23,10 +23,7 @@ export const MixRowViewEdit = observer(class MixRowViewEdit extends Component{
     }
 
     applyTransformOffset = () => {
-      if(this.props.store.ui.viewMode === 'edit' && !this.props.store.ui.editGraph){
-        //do nothing
-      }
-      else{
+      if(this.props.store.ui.viewMode !== 'edit' || (this.props.store.ui.viewMode === 'edit' && this.props.store.ui.views.edit.mode !== 'bar')){
         let gridContainer = document.getElementById('gridContainer');
         if(gridContainer){
           let transformX = gridContainer.getAttribute('data-x') * -1;

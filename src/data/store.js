@@ -29,9 +29,15 @@ export const store = RootStore.create({
   "samples" : [],
   "ui" : {
     "viewMode" : "sequencer",
+    "views": {
+      "sequencer": {},
+      "button" : {},
+      "edit" : {
+        "mode" : "graph"
+      }
+    },
     "mixMode" : false,
     "editMode" : false,
-    "editGraph" : false,
     "recordMode" : false,
     "settings" : false,
     "viewLength" : "1:0:0",
