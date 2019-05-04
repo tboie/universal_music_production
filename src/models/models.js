@@ -4313,11 +4313,6 @@ export const RootStore = types.model("RootStore", {
         function delTrack(id) {
             let track = self.getTrack(id);
 
-            if(track.type !== "audio")
-                store.ui.selectObj('');
-            else if(track.type === "audio" && !track.region)
-                store.ui.selectObj('');
-
             //remove selections
             if(store.ui.selectedPattern){
                 if(store.ui.selectedPattern.track.id === id)
@@ -4331,6 +4326,11 @@ export const RootStore = types.model("RootStore", {
             if(store.ui.selectedNote){
                 if(store.ui.selectedNote.getPattern().track === track){
                     store.ui.selectNote(undefined);
+                }
+            }
+            if(store.ui.selectedObj){
+                if(store.getObjsByTrackObj(track).find(o => o.id === store.ui.selectedObj)){
+                    store.ui.selectObj('');
                 }
             }
 
