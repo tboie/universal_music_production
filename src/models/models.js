@@ -4356,11 +4356,6 @@ export const RootStore = types.model("RootStore", {
             if (track.type === "audio") {
                 if(track.region)
                     self.getSample(track.sample.id).delRegion(track.region.id);
-                
-                //delete sample if no regions exist and no other tracks reference it
-                if(track.sample.regions.length === 0 
-                    && !self.tracks.filter(t => t.type === "audio" && t.sample).find(t => t.sample.id === track.sample.id && t.id !== track.id))
-                        destroy(self.getSample(track.sample.id));
             }
 
             destroy(self.getTrack(id));
