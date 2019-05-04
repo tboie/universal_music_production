@@ -4317,13 +4317,17 @@ export const RootStore = types.model("RootStore", {
                 store.ui.selectObj('');
             else if(track.type === "audio" && !track.region)
                 store.ui.selectObj('');
-            
+
+            //remove selections
+            if(store.ui.selectedPattern){
+                if(store.ui.selectedPattern.track.id === id)
+                    store.ui.selectPattern(undefined);
+            }
             if(store.ui.selectedTrack){
                 if(store.ui.selectedTrack === track){
                     store.ui.selectTrack(undefined);
                 }
             }
-    
             if(store.ui.selectedNote){
                 if(store.ui.selectedNote.getPattern().track === track){
                     store.ui.selectNote(undefined);
