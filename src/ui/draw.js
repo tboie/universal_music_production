@@ -35,7 +35,8 @@ export const Draw = observer(class Draw extends Component {
       }
       
       if(this.props.viewMode === 'edit' && this.props.editViewMode === 'graph'){
-        if(prevProps.objs.length !== this.props.objs.length || prevProps.viewMode !== 'edit' || prevProps.editViewMode === 'bar'){
+        if(prevProps.objs.length !== this.props.objs.length || prevProps.viewMode !== 'edit' || prevProps.editViewMode === 'bar' 
+            || prevProps.selectedTrack !== this.props.selectedTrack){
           this.initEditObjs();
         }
       }
