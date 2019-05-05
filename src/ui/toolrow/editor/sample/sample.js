@@ -22,6 +22,16 @@ export const ToolSampleEditor = observer(class ToolSampleEditor extends Componen
         this.sample.destroy();
         this.drawAudio();
       }
+
+      //reset zoom when toolbar changed (fixes bug where waveform doesn't fill container)
+      if(prevProps.selectedToolbar !== this.props.selectedToolbar && this.props.selectedToolbar === 'editor'){
+        if(this.sample){
+          if(this.sample.getDuration()){
+            let zoom = store.ui.windowWidth / this.sample.getDuration();
+            this.sample.zoom(zoom);
+          }
+        }
+      }
   
       if(store.ui.viewMode === 'button' || store.ui.viewMode === 'sequencer'){
         if(prevProps.selectedTrack !== this.props.selectedTrack){
@@ -229,7 +239,7 @@ export const ToolSampleEditor = observer(class ToolSampleEditor extends Componen
         });
   
         this.sample.on('zoom', function (zoom) {
-             //console.log('zoom called.  zoom(pxpersec): ' + zoom + '  interval: ' +  self.zoomInterval + '  base pxpersec: ' + self.pxPerSec)
+          self.zoomVal = zoom;
         });
       }
     }
