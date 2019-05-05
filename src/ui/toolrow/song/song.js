@@ -21,9 +21,12 @@ export const ToolSong = observer(class ToolSong extends Component {
       this.updateSongData();
     }
   
-    componentDidUpdate(prevProps, prevState, snapshot){
+    componentDidUpdate(prevProps){
       if(prevProps.bpm !== this.props.bpm)
         songTree.name = store.settings.title + ' [' + Tone.Time(store.getSongLength()).toBarsBeatsSixteenths() + '] [' + store.settings.bpm + " bpm]";
+      
+      if(prevProps.numTracks !== this.props.numTracks)
+        this.updateSongData();
     }
   
     componentWillUnmount(){
