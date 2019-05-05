@@ -90,7 +90,7 @@ export const MixRowViewEdit = observer(class MixRowViewEdit extends Component{
       let btn = document.getElementById("btnMixNote_" + this.mixSelection);
   
       if(this.bPressed)
-        btn.innerHTML = e.target.value;
+        btn.innerHTML = Math.round(parseFloat(e.target.value) * 100);
       else
         btn.innerHTML = this.mixSelection;
     }
@@ -100,7 +100,7 @@ export const MixRowViewEdit = observer(class MixRowViewEdit extends Component{
   
       this.bPressed = true;
       let btn = document.getElementById("btnMixNote_" + this.mixSelection);
-      btn.innerHTML = e.target.value;
+      btn.innerHTML = Math.round(parseFloat(e.target.value) * 100);
     }
   
     onPressUp = (e) => {

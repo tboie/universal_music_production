@@ -525,6 +525,8 @@ const EditViewGraph = observer(class EditViewGraph extends Component {
           selectedPatternNotes={this.props.store.ui.getSelectedPatternProp('notes')}
           selectedKey={this.props.store.ui.selectedKey}
           windowWidth={this.props.store.ui.windowWidth}
+          selectedNoteDuration={this.props.store.ui.getSelectedNoteDuration()}
+          selectedNoteOffset={this.props.store.ui.getSelectedNoteOffset()}
         />
       }
   
