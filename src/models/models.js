@@ -3613,13 +3613,20 @@ const UI = types.model("UI", {
                     }
                 }
 
-                //align grid to right side if gap is created on size change
-                let left = gridContainer.style.left.replace('px', '');
-                let dx = gridContainer.getAttribute('data-x') * -1;
-                if (left < dx) {
-                    let x = left * -1;
-                    gridContainer.setAttribute('data-x', x);
-                    gridContainer.style.webkitTransform = gridContainer.style.transform = 'translate(' + x + 'px, ' + 0 + 'px)';
+                //align grid in case gap created on size change
+                let left = parseFloat(gridContainer.style.left.replace('px', ''));
+                let gridX = parseFloat(gridContainer.getAttribute('data-x'));
+                let gridY = parseFloat(gridContainer.getAttribute('data-y'));
+                //right gap
+                if (left < (gridX * -1)) {
+                    let newX = left * -1;
+                    gridContainer.setAttribute('data-x', newX);
+                    gridContainer.style.webkitTransform = gridContainer.style.transform = 'translate(' + newX + 'px, ' + gridY + 'px)';
+                }
+                //left gap
+                if(gridX > 0){
+                    gridContainer.setAttribute('data-x', 0);
+                    gridContainer.style.webkitTransform = gridContainer.style.transform = 'translate(' + 0 + 'px, ' + gridY + 'px)';
                 }
 
                 interact('#gridContainer').fire({ type: 'dragmove', target: gridContainer });
