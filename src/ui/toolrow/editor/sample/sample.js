@@ -214,6 +214,11 @@ export const ToolSampleEditor = observer(class ToolSampleEditor extends Componen
             document.getElementById('btnDelRegion').disabled = false;
             document.getElementById('iconSampleDelete').style.opacity = "1";
           }
+
+          let track = store.getTrackBySampleRegion(self.sampleId, region.id);
+          if(track){
+            store.ui.selectTrack(track.id);
+          }
         })
   
         this.sample.on('loading', function(progress, obj){
