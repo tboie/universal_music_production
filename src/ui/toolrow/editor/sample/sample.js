@@ -24,7 +24,8 @@ export const ToolSampleEditor = observer(class ToolSampleEditor extends Componen
       }
 
       //reset zoom when toolbar changed (fixes bug where waveform doesn't fill container)
-      if(prevProps.selectedToolbar !== this.props.selectedToolbar && this.props.selectedToolbar === 'editor'){
+      if((prevProps.selectedToolbar !== this.props.selectedToolbar && this.props.selectedToolbar === 'editor') 
+        || (prevProps.winWidth !== this.props.winWidth)){
         if(this.sample){
           if(this.sample.getDuration()){
             let zoom = store.ui.windowWidth / this.sample.getDuration();
