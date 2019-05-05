@@ -17,22 +17,24 @@ export const ToolSampleEditor = observer(class ToolSampleEditor extends Componen
       this.drawAudio();
     }
   
-    componentDidUpdate(prevProps, prevState, snapshot){
+    componentDidUpdate(prevProps){
       if(prevProps.objId !== this.props.objId || prevProps.file !== this.props.file){
         this.sample.destroy();
         this.drawAudio();
       }
   
-      if(prevProps.selectedTrack !== this.props.selectedTrack){
-        if(this.props.selectedTrack){
-          let region = this.props.selectedTrack.region;
-          if(region){
-            if(this.selectedRegion){
-              if(this.selectedRegion.id !== region.id)
+      if(store.ui.viewMode === 'button' || store.ui.viewMode === 'sequencer'){
+        if(prevProps.selectedTrack !== this.props.selectedTrack){
+          if(this.props.selectedTrack){
+            let region = this.props.selectedTrack.region;
+            if(region){
+              if(this.selectedRegion){
+                if(this.selectedRegion.id !== region.id)
+                  this.selectRegion(region.id);
+              }
+              else{
                 this.selectRegion(region.id);
-            }
-            else{
-              this.selectRegion(region.id);
+              }
             }
           }
         }
@@ -183,36 +185,31 @@ export const ToolSampleEditor = observer(class ToolSampleEditor extends Componen
           })
         });
   
-        this.sample.on('region-click', function(region){ 
+        this.sample.on('region-click', function(region){
+          self.selectedRegion = region;
+
           let eles = document.getElementsByClassName("wavesurfer-region-selected");
           for(let i=0; i < eles.length; i++)
             eles[i].className = "wavesurfer-region";
-  
-          if(self.selectedRegion !== region){
-            self.selectedRegion = region;
-            region.element.className = "wavesurfer-region-selected";
-            document.getElementById('btnDelRegion').disabled = false;
-            document.getElementById('iconSampleDelete').style.opacity = "1";
-            let track = store.getTrackBySampleRegion(self.sampleId, region.id);
-            if(track)
-              store.ui.selectTrack(track.id);
-          }
-          else{
-            self.selectedRegion = null;
-            region.element.className = "wavesurfer-region";
-            document.getElementById('btnDelRegion').disabled = true;
-            document.getElementById('iconSampleDelete').style.opacity = "0.5";
-            store.ui.selectTrack(undefined);
+          
+          region.element.className = "wavesurfer-region-selected";
+          document.getElementById('btnDelRegion').disabled = false;
+          document.getElementById('iconSampleDelete').style.opacity = "1";
+          
+          let track = store.getTrackBySampleRegion(self.sampleId, region.id);
+          if(track){
+            store.ui.selectTrack(track.id);
           }
         })
   
         this.sample.on('region-updated', function(region){
           if(self.selectedRegion !== region){
+            self.selectedRegion = region;
+
             let eles = document.getElementsByClassName("wavesurfer-region-selected");
             for(let i=0; i < eles.length; i++)
               eles[i].className = "wavesurfer-region";
   
-            self.selectedRegion = region;
             region.element.className = "wavesurfer-region-selected";
             document.getElementById('btnDelRegion').disabled = false;
             document.getElementById('iconSampleDelete').style.opacity = "1";
