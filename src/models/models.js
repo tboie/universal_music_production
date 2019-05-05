@@ -3376,10 +3376,13 @@ const UIEditView = types.model("UIEditView", {
 
 })).actions(self => ({
     toggleMode() {
-        if(self.mode === 'graph')
+        if(self.mode === 'graph'){
+            store.ui.setViewLength('1:0:0');
             self.mode = 'bar';
-        else
+        }
+        else{
             self.mode = 'graph'
+        }
     }
 }))
 
@@ -3813,10 +3816,6 @@ const UI = types.model("UI", {
             }
 
             self.selectPattern(store.getPatternByTrackScene(self.selectedTrack.id, self.selectedScene.id).id)
-            
-            //set viewlength to 1m if editing notes
-            if(self.views.edit.mode === 'bar')
-                self.setViewLength('1:0:0');
             
             self.viewMode = "edit";
         }
