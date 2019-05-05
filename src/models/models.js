@@ -3565,18 +3565,44 @@ const UI = types.model("UI", {
                 }
 
                 if(setupScroll && (self.viewMode === "sequencer" || (self.viewMode === "edit" && self.views.edit.mode === 'bar'))){
+                    let gridContainerHeight = gridContainer.offsetHeight;
+
                     //162 = header + footer + toolbar + gridtimeline + toolrow icons
                     let top = 40, padding = 162;
                     if(self.viewMode === "edit" && self.views.edit.mode === 'bar'){
                         top = 80; //+ mixrow + gridtimeline
                         padding = 202; //+ mixrow
+                        //allow one row to be visible when scrolled to top;
+                        if(gridContainerHeight > (self.windowHeight - padding))
+                            padding = self.windowHeight - 60;
                     }
-
-                    let gridContainerHeight = gridContainer.offsetHeight;
+                    
                     let diff = gridContainerHeight - (self.windowHeight - padding); 
+
+                    if(self.viewMode === "edit" && self.views.edit.mode === 'bar'){
+                        diff = gridContainerHeight - (self.windowHeight - padding); 
+                    }
                     if(diff > 0){
-                        gridParent.style.top = (top - diff) + 'px';
+                        let prevTop = parseInt(gridParent.style.top.replace('px',''), 10);
+                        let newTop = top - diff;
+
+                        gridParent.style.top =  newTop + 'px';
                         gridParent.style.height = (gridContainerHeight + diff) + 'px';
+
+                        let topDiff = 0;
+                        if(newTop !== prevTop)
+                            topDiff = prevTop - newTop;
+                
+                        let gridX = parseInt(gridContainer.getAttribute('data-x'), 10);
+                        let gridY = parseInt(gridContainer.getAttribute('data-y'), 10);
+
+                        if(newTop < prevTop)
+                            gridY = gridY + topDiff;
+                        else
+                            gridY = gridY - topDiff
+
+                        gridContainer.setAttribute('data-y', gridY);
+                        gridContainer.style.transform = 'translate(' + gridX + 'px,' + gridY + 'px)';
                     } else {
                         gridParent.style.top = top + 'px';
                         gridParent.style.height = gridContainerHeight + 'px';
