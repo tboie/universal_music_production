@@ -3824,6 +3824,9 @@ const UI = types.model("UI", {
 
             self.selectPattern(store.getPatternByTrackScene(self.selectedTrack.id, self.selectedScene.id).id)
             
+            if(Tone.Time(self.viewLength) > Tone.Time('1:0:0'))
+                self.setViewLength('1:0:0');
+            
             self.viewMode = "edit";
         }
         else if (mode === "sequencer") {
