@@ -120,6 +120,16 @@ export const ToolSampleEditor = observer(class ToolSampleEditor extends Componen
   
         this.sample.on('ready', function () {
           self.sample.isReady = true;
+
+          //set zoom range vals pxPerSec
+          const minZoom = store.ui.windowWidth / self.sample.getDuration();
+          const maxZoom = store.ui.windowWidth; // 1s width
+          const eleZoom = document.getElementById('sampleEditorZoomSlider');
+          if(eleZoom){
+            eleZoom.min = minZoom;
+            eleZoom.max = maxZoom;
+            eleZoom.value = minZoom;
+          }
   
           storeSample = store.getSample(sampleId);
           storeSample.regions.forEach(function(region){
@@ -395,7 +405,7 @@ export const ToolSampleEditor = observer(class ToolSampleEditor extends Componen
             <button onClick={this.zoomOut} style={{position:'absolute', left:'50px'}}>-</button>
           */ }
             <div style={{marginLeft:'25px', marginRight:'225px', position:'relative'}}>
-              <input type="range" min="1" max="200" onInput={this.zoomChange} style={{width:'100%'}}></input>
+              <input id='sampleEditorZoomSlider' type="range" onInput={this.zoomChange} style={{width:'100%'}}></input>
             </div>
             <button onClick={this.delRegion} id="btnDelRegion" style={{position:'absolute',right:'5px', backgroundColor:'transparent', top:'4px', border:0}}>
               <i id="iconSampleDelete" className="material-icons i-28 colorRed" style={{opacity:0.5}}>delete</i>
