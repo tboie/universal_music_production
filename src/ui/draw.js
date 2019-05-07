@@ -30,7 +30,8 @@ export const Draw = observer(class Draw extends Component {
     componentDidUpdate(prevProps){
       this.initPlayhead();
 
-      if((!prevProps.mixMode && this.props.mixMode) || prevProps.viewMode !== this.props.viewMode || prevProps.numTracks !== this.props.numTracks){
+      if((!prevProps.mixMode && this.props.mixMode) || prevProps.viewMode !== this.props.viewMode 
+        || prevProps.selectedTrack !== this.props.selectedTrack || prevProps.numTracks !== this.props.numTracks){
         this.initMeters();
       }
       
@@ -120,25 +121,27 @@ export const Draw = observer(class Draw extends Component {
             let meterL = ToneObjs.components.find(c => c.id === ("mix_meter_L_" + track.id));
             let meterR = ToneObjs.components.find(c => c.id === ("mix_meter_R_" + track.id));
             
-            if(meterL.obj && meterR.obj){
-              let ctxL = cL.getContext('2d');
-              let ctxR = cR.getContext('2d');
-  
-              //left and right dimensions should be the same
-              let width = cL.width;
-              let height = cL.height;
-  
-              let gradientL = ctxL.createLinearGradient(0, 0, width, 0);
-              gradientL.addColorStop(0, "#BFFF02");
-              gradientL.addColorStop(0.8, "#02FF24");
-              gradientL.addColorStop(1, "#FF0202");
-          
-              let gradientR = ctxR.createLinearGradient(0, 0, width, 0);
-              gradientR.addColorStop(0, "#BFFF02");
-              gradientR.addColorStop(0.8, "#02FF24");
-              gradientR.addColorStop(1, "#FF0202");
+            if(meterL && meterR){
+              if(meterL.obj && meterR.obj){
+                let ctxL = cL.getContext('2d');
+                let ctxR = cR.getContext('2d');
+    
+                //left and right dimensions should be the same
+                let width = cL.width;
+                let height = cL.height;
+    
+                let gradientL = ctxL.createLinearGradient(0, 0, width, 0);
+                gradientL.addColorStop(0, "#BFFF02");
+                gradientL.addColorStop(0.8, "#02FF24");
+                gradientL.addColorStop(1, "#FF0202");
+            
+                let gradientR = ctxR.createLinearGradient(0, 0, width, 0);
+                gradientR.addColorStop(0, "#BFFF02");
+                gradientR.addColorStop(0.8, "#02FF24");
+                gradientR.addColorStop(1, "#FF0202");
 
-              this.objMeterCanvas.push({track: track.id, type: track.type, meterL: meterL, meterR: meterR, ctxL: ctxL, ctxR: ctxR, width: width, height: height, gradientL: gradientL, gradientR: gradientR})
+                this.objMeterCanvas.push({track: track.id, type: track.type, meterL: meterL, meterR: meterR, ctxL: ctxL, ctxR: ctxR, width: width, height: height, gradientL: gradientL, gradientR: gradientR})
+              }
             }
           }
         }

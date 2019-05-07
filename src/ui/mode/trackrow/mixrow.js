@@ -208,6 +208,12 @@ export const MixMeters = observer(class MixMeters extends Component{
     this.addMeter();
   }
 
+  componentDidUpdate(prevProps){
+    if(prevProps.track !== this.props.track){
+      this.addMeter();
+    }
+  }
+
   componentWillUnmount(){
     this.split.disconnect(this.meterL, 0);
     this.split.disconnect(this.meterR, 1);
@@ -221,13 +227,16 @@ export const MixMeters = observer(class MixMeters extends Component{
     this.idTrack = this.props.track.id;
 
     this.idSplit = "mix_split_" + this.idTrack;
-    ToneObjs.components.push({id: this.idSplit, track: this.props.track.id, obj: new Tone.Split()})
+    if(!ToneObjs.components.find(c => c.id === this.idSplit))
+      ToneObjs.components.push({id: this.idSplit, track: this.props.track.id, obj: new Tone.Split()})
 
     this.idMeterL = "mix_meter_L_" + this.idTrack;
-    ToneObjs.components.push({id: this.idMeterL, track: this.props.track.id, obj: new Tone.Meter()})
+    if(!ToneObjs.components.find(c => c.id === this.idMeterL))
+      ToneObjs.components.push({id: this.idMeterL, track: this.props.track.id, obj: new Tone.Meter()})
 
     this.idMeterR = "mix_meter_R_" + this.idTrack;
-    ToneObjs.components.push({id: this.idMeterR, track: this.props.track.id, obj: new Tone.Meter()})
+    if(!ToneObjs.components.find(c => c.id === this.idMeterR))
+      ToneObjs.components.push({id: this.idMeterR, track: this.props.track.id, obj: new Tone.Meter()})
 
     this.split = ToneObjs.components.find(o => o.id === this.idSplit).obj;
     this.meterL = ToneObjs.components.find(o => o.id === this.idMeterL).obj;

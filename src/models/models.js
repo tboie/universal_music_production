@@ -3743,7 +3743,7 @@ const UI = types.model("UI", {
                     });  
                 }
             }
-
+            self.selectedNote = undefined;
             self.selectedTrack = selTrack;
         }
     }
