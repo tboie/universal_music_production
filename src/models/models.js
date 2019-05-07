@@ -3371,7 +3371,7 @@ const UIButtonView = types.model("UIButtonView", {
 }))
 
 const UIEditView = types.model("UIEditView", {
-    mode: types.optional(types.union(types.literal("graph"), types.literal("bar")), "graph"),
+    mode: types.optional(types.union(types.literal("graph"), types.literal("bar")), "bar"),
 }).views(self => ({
 
 })).actions(self => ({

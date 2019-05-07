@@ -35,7 +35,7 @@ export const store = RootStore.create({
       "button" : {
       },
       "edit" : {
-        "mode" : "graph"
+        "mode" : "bar"
       }
     },
     "toolbar" : {
