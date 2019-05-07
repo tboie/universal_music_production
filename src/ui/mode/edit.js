@@ -45,10 +45,10 @@ export const EditView = observer(class EditView extends Component {
   }
 });
 
-const EditViewBars= observer(class EditViewBars extends Component {
+const EditViewBars = observer(class EditViewBars extends Component {
   componentDidMount(){
     applyDraggableGrid();
-    store.ui.calibrateSizes(true);
+    store.ui.calibrateSizes(true, true);
   }
   componentDidUpdate(prevProps){
     if(prevProps.sceneLength !== this.props.sceneLength){

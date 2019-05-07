@@ -3542,7 +3542,7 @@ const UI = types.model("UI", {
         
         return {parent: {width: self.windowWidth + 'px', left: 0}, container:{width: self.windowWidth + 'px', left: 0}}
     },
-    calibrateSizes(setupScroll) {
+    calibrateSizes(setupScroll, resetGridY) {
         if(self.selectedScene){
             if (self.viewMode === "sequencer" || self.viewMode === "button" || self.viewMode === "edit") {
                 let windowWidth = self.windowWidth;
@@ -3599,7 +3599,11 @@ const UI = types.model("UI", {
                         let gridX = parseInt(gridContainer.getAttribute('data-x'), 10);
                         let gridY = parseInt(gridContainer.getAttribute('data-y'), 10);
 
-                        if(newTop < prevTop)
+                        //reset grid Y showing first bar
+                        if(resetGridY)
+                            gridY = (newTop * -1) + 80;
+                        //adjust when bars added / deleted
+                        else if(newTop < prevTop)
                             gridY = gridY + topDiff;
                         else
                             gridY = gridY - topDiff
