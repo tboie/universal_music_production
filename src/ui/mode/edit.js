@@ -46,6 +46,8 @@ export const EditView = observer(class EditView extends Component {
 });
 
 const EditViewBars = observer(class EditViewBars extends Component {
+  strSVG;
+
   componentDidMount(){
     applyDraggableGrid();
     store.ui.calibrateSizes(true, true);
@@ -58,6 +60,11 @@ const EditViewBars = observer(class EditViewBars extends Component {
   componentWillUnmount(){
     interact(document.querySelector('body')).unset();
     interact('#gridContainer').unset();
+  }
+
+  setSVG = (svg) => {
+    this.strSVG = svg;
+    this.forceUpdate();
   }
 
   render(){
@@ -106,6 +113,8 @@ const EditViewBars = observer(class EditViewBars extends Component {
           bar={i}
           selectedNoteDuration={this.props.store.ui.getSelectedNoteDuration()}
           selectedNoteOffset={this.props.store.ui.getSelectedNoteOffset()}
+          strSVG={this.strSVG}
+          setSVG={this.setSVG}
         />)
     }
 

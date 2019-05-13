@@ -21,16 +21,18 @@ export const TrackRowView = observer(class TrackRowView extends Component {
   id;
 
   componentDidMount(){
-    if(this.props.track.type !== "master" && this.props.track.type === "audio"){
-      this.player = ToneObjs.instruments.find(inst => inst.track === this.props.track.id).obj;
+    if(this.props.track.type !== "master"){
+      if(this.props.track.type === "audio"){
+        this.player = ToneObjs.instruments.find(inst => inst.track === this.props.track.id).obj;
 
-      //force draw on first load
-      this.ensureBufferIsLoaded(this.player.buffer).then(() => {
-        this.init(true)
-      });
-    }
-    else if(this.props.track.type === "instrument"){
-      this.init();
+        //force draw on first load
+        this.ensureBufferIsLoaded(this.player.buffer).then(() => {
+          this.init(true)
+        });
+      }
+      else if(this.props.track.type === "instrument"){
+        this.init();
+      }
     }
 
     //update waveforms on zoom in out
@@ -60,14 +62,19 @@ export const TrackRowView = observer(class TrackRowView extends Component {
     //console.log('trackrowview updated')
     if(this.props.track.type !== "master"){
       if(this.props.track.type === "audio"){
-        //Region was modified
-        if(prevProps.region && this.props.region){
-          if(prevProps.region.start !== this.props.region.start || prevProps.region.end !== this.props.region.end){
-            this.init(true);
-            return;
+
+        //region was updated
+        //update all views or only 1st bar in edit view bars (limit async renderSVG to be called once)
+        if(!this.props.bar || this.props.bar === 1){
+          if(prevProps.region && this.props.region){
+            if(prevProps.region.start !== this.props.region.start || prevProps.region.end !== this.props.region.end){
+              this.init(true);
+              return;
+            }
           }
         }
       }
+      
       /*
       if(this.props.store.ui.viewMode === 'sequencer'){
         //perform individual prop checks here to only re-draw updated tracks?
@@ -339,25 +346,33 @@ export const TrackRowView = observer(class TrackRowView extends Component {
     if(!this.img)
       this.img = new Image();
 
-    if(!this.img.src || update){
-      renderSVG(buffer.toArray(0), '#' + svgId, imgWidth, this.canvasHeight).then(() => {
-        let svgDiv = document.getElementById('svgimg' + trackId);
-        if(svgDiv){
-          let svgImg = svgDiv.childNodes[0];
-          let svgData = (new XMLSerializer()).serializeToString(svgImg);
-          this.img.src = "data:image/svg+xml;base64," + btoa(svgData);
-
-          //Remove SVG from DOM
-          svgDiv.removeChild(svgImg);
-        }
-      });
+    if(!this.img.src || update || (this.props.bar && this.props.strSVG !== this.img.src)){
+      if(!this.props.bar || this.props.bar === 1){
+        renderSVG(buffer.toArray(0), '#' + svgId, imgWidth, this.canvasHeight).then(() => {
+          let svgDiv = document.getElementById('svgimg' + trackId);
+          if(svgDiv){
+            let svgImg = svgDiv.childNodes[0];
+            let svgData = (new XMLSerializer()).serializeToString(svgImg);
+            svgDiv.removeChild(svgImg);
+            this.img.src = "data:image/svg+xml;base64," + btoa(svgData);
+          }
+        });
+      }
+      else if(this.props.strSVG !== this.img.src){
+        this.img.src = this.props.strSVG;
+      }
     }
-    else{
+    else if(this.img.complete){
       this.drawAudioNote(this.img, buffer, duration, pattern, viewLength, squareWidth, imgWidth);
     }
 
     this.img.onload = () => {
-      this.drawAudioNote(this.img, buffer, duration, pattern, viewLength, squareWidth, imgWidth);
+      if(this.props.bar === 1){
+        this.props.setSVG(this.img.src)
+      }
+      else{
+        this.drawAudioNote(this.img, buffer, duration, pattern, viewLength, squareWidth, imgWidth);
+      }
     }
   }
 
