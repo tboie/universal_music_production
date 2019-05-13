@@ -381,10 +381,28 @@ export const TrackRowView = observer(class TrackRowView extends Component {
     let height = this.canvasHeight;
     let sorted = pattern.getSortedNotesAsc();
 
-    let currBar = this.props.bar-1 + ':0:0';
-    let nextBar= this.props.bar + ':0:0';
+    let currBar, nextBar;
     if(this.props.bar){
+      currBar = (this.props.bar - 1) + ':0:0';
+      nextBar = this.props.bar + ':0:0';
+
+      //check if previous bars note extend into current bar
+      let prevNote;
+      sorted.filter(n => Tone.Time(n.time) < Tone.Time(currBar)).reverse().some(n => {
+        if((Tone.Time(n.time) + Tone.Time(this.player.buffer.duration)) > Tone.Time(currBar)){
+          prevNote = n;
+          return true;
+        }
+        else{
+          return false;
+        }
+      })
+
       sorted = sorted.filter(n => Tone.Time(n.time) >= Tone.Time(currBar) && Tone.Time(n.time) < Tone.Time(nextBar));
+
+      //add to beginning of array
+      if(prevNote)
+        sorted.unshift(prevNote);
     }
 
     sorted.forEach(note => {
