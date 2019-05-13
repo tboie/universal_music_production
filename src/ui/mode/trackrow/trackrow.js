@@ -15,11 +15,9 @@ export const TrackRowView = observer(class TrackRowView extends Component {
   c;
   ctx;
   img;
-  regionUpdated;
   mStartPos;
   mStopPos;
   mouseHold;
-  bSelectedNote;
   id;
 
   componentDidMount(){
@@ -27,14 +25,18 @@ export const TrackRowView = observer(class TrackRowView extends Component {
       this.player = ToneObjs.instruments.find(inst => inst.track === this.props.track.id).obj;
 
       //force draw on first load
-      this.regionUpdated = true;
-      this.ensureBufferIsLoaded(this.player.buffer).then(() => this.init());
+      this.ensureBufferIsLoaded(this.player.buffer).then(() => {
+        this.init(true)
+      });
     }
     else if(this.props.track.type === "instrument"){
       this.init();
     }
 
-    document.getElementById("gridContainer").addEventListener("transitionend", () => { this.init(true) });
+    //update waveforms on zoom in out
+    document.getElementById("gridContainer").addEventListener("transitionend", () => { 
+      this.init(true) 
+    });
 
     interact("#canvas" + this.id).on('hold', event => {
       this.mouseHold = true;
@@ -55,155 +57,25 @@ export const TrackRowView = observer(class TrackRowView extends Component {
   }
 
   componentDidUpdate(prevProps){
-    //TODO: deal with updating sequencerview independtly?  if(viewMode === sequencer) (check mixmode too)
-    //lots of prop checks here so we don't update all trackrows in sequencerview
     //console.log('trackrowview updated')
-
-    if(prevProps.windowWidth !== this.props.windowWidth)
-      this.init();
-
     if(this.props.track.type !== "master"){
-
       if(this.props.track.type === "audio"){
-
-        //Region was added
-        if(!prevProps.region && this.props.region){
-          this.regionUpdated = true;
-          this.init();
-        }
-
         //Region was modified
         if(prevProps.region && this.props.region){
-          if(prevProps.region.start !== this.props.region.start 
-            || prevProps.region.end !== this.props.region.end){
-            this.regionUpdated = true;
-            this.init();
-          } else {
-            this.regionUpdated = false;
-          }
-        }
-
-        if(prevProps.playbackRate !== this.props.playbackRate){
-          this.init();
-        }
-
-        if(prevProps.bpm !== this.props.bpm){
-          this.init();
-        }
-
-        this.regionUpdated = false;
-      }
-
-      if(prevProps.songLength !== this.props.songLength){
-        this.init();
-        return;
-      }
-
-      if(prevProps.viewLength !== this.props.viewLength){
-        return;
-        //eventlistener used now above
-        /*
-        if(this.props.track.type === "instrument"){
-          this.init();
-          return;
-        }
-        */
-      }
-      
-      //same selected note before and after update
-      if(prevProps.selectedNote && this.props.selectedNote){
-        if(prevProps.selectedNote.id === this.props.selectedNote.id){
-          if(prevProps.selectedNoteDuration !== this.props.selectedNoteDuration || prevProps.selectedNoteOffset !== this.props.selectedNoteOffset){
-            this.init();
-            return;
-          }
-          //updated blank selectednote to same selectedkey (select key, create new note, select same key)
-          if(prevProps.selectedNoteValue !== this.props.selectedNoteValue && prevProps.selectedKey === this.props.selectedKey){
-            this.init();
+          if(prevProps.region.start !== this.props.region.start || prevProps.region.end !== this.props.region.end){
+            this.init(true);
             return;
           }
         }
       }
-
-      //update previous/current track containing selectednote
-      if(prevProps.selectedNote !== this.props.selectedNote){
-        if(this.props.selectedNote){
-          if(this.props.selectedNote.getPattern().track.id === this.props.track.id){
-            this.bSelectedNote = true;
-            //console.log('selected note this track '  + this.props.track.id)
-            this.init();
-            return;
-          }
-          else if(this.bSelectedNote){
-            //console.log('selected note was in this track, but not anymore: ' + this.props.track.id)
-            this.bSelectedNote = false;
-            this.init();
-            return;
-          }
-        }
-        //note was de-selected
-        else{
-          //console.log('no selected note right now and note was in this track prev: ' + this.props.track.id)
-          this.bSelectedNote = false;
-          this.init();
-          return;
-        }
-      }
-      
-      if(prevProps.selectedKey !== this.props.selectedKey){
-        if(this.props.selectedNote){
-          if(this.props.selectedNote.getPattern().track.id === this.props.track.id){
-            this.init();
-            return;
-          }
-        }
-      }
-
-      if(prevProps.selectedPattern !== this.props.selectedPattern){
-        if(prevProps.selectedPattern){
-          if(prevProps.selectedPattern.track.id === this.props.track.id){
-            this.init();
-            return;
-          }
-        }
-
-        if(this.props.selectedPattern){
-          if(this.props.selectedPattern.track.id === this.props.track.id){
-            this.init();
-            return;
-          }
-        }
-      }
-      //update quantization(resolution) change for this track's selected pattern
-      else if(prevProps.selectedPattern && this.props.selectedPattern){
-        if(this.props.selectedPattern.track.id === this.props.track.id){
-          if(prevProps.selectedPatternRes !== this.props.selectedPatternRes){
-            this.init();
-            return;
-          }
-          else if(prevProps.selectedPatternNotes !== this.props.selectedPatternNotes){
-            this.init();
-            return;
-          }
-        }
-      }
-
-      /*      
-      if(prevProps.notes !== this.props.notes){
-        console.log('notes changed for track; ' + this.props.track.id)
-        this.init();
+      /*
+      if(this.props.store.ui.viewMode === 'sequencer'){
+        //perform individual prop checks here to only re-draw updated tracks?
+        //is this necessary?
       }
       */
 
-      if(prevProps.selectedScene !== this.props.selectedScene){
-        this.init();
-        return;
-      }
-    
-      if(prevProps.selectedGroup !== this.props.selectedGroup){
-        this.init();
-        return;
-      }
+      this.init();
     }
   }
 
@@ -467,7 +339,7 @@ export const TrackRowView = observer(class TrackRowView extends Component {
     if(!this.img)
       this.img = new Image();
 
-    if(this.regionUpdated || !this.img.complete || !this.img.src || update){
+    if(!this.img.src || update){
       renderSVG(buffer.toArray(0), '#' + svgId, imgWidth, this.canvasHeight).then(() => {
         let svgDiv = document.getElementById('svgimg' + trackId);
         if(svgDiv){
