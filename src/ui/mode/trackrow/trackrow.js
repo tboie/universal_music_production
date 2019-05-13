@@ -287,7 +287,7 @@ export const TrackRowView = observer(class TrackRowView extends Component {
     viewSquares = parseInt(viewSquares.split(":")[0] * pattern.resolution, 10) + parseInt(viewSquares.split(":")[1] * (pattern.resolution/4), 10);
     let squareWidth = windowWidth / viewSquares;
 
-    let sorted = pattern.getSortedNotesAsc();
+    let sorted = pattern.getSortedNotesAsc().filter(n => !n.mute);
 
     let currBar, nextBar;
     if(this.props.bar){
@@ -314,7 +314,7 @@ export const TrackRowView = observer(class TrackRowView extends Component {
     }
 
     sorted.forEach(note => {
-      if(!note.mute && note.note){
+      if(note.note){
         if(note.note[0] !== '' || this.props.selectedNote === note){
           let x;
           if(this.props.bar){
@@ -397,7 +397,7 @@ export const TrackRowView = observer(class TrackRowView extends Component {
   drawAudioNote = (img, buffer, duration, pattern, viewLength, squareWidth, imgWidth) => {
     let ctx = this.ctx;
     let height = this.canvasHeight;
-    let sorted = pattern.getSortedNotesAsc();
+    let sorted = pattern.getSortedNotesAsc().filter(n => !n.mute);
 
     let currBar, nextBar;
     if(this.props.bar){
@@ -425,63 +425,61 @@ export const TrackRowView = observer(class TrackRowView extends Component {
 
     sorted.forEach(note => {
       //console.log('track: ' + this.id + ' dealing with note: ' + Tone.Time(note.time).toBarsBeatsSixteenths())
-      if(!note.mute){
-        let noteOffset = Tone.Time(pattern.resolution + 'n') * note.offset;
-        let x, xOffset;
-        
-        if(this.props.bar){
-          let barOffset = Tone.Time(note.time) - Tone.Time(currBar);
-          x = barOffset / Tone.Time(viewLength) * this.props.windowWidth;
-          xOffset = (barOffset + noteOffset) / Tone.Time(viewLength) * this.props.windowWidth;
+      let noteOffset = Tone.Time(pattern.resolution + 'n') * note.offset;
+      let x, xOffset;
+      
+      if(this.props.bar){
+        let barOffset = Tone.Time(note.time) - Tone.Time(currBar);
+        x = barOffset / Tone.Time(viewLength) * this.props.windowWidth;
+        xOffset = (barOffset + noteOffset) / Tone.Time(viewLength) * this.props.windowWidth;
+      }
+      else{
+        x = Tone.Time(note.time) / Tone.Time(viewLength) * this.props.windowWidth;
+        xOffset = (Tone.Time(note.time) + noteOffset) / Tone.Time(viewLength) * this.props.windowWidth;
+      }
+
+      //Draw square
+      if(this.props.selectedNote === note)
+        ctx.fillStyle = '#065ae0';
+      else 
+        ctx.fillStyle = '#133e83';
+      
+      ctx.fillRect(x, 0, squareWidth, height);
+
+      //draw border separator lines
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(xOffset, 0, 1, height);
+      //ctx.fillRect(x + noteWidth, 0, 1, height);
+      
+      let widthDelta = 0;
+      let noteTimeDelta = 0;
+      let cutDuration = (buffer.duration * note.duration) / this.props.playbackRate;
+
+      sorted.some(n2 => {
+        if(Tone.Time(n2.time) > Tone.Time(note.time) && !n2.mute){
+          //seconds between notes
+          let n2Offset = Tone.Time(pattern.resolution + 'n') * n2.offset;
+          noteTimeDelta = (Tone.Time(n2.time) - Tone.Time(note.time)) - noteOffset + n2Offset;
+          if(cutDuration >= noteTimeDelta){
+            //sample seconds - note delta seconds to pixels
+            widthDelta = ((duration - noteTimeDelta) / Tone.Time(viewLength)) * this.props.windowWidth;
+            return true;
+          }
+        }
+        return false;
+      })
+
+      if(cutDuration > noteTimeDelta && noteTimeDelta !== 0){
+        let percent = noteTimeDelta / duration;
+        ctx.drawImage(img, 0, 0, img.width * percent, height, xOffset, 0, imgWidth - widthDelta, height);
+      }
+      else{
+        if(note.duration < 1){
+          widthDelta = ((duration - cutDuration) / Tone.Time(viewLength)) * this.props.windowWidth;
+          ctx.drawImage(img, 0, 0, img.width * note.duration, height, xOffset, 0, imgWidth - widthDelta, height);
         }
         else{
-          x = Tone.Time(note.time) / Tone.Time(viewLength) * this.props.windowWidth;
-          xOffset = (Tone.Time(note.time) + noteOffset) / Tone.Time(viewLength) * this.props.windowWidth;
-        }
-
-        //Draw square
-        if(this.props.selectedNote === note)
-          ctx.fillStyle = '#065ae0';
-        else 
-          ctx.fillStyle = '#133e83';
-        
-        ctx.fillRect(x, 0, squareWidth, height);
-
-        //draw border separator lines
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(xOffset, 0, 1, height);
-        //ctx.fillRect(x + noteWidth, 0, 1, height);
-        
-        let widthDelta = 0;
-        let noteTimeDelta = 0;
-        let cutDuration = (buffer.duration * note.duration) / this.props.playbackRate;
-
-        sorted.some(n2 => {
-          if(Tone.Time(n2.time) > Tone.Time(note.time) && !n2.mute){
-            //seconds between notes
-            let n2Offset = Tone.Time(pattern.resolution + 'n') * n2.offset;
-            noteTimeDelta = (Tone.Time(n2.time) - Tone.Time(note.time)) - noteOffset + n2Offset;
-            if(cutDuration >= noteTimeDelta){
-              //sample seconds - note delta seconds to pixels
-              widthDelta = ((duration - noteTimeDelta) / Tone.Time(viewLength)) * this.props.windowWidth;
-              return true;
-            }
-          }
-          return false;
-        })
-
-        if(cutDuration > noteTimeDelta && noteTimeDelta !== 0){
-          let percent = noteTimeDelta / duration;
-          ctx.drawImage(img, 0, 0, img.width * percent, height, xOffset, 0, imgWidth - widthDelta, height);
-        }
-        else{
-          if(note.duration < 1){
-            widthDelta = ((duration - cutDuration) / Tone.Time(viewLength)) * this.props.windowWidth;
-            ctx.drawImage(img, 0, 0, img.width * note.duration, height, xOffset, 0, imgWidth - widthDelta, height);
-          }
-          else{
-            ctx.drawImage(img, xOffset, 0, imgWidth, height);
-          }
+          ctx.drawImage(img, xOffset, 0, imgWidth, height);
         }
       }
     })
