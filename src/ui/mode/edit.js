@@ -538,13 +538,19 @@ const EditViewGraph = observer(class EditViewGraph extends Component {
           selectedNoteOffset={this.props.store.ui.getSelectedNoteOffset()}
         />
       }
+
+      let timeline, playhead;
+      if(this.props.track.type !== 'master'){
+        timeline = <GridTimeline selectedScene={this.props.store.ui.selectedScene} ui={this.props.store.ui} windowWidth={this.props.store.ui.windowWidth}/>
+        playhead = <div className="progressLine" id="playhead"></div>;
+      }
   
       let sizes = store.ui.getGridSizes();
       return (
         <div id="gridParent" style={{width: sizes.parent.width, left: sizes.parent.left}}>
           <div className="divBody" id="gridContainer" style={{width: sizes.container.width, left: sizes.container.left}}>
-            <GridTimeline selectedScene={this.props.store.ui.selectedScene} ui={this.props.store.ui} windowWidth={this.props.store.ui.windowWidth}/>
-            <div className="progressLine" id="playhead"></div>
+            { timeline }
+            { playhead }
             { trackRow }
           </div>
           <div id='divEditViewBG' style={{width: store.ui.windowWidth + 'px'}}>
