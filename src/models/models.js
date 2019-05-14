@@ -3825,11 +3825,16 @@ const UI = types.model("UI", {
                     self.selectNote(undefined);
                 }
             }
-
-            self.selectPattern(store.getPatternByTrackScene(self.selectedTrack.id, self.selectedScene.id).id)
-            
-            if(Tone.Time(self.viewLength) > Tone.Time('1:0:0'))
-                self.setViewLength('1:0:0');
+            if(self.selectedTrack.type !== 'master'){
+                self.selectPattern(store.getPatternByTrackScene(self.selectedTrack.id, self.selectedScene.id).id)
+                
+                if(Tone.Time(self.viewLength) > Tone.Time('1:0:0'))
+                    self.setViewLength('1:0:0');
+            }
+            else{
+                if(self.views.edit.mode !== 'graph')
+                    self.views.edit.toggleMode('graph')
+            }
             
             self.viewMode = "edit";
         }
