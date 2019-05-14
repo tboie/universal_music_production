@@ -190,7 +190,13 @@ export const TrackRowView = observer(class TrackRowView extends Component {
           let tSplit = Tone.Time(clickSecs).toBarsBeatsSixteenths().split(":");
           let sixteenths = tSplit[2];
           
-          if(pattern.resolution === 16){
+          if(pattern.resolution === 8){
+            if(parseFloat(sixteenths) < 2)
+              sixteenths = 0;
+            else 
+              sixteenths = 2;
+          }
+          else if(pattern.resolution === 16){
             sixteenths = Math.floor(sixteenths);
           }
           else if(pattern.resolution === 32){
