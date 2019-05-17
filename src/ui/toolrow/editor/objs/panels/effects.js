@@ -262,7 +262,7 @@ export const UIReverb = observer(class UIReverb extends Component{
       <div className='divToolRowEditorContainer'>
         <UIEditorHeader obj={this.obj} type={this.props.type}/>
         <UICustomRangeControl obj={this.obj} propName={'decay'} min={0.1} max={4} mode={'range'} step={null} density={1} numType={'float'} signal={false}/>
-        <UICustomRangeControl obj={this.obj} propName={'preDelay'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={false}/>
+        <UICustomRangeControl obj={this.obj} propName={'preDelay'} min={0.01} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={false}/>
         <UICustomRangeControl obj={this.obj} propName={'wet'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
       </div>
     )
