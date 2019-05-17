@@ -295,7 +295,7 @@ export const UIMultibandSplit = observer(class UIMultibandSplit extends Componen
         { 
           this.arrSections.map(section => {
             if(section !== 'main'){
-              return <div style={{display:this.getDisplay(section)}}>
+              return <div key={this.props.objId + '_' + section} style={{display:this.getDisplay(section)}}>
                         <UICustomRangeControl obj={this.obj} propName='Q' min={0} max={10} mode={'steps'} step={1} density={10} numType={'integer'} signal={true} child={section}/>
                         <UIFilterTypeControl obj={this.obj} propName={"type"}  child={section}/>
                         <UICustomRangeControl obj={this.obj} propName='frequency' min={0} max={10000} mode={'range'} step={null} density={1} numType={'float'} signal={true} child={section}/>
