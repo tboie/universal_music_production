@@ -1,7 +1,6 @@
 import Tone from 'tone';
 import { ToneObjs } from '../models/models.js';
 import { store } from '../data/store.js';
-import { transposeBy } from 'tonal-distance';
 
 let btDevice, btCharacteristic;
 const serviceId = '03B80E5A-EDE8-4B33-A751-6CE34EC4C700'.toLowerCase();
