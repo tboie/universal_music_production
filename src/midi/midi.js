@@ -6,7 +6,7 @@ let btDevice, btCharacteristic;
 const serviceId = '03B80E5A-EDE8-4B33-A751-6CE34EC4C700'.toLowerCase();
 const characteristicId = '7772E5DB-3868-4112-A1A9-F2669D106BF3'.toLowerCase();
 
-/*   testing
+/*   testing 
 document.addEventListener('mousedown', async() => {
     if(!btDevice)
         await initBLE();
@@ -33,23 +33,68 @@ function onMIDIFailure() {
 
 function getMIDIMessage(message) {
     var command = message.data[0];
-    var note = message.data[1];
+    var val = message.data[1];
     var velocity = message.data[2];
 
     switch (command) {
+        case 176:
+            changeRate(velocity);
+            break;
         case 144:
-            noteOn(note);
+            noteOn(val);
             break;
         case 128:
-            noteOff(note);
+            noteOff(val);
             break;
         default:
             break;
     }
 }
 
+//map num range to new range
+function mapVal (num, in_min, in_max, out_min, out_max) {
+    return (num - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
+
+const changeRate = (val) => {
+    store.getTracksByGroup(store.ui.selectedGroup).forEach((track, idx) => {
+        if(track.type === "audio"){
+            let row = ToneObjs.instruments.find(i => i.track === track.id);
+            if(row){
+                let newVal = mapVal(val, 0, 127, 0, 2);
+                row.obj.playbackRate = newVal;
+            }
+        }
+    });
+}
 
 const noteOn = (note) => {
+    let selectedTrack;
+    store.getTracksByGroup(store.ui.selectedGroup).forEach((track, idx) => {
+        if(note-60 === idx){
+            if(track.type === "audio"){
+                selectedTrack = track;
+            }
+        }
+        else{
+            if(track.type === "audio"){
+                let row = ToneObjs.instruments.find(i => i.track === track.id);
+                if(row){
+                    row.obj.stop();
+                }
+            }
+        }
+    })
+
+    if(selectedTrack){
+        let row = ToneObjs.instruments.find(i => i.track === selectedTrack.id);
+        if(row){
+            row.obj.start();
+        }
+    }
+
+
+    /*
     if(store.ui.selectedTrack){
         ToneObjs.instruments.filter(o => o.track === store.ui.selectedTrack.id).forEach(function(row){
             if(row.obj){
@@ -72,9 +117,11 @@ const noteOn = (note) => {
             }
         });
     }
+    */
 }
 
-const noteOff = (note) => { 
+const noteOff = (note) => {
+    /*
     ToneObjs.instruments.filter(o => o.track === store.ui.selectedTrack.id).forEach(function(row){
         if(row.obj){
             let type = row.id.split('_')[0];
@@ -87,6 +134,7 @@ const noteOff = (note) => {
             }
         }
     });
+    */
 }
 
 /*******************************
