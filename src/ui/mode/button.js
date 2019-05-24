@@ -137,8 +137,10 @@ export const GridButtonView = observer(class ButtonView extends Component {
             let tNow = new Date().getTime(), percent = 0;
             let tDelta = ((this.tStart - tNow) / 1000) * -1;
             
-            if(tDelta < player.buffer.duration)
-              percent = (tDelta / player.buffer.duration) * 100
+            let duration = player.buffer.duration / player.playbackRate;
+
+            if(tDelta < duration)
+              percent = (tDelta / duration) * 100;
 
             this.tStart = new Date().getTime();
 
@@ -147,12 +149,12 @@ export const GridButtonView = observer(class ButtonView extends Component {
               this.divProgress.style.animation = 'none';
               window.requestAnimationFrame(time => {
                 window.requestAnimationFrame(time => {
-                  this.divProgress.style.animation = 'progressWidth ' + player.buffer.duration + 's linear';
+                  this.divProgress.style.animation = 'progressWidth ' + duration + 's linear';
                 });
               });
             }
             else{
-              this.divProgress.style.animation = 'progressWidth ' + player.buffer.duration + 's linear';
+              this.divProgress.style.animation = 'progressWidth ' + duration + 's linear';
             }
 
             
