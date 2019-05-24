@@ -80,7 +80,11 @@ const noteOn = (note) => {
             if(track.type === "audio"){
                 let row = ToneObjs.instruments.find(i => i.track === track.id);
                 if(row){
-                    row.obj.stop();
+                    if(row.obj){
+                        if(row.obj.buffer.loaded){
+                            row.obj.stop();
+                        }
+                    }
                 }
             }
         }
@@ -102,7 +106,11 @@ const noteOn = (note) => {
         else{
             let row = ToneObjs.instruments.find(i => i.track === selectedTrack.id);
             if(row){
-                row.obj.start();
+                if(row.obj){
+                    if(row.obj.buffer.loaded){
+                        row.obj.start();
+                    }
+                }
             }
         }
     }

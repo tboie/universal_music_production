@@ -131,7 +131,7 @@ export const GridButtonView = observer(class ButtonView extends Component {
           },
         })
         .on('down', event => {
-          if(player && !this.props.store.ui.editMode){
+          if(player && !this.props.store.ui.editMode && player.buffer.loaded){
             player.start(Tone.context.currentTime);
 
             let tNow = new Date().getTime(), percent = 0;
