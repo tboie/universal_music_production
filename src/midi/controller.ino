@@ -239,7 +239,7 @@ void loop()
     //Serial.println(average);
     prevAverage = average;
     
-    int mappedAvg = map(average, 0, 940, 0, 127);
+    int mappedAvg = map(average, 0, 940, 1, 127);
     //Serial.println(mappedAvg);
     MIDI.sendControlChange(1, mappedAvg, 1);
   }    
