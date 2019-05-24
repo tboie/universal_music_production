@@ -46,26 +46,25 @@ BLEMidi blemidi; // midi
 MIDI_CREATE_DEFAULT_INSTANCE();
 
 const int pots[] = {PIN_A0, PIN_A1, PIN_A2, PIN_A3}; 
-//float mv_per_lsb = 3600.0F/1024.0F; // 10-bit ADC with 3.6V input range
 
+//board
 const int pins[] = {28, 29, 12, 13, 14, 8, 20, 16, 15, 7, 11, 30, 27};
 int states1[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 const int notes1[] = {69, 73, 74, 75, 67, 66, 65, 70, 71, 60, 64, 68, 72};
 
+//mcp chip
 const int pinsmcp[] = {0, 1, 2, 3, 4, 5, 6, 7};
 int states2[] = {0, 0, 0, 0, 0, 0, 0, 0};
 const int notes2[] = {0, 1, 2, 3, 4, 62, 63, 61};
 
-#define TOLERANCE 5
-int oldPotVal = 0;
+//Pot Smoothing
+const int numReadings = 10;
+int readings[numReadings];      // the readings from the analog input
+int readIndex = 0;              // the index of the current reading
+int total = 0;                  // the running total
+int average = 0;                // the average
+int prevAverage = -1;           // prev average used for bounds padding
 
-/*
-byte note_sequence[] = {
-  74,78,81,86,90,93,98,102,57,61,66,69,73,78,81,85,88,92,97,100,97,92,88,85,81,78,
-  74,69,66,62,57,62,66,69,74,78,81,86,90,93,97,102,97,93,90,85,81,78,73,68,64,61,
-  56,61,64,68,74,78,81,86,90,93,98,102
-};
-*/
 
 void setup()
 {
@@ -84,6 +83,10 @@ void setup()
   for (int thisPin = 0; thisPin < 8; thisPin++) {
     mcp.pinMode(pinsmcp[thisPin], INPUT);
     mcp.pullUp(pinsmcp[thisPin], HIGH);  // turn on a 100K pullup internally
+  }
+
+  for (int thisReading = 0; thisReading < numReadings; thisReading++) {
+    readings[thisReading] = 0;
   }
 
   Serial.println("Adafruit Bluefruit52 MIDI over Bluetooth LE Example");
@@ -212,37 +215,36 @@ void loop()
       }
     }
   }
-  
-  /*
-  //btnState = mcp.digitalRead(0);
-  //btnState = digitalRead(btnPin);
-  if (btnState == LOW) {
-    //Serial.println(btnState);
-  } else {
-    //Serial.println(btnState);
+
+  // subtract the last reading:
+  total = total - readings[readIndex];
+  // read from the sensor:
+  readings[readIndex] = analogRead(pots[0]);
+  // add the reading to the total:
+  total = total + readings[readIndex];
+  // advance to the next position in the array:
+  readIndex = readIndex + 1;
+
+  // if we're at the end of the array...
+  if (readIndex >= numReadings) {
+    // ...wrap around to the beginning:
+    readIndex = 0;
   }
-  */
-  
-  int potVal = map(analogRead(pots[0]), 0, 940, 0, 127);
-  //MIDI.sendControlChange(1, potVal, 1);
-  //int potVal = analogRead(pots[1]);
-  //Serial.println(potVal);
-  //Serial.print(" [");
-  //Serial.print((float)potVal * mv_per_lsb);
-  //Serial.println(" mV]");
 
-  delay(25);
-  
-  int diff = abs(potVal - oldPotVal);
-  
-  if(diff > TOLERANCE)
-  {
-      oldPotVal = potVal; // only save if the val has changed enough to avoid slowly drifting
-      MIDI.sendControlChange(1, potVal, 1);
-  }     
-  
+  // calculate the average:
+  average = total / numReadings;
 
-  //delay(25);
+  // create bounds padding for varying values
+  if ((average + 5) <= prevAverage || (average - 5) >= prevAverage) {
+    //Serial.println(average);
+    prevAverage = average;
+    
+    int mappedAvg = map(average, 0, 940, 0, 127);
+    //Serial.println(mappedAvg);
+    MIDI.sendControlChange(1, mappedAvg, 1);
+  }    
+
+  delay(3);
 }
 
 
