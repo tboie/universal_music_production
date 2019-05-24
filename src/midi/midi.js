@@ -15,7 +15,7 @@ document.addEventListener('mousedown', async() => {
 
 export function initMidi(){
     if (navigator.requestMIDIAccess) {
-        navigator.requestMIDIAccess().then(onMIDISuccess, onMIDIFailure);
+        navigator.requestMIDIAccess({ sysex: true }).then(onMIDISuccess, onMIDIFailure);
     } else {
         console.log('WebMIDI is not supported in this browser.');
     }
@@ -32,9 +32,16 @@ function onMIDIFailure() {
 }
 
 function getMIDIMessage(message) {
-    var command = message.data[0];
-    var val = message.data[1];
-    var velocity = message.data[2];
+    let command, val, velocity;
+
+    if(message.data.length === 3){
+        command = message.data[0];
+        val = message.data[1];
+        velocity = message.data[2];
+    }
+    else if(message.data.length === 6){
+        command = "TransportChange";
+    }
 
     switch (command) {
         case 176:
@@ -46,8 +53,28 @@ function getMIDIMessage(message) {
         case 128:
             noteOff(val);
             break;
+        case "TransportChange":
+            TransportChange(message);
+            break;
         default:
             break;
+    }
+}
+
+const TransportChange = (msg) => {
+    let eleButton, action = msg.data[4];
+    
+    if(action === 2){
+        eleButton = document.getElementById('btnTransportTogglePlay');
+        if(eleButton){
+            eleButton.click();
+        }
+    }
+    else if(action === 40){
+        eleButton = document.getElementById('btnTransportToggleRecord');
+        if(eleButton){
+            eleButton.click();
+        }
     }
 }
 

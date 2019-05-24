@@ -12,8 +12,7 @@
  any redistribution
 
 
-
-button layout:
+device button layout:
 
 7, MCP 7, MCP 5, MCP6
 11, 20, 8, 14
@@ -41,6 +40,14 @@ Adafruit_MCP23008 mcp;
 BLEDis  bledis;  // device information
 BLEBas  blebas;  // battery
 BLEMidi blemidi; // midi
+
+/* real time messages
+using namespace midi;
+MidiType midiStart = Start;
+*/
+
+byte TransportStart[6] = {0xf0, 0x7f, 0x7f, 0x6, 0x2, 0xf7};
+byte TransportRecord[6] = {0xf0, 0x7f, 0x7f, 0x6, 0x28, 0xf7};
 
 //MIDI_CREATE_BLE_INSTANCE(blemidi);
 MIDI_CREATE_DEFAULT_INSTANCE();
@@ -198,7 +205,15 @@ void loop()
   for (int thisPin = 0; thisPin < 8; thisPin++) {
     if(mcp.digitalRead(pinsmcp[thisPin]) == LOW){
       if(states2[thisPin] == 0){
-        MIDI.sendNoteOn(notes2[thisPin], 127, 1);
+        if(thisPin > 4){
+          MIDI.sendNoteOn(notes2[thisPin], 127, 1);
+        }
+        else if(thisPin == 0){
+          MIDI.sendSysEx(6, TransportStart);       
+        }
+         else if(thisPin == 1){
+          MIDI.sendSysEx(6, TransportRecord);       
+        }
         
         states2[thisPin] = 1;
         //Serial.print("MCP ON");
@@ -207,7 +222,12 @@ void loop()
     }
     else{
       if(states2[thisPin] == 1){
-        MIDI.sendNoteOff(notes2[thisPin], 0, 1);
+        if(thisPin > 4){        
+          MIDI.sendNoteOff(notes2[thisPin], 0, 1);
+        }
+        else{
+          
+        }
         
         states2[thisPin] = 0;
         //Serial.print("MCP OFF");

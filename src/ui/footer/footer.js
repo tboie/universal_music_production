@@ -139,19 +139,17 @@ export const FooterView = observer(class FooterView extends Component{
       else
         (this.props.viewMode === "sequencer") ? iconView = "view_module" : iconView = "reorder";
   
-      /* uncomment when feature added
       let iconRed = '';
       if(this.props.store.ui.recordMode)
         iconRed = ' colorRed';
-      */
       
       return (
         <div id="divFooter" className="divFooter" style={{height:height + 'px', width: this.props.store.ui.windowWidth + 'px'}}>
           <div className="divTransportControls">
             { /* <button onClick={this.toggleMixMode} style={{position:'absolute', left:0 , height:'100%', backgroundColor:'transparent', border:0}}><i className="material-icons">assessment</i></button> */ }
             <button onClick={this.toggleViewMode} style={{position:'absolute', left:'0px' , height:'100%', backgroundColor:'transparent', border:0}}><i className="material-icons i-36">{iconView}</i></button>
-            { /* <button onClick={this.toggleRecordMode} style={{height:'100%', width:'50px', backgroundColor:'transparent', border:0}}><i id="iconRecord" className={"material-icons i-36" + iconRed}>fiber_manual_record</i></button> */ }
-            <button onClick={this.togglePlay} style={{height:'100%', width:'50px', backgroundColor:'transparent', border:0}}><i id="iconPlay" className="material-icons i-36">play_arrow</i></button>
+            <button id="btnTransportToggleRecord" onClick={this.toggleRecordMode} style={{height:'100%', width:'50px', backgroundColor:'transparent', border:0}}><i id="iconRecord" className={"material-icons i-36" + iconRed}>fiber_manual_record</i></button>
+            <button id="btnTransportTogglePlay" onClick={this.togglePlay} style={{height:'100%', width:'50px', backgroundColor:'transparent', border:0}}><i id="iconPlay" className="material-icons i-36">play_arrow</i></button>
             <button onClick={this.toggleSettings} style={{position:'absolute', right:0 , height:'100%', backgroundColor:'transparent', border:0}}><i className="material-icons i-36">settings_applications</i></button>
           </div>
           <div className="divFooterSettings" style={vDisplay}>
