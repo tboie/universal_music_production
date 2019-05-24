@@ -29,18 +29,9 @@ export const GridButtonView = observer(class ButtonView extends Component {
     }
     
     render() {
-      if(!this.props.selectedTrack){
-        let firstTrack = this.props.store.tracks.find(t => t.group === this.props.selectedGroup);
-        if(firstTrack)
-          store.ui.selectTrack(firstTrack.id)
-      }
-      
       let trackRow = null;
       if(this.props.selectedTrack){
         if(this.props.selectedTrack.group === this.props.store.ui.selectedGroup){
-          if(!this.props.store.ui.mixMode)
-            this.props.store.ui.toggleMixMode();
-  
           let track = this.props.selectedTrack;
           trackRow = <TrackRowView key={track.id} keyValue={track.id} 
             store={this.props.store} sample={track.sample} 
