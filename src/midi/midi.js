@@ -87,9 +87,23 @@ const noteOn = (note) => {
     })
 
     if(selectedTrack){
-        let row = ToneObjs.instruments.find(i => i.track === selectedTrack.id);
-        if(row){
-            row.obj.start();
+        // button view gridbutton mouse down
+        if(store.ui.viewMode === 'button' && store.ui.selectedGroup === selectedTrack.group){
+            let eleButton = document.getElementById('divGridButton_' + selectedTrack.id);
+            if(eleButton){
+                if(document.createEvent){
+                    eleButton.dispatchEvent(new PointerEvent("pointerdown", {
+                        bubbles: true,
+                    }));
+                }
+            }
+        }
+        // other views
+        else{
+            let row = ToneObjs.instruments.find(i => i.track === selectedTrack.id);
+            if(row){
+                row.obj.start();
+            }
         }
     }
 
