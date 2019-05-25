@@ -94,8 +94,11 @@ function changeRate(val){
         if(track.type === "audio"){
             let row = ToneObjs.instruments.find(i => i.track === track.id);
             if(row){
-                /*  update DOM since no mixrow model in MST
                 let newVal = mapVal(val, 0, 127, 0, 2);
+                if(row.obj)
+                    row.obj.playbackRate = newVal;
+                
+                /*  update DOM since no mixrow model in MST
                 let eleMixBtn = document.getElementById('btnMixLevel_' + track.id);
                 if(eleMixBtn){
                     while(eleMixBtn.getAttribute('data-mix-selection') !== 'Spd'){
@@ -125,9 +128,6 @@ function changeRate(val){
                     //store.instruments.getPlayerByTrack(track.id).setPropVal('playbackRate', parseFloat(newVal));
                 }
                 */
-                
-                if(row.obj)
-                    row.obj.playbackRate = newVal;
             }
         }
     });
