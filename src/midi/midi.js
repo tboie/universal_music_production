@@ -44,7 +44,13 @@ function getMIDIMessage(message) {
         velocity = message.data[2];
     }
     else if(message.data.length === 6){
-        command = "TransportChange";
+        val = message.data[4].toString(16)
+        if(val >= 41 && val <= 44){
+            command = "GroupChange";
+        }
+        else{
+            command = "TransportChange";
+        }
     }
 
     switch (command) {
@@ -61,8 +67,31 @@ function getMIDIMessage(message) {
         case "TransportChange":
             TransportChange(message);
             break;
+        case "GroupChange":
+            GroupChange(hex_to_ascii(val));
+            break
         default:
             break;
+    }
+}
+
+function hex_to_ascii(str1){
+	var hex  = str1.toString();
+	var str = '';
+	for (var n = 0; n < hex.length; n += 2) {
+		str += String.fromCharCode(parseInt(hex.substr(n, 2), 16));
+	}
+	return str;
+ }
+
+function mapVal (num, in_min, in_max, out_min, out_max) {
+    return (num - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
+
+
+const GroupChange = (group) => {
+    if(store.ui.selectedGroup !== group){
+        store.ui.selectGroup(group);
     }
 }
 
@@ -81,11 +110,6 @@ const TransportChange = (msg) => {
             eleButton.click();
         }
     }
-}
-
-//map num range to new range
-function mapVal (num, in_min, in_max, out_min, out_max) {
-    return (num - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
 //let potTimeout;
