@@ -7,6 +7,7 @@ import { store } from '../../../data/store.js';
 import { renderSVG } from "../../utils.js";
 import { MixRowView } from "./mixrow.js";
 import { MixRowViewEdit } from "./mixrowedit.js";
+import * as debounce from 'lodash/debounce';
 
 
 export const TrackRowView = observer(class TrackRowView extends Component {
@@ -79,6 +80,15 @@ export const TrackRowView = observer(class TrackRowView extends Component {
       if(this.props.store.ui.viewMode === 'sequencer'){
         //perform individual prop checks here to only re-draw updated tracks?
         //is this necessary?
+      }
+      */
+
+      /*
+      let debounceInit = debounce(this.init, 1000);
+      if(prevProps.playbackRate !== this.props.playbackRate){
+        console.log('PLAYBACKRATE UPDATED track: ' + this.props.track.id);
+        debounceInit();
+        return;
       }
       */
 

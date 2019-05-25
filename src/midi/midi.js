@@ -1,6 +1,8 @@
 import Tone from 'tone';
 import { ToneObjs } from '../models/models.js';
 import { store } from '../data/store.js';
+import * as throttle from 'lodash/throttle';
+
 
 let btDevice, btCharacteristic;
 const serviceId = '03B80E5A-EDE8-4B33-A751-6CE34EC4C700'.toLowerCase();
@@ -31,6 +33,8 @@ function onMIDIFailure() {
     console.log('Could not access your MIDI devices.');
 }
 
+
+//var throttleRateChange = throttle(changeRate, 10);
 function getMIDIMessage(message) {
     let command, val, velocity;
 
@@ -45,6 +49,7 @@ function getMIDIMessage(message) {
 
     switch (command) {
         case 176:
+            //throttleRateChange(velocity);
             changeRate(velocity);
             break;
         case 144:
@@ -63,7 +68,7 @@ function getMIDIMessage(message) {
 
 const TransportChange = (msg) => {
     let eleButton, action = msg.data[4];
-    
+
     if(action === 2){
         eleButton = document.getElementById('btnTransportTogglePlay');
         if(eleButton){
@@ -83,13 +88,46 @@ function mapVal (num, in_min, in_max, out_min, out_max) {
     return (num - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
-const changeRate = (val) => {
+//let potTimeout;
+function changeRate(val){
     store.getTracksByGroup(store.ui.selectedGroup).forEach((track, idx) => {
         if(track.type === "audio"){
             let row = ToneObjs.instruments.find(i => i.track === track.id);
             if(row){
+                /*  update DOM since no mixrow model in MST
                 let newVal = mapVal(val, 0, 127, 0, 2);
-                row.obj.playbackRate = newVal;
+                let eleMixBtn = document.getElementById('btnMixLevel_' + track.id);
+                if(eleMixBtn){
+                    while(eleMixBtn.getAttribute('data-mix-selection') !== 'Spd'){
+                        eleMixBtn.click();
+                    }
+                    
+                    let eleMixSlider = document.getElementById('volSlider' + track.id);
+                    if(eleMixSlider){
+                        let evtdown = new MouseEvent('mousedown', { bubbles: true });
+                        eleMixSlider.dispatchEvent(evtdown);
+
+                        eleMixSlider.value = newVal;
+                        
+                        let evt = new Event('change', { bubbles: true });
+                        eleMixSlider.dispatchEvent(evt);
+
+                        clearTimeout(potTimeout);
+                        
+                        potTimeout = setTimeout(() => { 
+                            let evtup = new MouseEvent('mouseup', { bubbles: true });
+                            eleMixSlider.dispatchEvent(evtup);
+                        }, 1500);
+                    }                 
+                }
+                else{
+                    //console.log('setting val to: ' + newVal);
+                    //store.instruments.getPlayerByTrack(track.id).setPropVal('playbackRate', parseFloat(newVal));
+                }
+                */
+                
+                if(row.obj)
+                    row.obj.playbackRate = newVal;
             }
         }
     });
