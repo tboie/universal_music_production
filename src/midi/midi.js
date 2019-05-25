@@ -3,7 +3,6 @@ import { ToneObjs } from '../models/models.js';
 import { store } from '../data/store.js';
 import * as throttle from 'lodash/throttle';
 
-
 let btDevice, btCharacteristic;
 const serviceId = '03B80E5A-EDE8-4B33-A751-6CE34EC4C700'.toLowerCase();
 const characteristicId = '7772E5DB-3868-4112-A1A9-F2669D106BF3'.toLowerCase();
@@ -34,7 +33,9 @@ function onMIDIFailure() {
 }
 
 
-//var throttleRateChange = throttle(changeRate, 10);
+//throttle when changing player model (redraws trackrowview)
+let throttlePlayerModelRateChange = throttle(changePlayerModelRate, 50);
+
 function getMIDIMessage(message) {
     let command, val, velocity;
 
@@ -55,8 +56,9 @@ function getMIDIMessage(message) {
 
     switch (command) {
         case 176:
-            //throttleRateChange(velocity);
-            changeRate(velocity);
+            val = parseFloat(mapVal(velocity, 0, 127, 0, 2).toFixed(2));
+            throttlePlayerModelRateChange(val);
+            changePlayerRate(val);
             break;
         case 144:
             noteOn(val);
@@ -76,18 +78,17 @@ function getMIDIMessage(message) {
 }
 
 function hex_to_ascii(str1){
-	var hex  = str1.toString();
-	var str = '';
-	for (var n = 0; n < hex.length; n += 2) {
+	let hex  = str1.toString();
+	let str = '';
+	for (let n = 0; n < hex.length; n += 2) {
 		str += String.fromCharCode(parseInt(hex.substr(n, 2), 16));
 	}
 	return str;
- }
+}
 
 function mapVal (num, in_min, in_max, out_min, out_max) {
     return (num - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
-
 
 const GroupChange = (group) => {
     if(store.ui.selectedGroup !== group){
@@ -112,46 +113,25 @@ const TransportChange = (msg) => {
     }
 }
 
-//let potTimeout;
-function changeRate(val){
+function changePlayerModelRate(val){
+    store.getTracksByGroup(store.ui.selectedGroup).forEach((track, idx) => {
+        if(track.type === "audio"){
+            let player = store.instruments.getPlayerByTrack(track.id);
+            if(player.playbackRate !== val){
+                player.setModelPlaybackRate(val);
+            }
+        }
+    });
+}
+
+function changePlayerRate(val){
     store.getTracksByGroup(store.ui.selectedGroup).forEach((track, idx) => {
         if(track.type === "audio"){
             let row = ToneObjs.instruments.find(i => i.track === track.id);
             if(row){
-                let newVal = mapVal(val, 0, 127, 0, 2);
-                if(row.obj)
-                    row.obj.playbackRate = newVal;
-                
-                /*  update DOM since no mixrow model in MST
-                let eleMixBtn = document.getElementById('btnMixLevel_' + track.id);
-                if(eleMixBtn){
-                    while(eleMixBtn.getAttribute('data-mix-selection') !== 'Spd'){
-                        eleMixBtn.click();
-                    }
-                    
-                    let eleMixSlider = document.getElementById('volSlider' + track.id);
-                    if(eleMixSlider){
-                        let evtdown = new MouseEvent('mousedown', { bubbles: true });
-                        eleMixSlider.dispatchEvent(evtdown);
-
-                        eleMixSlider.value = newVal;
-                        
-                        let evt = new Event('change', { bubbles: true });
-                        eleMixSlider.dispatchEvent(evt);
-
-                        clearTimeout(potTimeout);
-                        
-                        potTimeout = setTimeout(() => { 
-                            let evtup = new MouseEvent('mouseup', { bubbles: true });
-                            eleMixSlider.dispatchEvent(evtup);
-                        }, 1500);
-                    }                 
+                if(row.obj){
+                    row.obj.playbackRate = val;
                 }
-                else{
-                    //console.log('setting val to: ' + newVal);
-                    //store.instruments.getPlayerByTrack(track.id).setPropVal('playbackRate', parseFloat(newVal));
-                }
-                */
             }
         }
     });

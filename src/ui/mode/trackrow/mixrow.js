@@ -56,11 +56,11 @@ export const MixRowView = observer(class MixRowView extends Component{
           { secondButton }
           <MixRowButtonMute track={this.props.track} mute={this.props.track.mute}/>
           <MixRowButtonSolo track={this.props.track} solo={this.props.track.solo}/>
-          <MixRowButtonSliderProp track={this.props.track} toggleMixSelection={(p) => this.toggleMixSelection(p)}/>
+          <MixRowButtonSliderProp track={this.props.track} toggleMixSelection={(p) => this.toggleMixSelection(p)} playbackRate={this.props.playbackRate} mixSelection={this.mixSelection}/>
         </div>
         <div className='track-rowmix-right'>
           <MixMeters track={this.props.track}/>
-          <MixRowSlider track={this.props.track} mixSelection={this.mixSelection} panvol={this.panvol} player={this.player}/>
+          <MixRowSlider track={this.props.track} mixSelection={this.mixSelection} panvol={this.panvol} player={this.player} playbackRate={this.props.playbackRate}/>
         </div>
       </div>
     )
@@ -68,7 +68,34 @@ export const MixRowView = observer(class MixRowView extends Component{
 })
 
 const MixRowButtonSliderProp = observer(class MixRowButtonSliderProp extends Component{
-  componentDidMount(){ }
+  mixSelection;
+  timeout;
+
+  componentDidMount(){}
+
+  componentDidUpdate(prevProps){
+    //auto set if value changed not from slider (ex. midi controller)
+    if(prevProps.playbackRate !== this.props.playbackRate){
+      if(this.mixSelection !== 'Spd' && this.props.track.type === 'audio'){
+        this.props.toggleMixSelection('Spd');
+      }
+
+      //set btn text to val 
+      let eleBtn = document.getElementById('btnMixLevel_' + this.props.track.id);
+      if(eleBtn){
+        eleBtn.innerHTML = this.props.playbackRate;
+
+        clearTimeout(this.timeout);
+        this.timeout = setTimeout(() => {
+          eleBtn = document.getElementById('btnMixLevel_' + this.props.track.id);
+          if(eleBtn){
+            eleBtn.innerHTML = this.props.mixSelection;
+          }
+        }, 1500);
+      }
+    }
+  }
+
   componentWillUnmount(){}
 
   toggleMixButton = (e) => {
@@ -93,7 +120,6 @@ const MixRowButtonSliderProp = observer(class MixRowButtonSliderProp extends Com
       this.mixSelection = 'Vol';
     }
 
-    e.target.setAttribute('data-mix-selection', this.mixSelection);
     this.props.toggleMixSelection(this.mixSelection);
   }
 
@@ -105,7 +131,7 @@ const MixRowButtonSliderProp = observer(class MixRowButtonSliderProp extends Com
     }
 
     return (
-      <button id={this.id} className='btn-mix' onClick={this.toggleMixButton} data-mix-selection={this.mixSelection}>{this.mixSelection}</button>
+      <button id={this.id} className='btn-mix' onClick={this.toggleMixButton}>{this.mixSelection}</button>
     );
   }
 })
@@ -136,10 +162,20 @@ const MixRowButtonSolo = observer(class MixRowButtonSolo extends Component{
 })
 
 const MixRowSlider = observer(class MixRowSlider extends Component{
+  componentDidUpdate(prevProps){
+    if(prevProps.playbackRate !== this.props.playbackRate){
+      if(!this.bPressed){
+        let eleSlider = document.getElementById('mixSlider_' + this.props.track.id);
+        if(eleSlider){
+          eleSlider.value = this.props.playbackRate;
+        }
+      }
+    }
+  }
   changeSlider = (e) => {
     e.preventDefault();
     e.stopPropagation();
-
+    
     //TODO: only call MST set prop onpresssup?
     if(this.props.mixSelection === 'Vol')
       this.props.panvol.setPropVal('volume', parseFloat(e.target.value), true);
@@ -179,17 +215,17 @@ const MixRowSlider = observer(class MixRowSlider extends Component{
     let sliderVal = 0, sliderEle;
     if(this.props.mixSelection === 'Vol'){
       sliderVal = this.props.panvol.volume;
-      sliderEle = <input type='range' min='-40' max='10' value={sliderVal} className='trackMixSlider' step='0.05' id={'volSlider' + this.props.track.id} 
+      sliderEle = <input  id={'mixSlider_' + this.props.track.id} type='range' min='-40' max='10' value={sliderVal} className='trackMixSlider' step='0.05'
                     onChange={this.changeSlider} onInput={this.changeSlider} onMouseDown={this.onPressDown} onMouseUp={this.onPressUp} onTouchStart={this.onPressDown} onTouchEnd={this.onPressUp}/>
     }
     else if(this.props.mixSelection === 'Pan'){
       sliderVal = this.props.panvol.pan;
-      sliderEle = <input type='range' min='-1' max='1' value={sliderVal} className='trackMixSlider' step='0.01' id={'volSlider' + this.props.track.id} 
+      sliderEle = <input  id={'mixSlider_' + this.props.track.id} type='range' min='-1' max='1' value={sliderVal} className='trackMixSlider' step='0.01'
                     onChange={this.changeSlider} onInput={this.changeSlider} onMouseDown={this.onPressDown} onMouseUp={this.onPressUp} onTouchStart={this.onPressDown} onTouchEnd={this.onPressUp}/>
     }
     else if(this.props.mixSelection === 'Spd'){
       sliderVal = this.props.player.playbackRate;
-      sliderEle = <input type='range' min='0.01' max='2' value={sliderVal} className='trackMixSlider' step='0.01' id={'volSlider' + this.props.track.id} 
+      sliderEle = <input  id={'mixSlider_' + this.props.track.id} type='range' min='0.01' max='2' value={sliderVal} className='trackMixSlider' step='0.01'
                     onChange={this.changeSlider} onInput={this.changeSlider} onMouseDown={this.onPressDown} onMouseUp={this.onPressUp} onTouchStart={this.onPressDown} onTouchEnd={this.onPressUp}/>
     }
 

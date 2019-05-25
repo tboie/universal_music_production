@@ -188,7 +188,7 @@ const Track = types.model("Track", {
 
         return r;
     },
-    getPlaybackRate(){
+    get getPlaybackRate(){
         if(self.type === "audio"){
           let player = store.instruments.getPlayerByTrack(self.id);
           if(player)
@@ -2265,6 +2265,9 @@ const Player = types.model("Player", {
 
     ui: types.maybe(UIObj)
 }).actions(self => ({
+    setModelPlaybackRate(val){
+        self.playbackRate = val;
+    },
     setPropVal(prop, val, signal, child) {
         self[prop] = val;
         ToneObjs.setPropVal(self.id, 'instrument', prop, val, signal, child);

@@ -20,6 +20,7 @@ export const TrackRowView = observer(class TrackRowView extends Component {
   mStopPos;
   mouseHold;
   id;
+  currPlaybackRate;
 
   componentDidMount(){
     if(this.props.track.type !== "master"){
@@ -37,7 +38,7 @@ export const TrackRowView = observer(class TrackRowView extends Component {
     }
 
     //update waveforms on zoom in out
-    document.getElementById("gridContainer").addEventListener("transitionend", () => { 
+    document.getElementById("gridContainer").addEventListener("transitionend", () => {
       this.init(true) 
     });
 
@@ -80,15 +81,6 @@ export const TrackRowView = observer(class TrackRowView extends Component {
       if(this.props.store.ui.viewMode === 'sequencer'){
         //perform individual prop checks here to only re-draw updated tracks?
         //is this necessary?
-      }
-      */
-
-      /*
-      let debounceInit = debounce(this.init, 1000);
-      if(prevProps.playbackRate !== this.props.playbackRate){
-        console.log('PLAYBACKRATE UPDATED track: ' + this.props.track.id);
-        debounceInit();
-        return;
       }
       */
 
@@ -555,13 +547,13 @@ export const TrackRowView = observer(class TrackRowView extends Component {
           if(this.props.selectedNote.getPattern().track.id === this.props.track.id)
             mixView = <MixRowViewEdit trackId={this.props.track.id} store={this.props.store} track={this.props.track} note={this.props.selectedNote} viewLength={this.props.viewLength}/>
           else
-            mixView = <MixRowView store={this.props.store}  track={this.props.track} viewLength={this.props.viewLength}/>
+            mixView = <MixRowView store={this.props.store} track={this.props.track} viewLength={this.props.viewLength} playbackRate={this.props.playbackRate}/>
         else
-          mixView = <MixRowView store={this.props.store} track={this.props.track} viewLength={this.props.viewLength}/>
+          mixView = <MixRowView store={this.props.store} track={this.props.track} viewLength={this.props.viewLength} playbackRate={this.props.playbackRate}/>
       }
     }
     else if(this.props.mixMode || this.props.track.type === "master"){
-      mixView = <MixRowView store={this.props.store} track={this.props.track} viewLength={this.props.viewLength}/>
+      mixView = <MixRowView store={this.props.store} track={this.props.track} viewLength={this.props.viewLength} playbackRate={this.props.playbackRate}/>
     }
 
     let strSelected = "";
