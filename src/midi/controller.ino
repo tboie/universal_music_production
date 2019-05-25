@@ -52,6 +52,7 @@ byte TransportRecord[6] = {0xf0, 0x7f, 0x7f, 0x6, 0x28, 0xf7};
 //A,B,C,D
 byte groups[4] = {0x41, 0x42, 0x43, 0x44};
 byte selectGroup[6] = {0xf0, 0x7f, 0x7f, 0x06, groups[0], 0xf7};
+byte selectedGroup;
 
 //MIDI_CREATE_BLE_INSTANCE(blemidi);
 MIDI_CREATE_DEFAULT_INSTANCE();
@@ -230,24 +231,36 @@ void loop()
       
       if(states2[4] == 1){
         if(thisPin == 3){
-          selectGroup[4] = groups[0];
-          //Serial.println("pin A");
-          MIDI.sendSysEx(6, selectGroup);
+          if(selectedGroup != groups[0]){
+            selectedGroup = groups[0];
+            selectGroup[4] = groups[0];
+            //Serial.println("pin A");
+            MIDI.sendSysEx(6, selectGroup);
+          }
         }
         else if(thisPin == 2){
-          selectGroup[4] = groups[1];
-          //Serial.println("pin B");
-          MIDI.sendSysEx(6, selectGroup);
+          if(selectedGroup != groups[1]){
+            selectedGroup = groups[1];
+            selectGroup[4] = groups[1];
+            //Serial.println("pin B");
+            MIDI.sendSysEx(6, selectGroup);
+          }
         }
         else if(thisPin == 1){
-          selectGroup[4] = groups[2];
-          //Serial.println("pin C");
-          MIDI.sendSysEx(6, selectGroup);
+          if(selectedGroup != groups[2]){
+            selectedGroup = groups[2];
+            selectGroup[4] = groups[2];
+            //Serial.println("pin C");
+            MIDI.sendSysEx(6, selectGroup);
+          }
         }
         else if(thisPin == 0){
-          selectGroup[4] = groups[3];
-          //Serial.println("pin D");
-          MIDI.sendSysEx(6, selectGroup);   
+          if(selectedGroup != groups[3]){
+            selectedGroup = groups[3];
+            selectGroup[4] = groups[3];
+            //Serial.println("pin D");
+            MIDI.sendSysEx(6, selectGroup);
+          }
         }
       }
     }
@@ -257,6 +270,9 @@ void loop()
         
         if(thisPin > 4){        
           MIDI.sendNoteOff(notes2[thisPin], 0, 1);
+        }
+        else if(thisPin < 4 && selectedGroup != 0){
+          selectedGroup = 0;
         }
                 
         //Serial.print("MCP OFF");
