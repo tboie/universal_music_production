@@ -59,6 +59,12 @@ const AppView = observer(class AppView extends Component {
     if (window.AudioContext || window.webkitAudioContext) { }
     else { alert("Sorry, but the Web Audio API is not supported by your browser."); }
 
+    // not sure how reliable Tone.start() in mount is for all cases... so use this too
+    document.documentElement.addEventListener('mousedown', () => {
+      if (Tone.context.state !== 'running')
+        Tone.start();
+    })
+
     //disable right click menu - this fixes the touch hold menu on some touch screens
     document.addEventListener('contextmenu', e => e.preventDefault());
 
