@@ -71,10 +71,20 @@ export const GridButtonView = observer(class ButtonView extends Component {
             {  trackRow }
           </div>
           <div id="divGridButtonViewBG">
-            { tracks.map((track, index) => <GridButton key={track.id} keyValue={track.id} store={this.props.store} sample={track.sample} region={track.returnRegion(track.region)}
-              patterns={this.props.store.getPatternsByTrack(track.id)} scenes={this.props.store.scenes} rowIndex={index} mixMode={this.props.store.ui.mixMode}
-              viewLength={this.props.store.ui.viewLength} bpm={this.props.store.settings.bpm} editNote={this.noteEdited} selectedTrack={this.props.selectedTrack}
-              editMode={this.props.editMode}/>)
+            { tracks.map((track, index) => <GridButton key={track.id} keyValue={track.id} 
+                      store={this.props.store} 
+                      sample={track.sample} 
+                      region={track.returnRegion(track.region)}
+                      patterns={this.props.store.getPatternsByTrack(track.id)} 
+                      scenes={this.props.store.scenes} 
+                      rowIndex={index} 
+                      mixMode={this.props.store.ui.mixMode}
+                      viewLength={this.props.store.ui.viewLength} 
+                      bpm={this.props.store.settings.bpm} 
+                      editNote={this.noteEdited} 
+                      selectedTrack={this.props.selectedTrack}
+                      editMode={this.props.editMode}
+                    />)
             }
          </div>
         </div>
@@ -171,9 +181,20 @@ export const GridButtonView = observer(class ButtonView extends Component {
             }
           }
         
-
-          if(self.props.store.ui.selectedTrack !== self.track)
+          //select track
+          if(self.props.store.ui.selectedTrack !== self.track){
             self.props.store.ui.selectTrack(self.props.keyValue);
+          }
+
+          //select pattern
+          if(store.ui.selectedPattern){
+            if(store.ui.selectedPattern.track.id !== self.props.keyValue){
+              store.ui.selectPattern(store.getPatternByTrackScene(self.props.keyValue, store.ui.selectedScene.id).id)
+            }
+          }
+          else{
+            store.ui.selectPattern(store.getPatternByTrackScene(self.props.keyValue, store.ui.selectedScene.id).id)
+          }
   
           event.preventDefault();
         });
