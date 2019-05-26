@@ -138,11 +138,33 @@ function changePlayerRate(val){
 }
 
 const noteOn = (note) => {
-    let selectedTrack;
     store.getTracksByGroup(store.ui.selectedGroup).forEach((track, idx) => {
         if(note-60 === idx){
             if(track.type === "audio"){
-                selectedTrack = track;
+                // button view gridbutton mouse down
+                if(store.ui.viewMode === 'button' && store.ui.selectedGroup === track.group){
+                    let eleButton = document.getElementById('divGridButton_' + track.id);
+                    if(eleButton){
+                        if(document.createEvent){
+                            eleButton.dispatchEvent(new PointerEvent("pointerdown", {
+                                bubbles: true,
+                            }));
+                        }
+                    }
+                }
+                // other views
+                else{
+                    let row = ToneObjs.instruments.find(i => i.track === track.id);
+                    if(row){
+                        if(row.obj){
+                            if(row.obj.buffer.loaded){
+                                row.obj.start();
+                            }
+                        }
+                    }
+                }
+                
+                store.ui.selectTrack(track.id);
             }
         }
         else{
@@ -158,32 +180,6 @@ const noteOn = (note) => {
             }
         }
     })
-
-    if(selectedTrack){
-        // button view gridbutton mouse down
-        if(store.ui.viewMode === 'button' && store.ui.selectedGroup === selectedTrack.group){
-            let eleButton = document.getElementById('divGridButton_' + selectedTrack.id);
-            if(eleButton){
-                if(document.createEvent){
-                    eleButton.dispatchEvent(new PointerEvent("pointerdown", {
-                        bubbles: true,
-                    }));
-                }
-            }
-        }
-        // other views
-        else{
-            let row = ToneObjs.instruments.find(i => i.track === selectedTrack.id);
-            if(row){
-                if(row.obj){
-                    if(row.obj.buffer.loaded){
-                        row.obj.start();
-                    }
-                }
-            }
-        }
-    }
-
 
     /*
     if(store.ui.selectedTrack){
