@@ -506,11 +506,8 @@ const EditViewGraph = observer(class EditViewGraph extends Component {
       let trackRow = null;
   
       if(this.props.track){
-        
-        if(!this.props.store.ui.mixMode)
-          this.props.store.ui.toggleMixMode();
-  
         let track = this.props.track;
+        
         trackRow = <TrackRowView key={track.id} 
           keyValue={track.id} store={this.props.store} 
           sample={track.sample} 

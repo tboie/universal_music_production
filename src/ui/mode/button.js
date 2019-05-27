@@ -70,7 +70,7 @@ export const GridButtonView = observer(class ButtonView extends Component {
             <div className="progressLine" id="playhead"></div>
             {  trackRow }
           </div>
-          <div id="divGridButtonViewBG">
+          <div id="divGridButtonViewBG" style={{width: store.ui.windowWidth + 'px'}}>
             { tracks.map((track, index) => <GridButton key={track.id} keyValue={track.id} 
                       store={this.props.store} 
                       sample={track.sample} 
