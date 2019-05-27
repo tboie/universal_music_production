@@ -94,7 +94,6 @@ export function applyDraggableGrid() {
         if(store.ui.viewMode !== 'edit' || (store.ui.viewMode === 'edit' && store.ui.views.edit.mode !== 'bar')){
           let elements = document.getElementsByClassName('track-rowmix');
           if (elements.length > 0) {
-            //all views except edit view bar graph
             for (let i = 0; i < elements.length; i++){
               elements[i].style.webkitTransform = elements[i].style.transform = 'translate(' + (x * -1) + 'px)';
             }
