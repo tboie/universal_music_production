@@ -174,6 +174,19 @@ const noteOn = (note) => {
                     if(row.obj){
                         if(row.obj.buffer.loaded){
                             row.obj.stop();
+                            
+                            //stop gridbutton animations
+                            if(store.ui.viewMode === 'button'){
+                                let divGridButton = document.getElementById('divGridButton_' + track.id);
+
+                                if(divGridButton){
+                                    let divProgress = divGridButton.querySelector('.divGridButtonProgress');
+                                    
+                                    if(divProgress){
+                                        divProgress.style.animation = 'none';
+                                    }
+                                }
+                            }
                         }
                     }
                 }
