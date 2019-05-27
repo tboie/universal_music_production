@@ -375,11 +375,13 @@ export const TrackRowView = observer(class TrackRowView extends Component {
     if(!this.img.src || update || (this.props.bar && this.props.strSVG !== this.img.src)){
       if(!this.props.bar || this.props.bar === 1){
         renderWaveform(buffer.toArray(0), '#' + canvasWaveformId, imgWidth, this.canvasHeight).then(() => {
-          let svgDiv = document.getElementById('canvasWaveform_' + trackId);
-          if(svgDiv){
-            let canvasWaveform = svgDiv.childNodes[0];
-            this.img.src = canvasWaveform.toDataURL();
-            svgDiv.removeChild(canvasWaveform);
+          let divCanvas = document.getElementById('canvasWaveform_' + trackId);
+          if(divCanvas){
+            let canvasWaveform = divCanvas.childNodes[0];
+            if(canvasWaveform){
+              this.img.src = canvasWaveform.toDataURL();
+              divCanvas.removeChild(canvasWaveform);
+            }
           }
         });
       }
