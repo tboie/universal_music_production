@@ -171,13 +171,14 @@ export function renderWaveform(data, id, width, height) {
         if(canvas.node()){
           if(canvas.node().getContext("2d")){
             let ctx = canvas.node().getContext("2d");
-
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = '#ff6000';
+            
             ctx.beginPath();
             [...Array(summary.length).keys()].forEach(i => {
               let h = multiplier * (summary[i][1] - summary[i][0]);
               let y = (height / 2) - h;
 
-              ctx.strokeStyle = '#ff6000';
               ctx.moveTo(i, y);
               ctx.lineTo(i, y + (h * 2));
             });
