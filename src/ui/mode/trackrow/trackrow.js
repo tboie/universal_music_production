@@ -38,9 +38,7 @@ export const TrackRowView = observer(class TrackRowView extends Component {
     }
 
     //update waveforms on zoom in out
-    document.getElementById("gridContainer").addEventListener("transitionend", () => {
-      this.init(true) 
-    });
+    document.getElementById("gridContainer").addEventListener("transitionend", this.redrawInit);
 
     interact("#canvas" + this.id).on('hold', event => {
       this.mouseHold = true;
@@ -88,6 +86,11 @@ export const TrackRowView = observer(class TrackRowView extends Component {
     }
   }
 
+  //used for eventlisteners (so we can detach the instance when unmounting)
+  redrawInit = () => {
+    this.init(true);
+  }
+
   init = (update) => {
     //console.log('init ' + this.props.track.id)
     this.c = document.getElementById("canvas" + this.id);
@@ -109,7 +112,7 @@ export const TrackRowView = observer(class TrackRowView extends Component {
 
   componentWillUnmount(){
     interact("#canvas" + this.id).unset();
-    document.getElementById("gridContainer").removeEventListener("transitionend", () => { this.init(true) });
+    document.getElementById("gridContainer").removeEventListener("transitionend", this.redrawInit);
   }
   
   handleMouseUp = (e) => {

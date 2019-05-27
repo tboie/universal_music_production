@@ -30,9 +30,10 @@ export const GridButtonView = observer(class ButtonView extends Component {
     
     render() {
       let trackRow = null;
-      if(this.props.selectedTrack){
-        if(this.props.selectedTrack.group === this.props.store.ui.selectedGroup){
-          let track = this.props.selectedTrack;
+      let track = this.props.selectedTrack;
+
+      if(track){
+        if(track.group === this.props.store.ui.selectedGroup){
           trackRow = <TrackRowView key={track.id} keyValue={track.id} 
             store={this.props.store} sample={track.sample} 
             region={track.returnRegion()} 
@@ -68,7 +69,7 @@ export const GridButtonView = observer(class ButtonView extends Component {
           <div className="divBody" id="gridContainer" style={{width: sizes.container.width, left: sizes.container.left}}>
             <GridTimeline selectedScene={this.props.store.ui.selectedScene} ui={this.props.store.ui} windowWidth={this.props.store.ui.windowWidth}/>
             <div className="progressLine" id="playhead"></div>
-            {  trackRow }
+            { trackRow }
           </div>
           <div id="divGridButtonViewBG" style={{width: store.ui.windowWidth + 'px'}}>
             { tracks.map((track, index) => <GridButton key={track.id} keyValue={track.id} 
@@ -157,8 +158,6 @@ export const GridButtonView = observer(class ButtonView extends Component {
             else{
               this.divProgress.style.animation = 'progressWidth ' + duration + 's linear';
             }
-
-            
           }
   
           //testing recording shizzzz.  check latencyHint for responsiveness?
