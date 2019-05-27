@@ -4,7 +4,7 @@ import Tone from 'tone';
 import interact from 'interactjs';
 import { ToneObjs } from '../../../models/models.js';
 import { store } from '../../../data/store.js';
-import { renderSVG } from "../../utils.js";
+import { renderWaveform } from "../../utils.js";
 import { MixRowView } from "./mixrow.js";
 import { MixRowViewEdit } from "./mixrowedit.js";
 import * as debounce from 'lodash/debounce';
@@ -359,7 +359,7 @@ export const TrackRowView = observer(class TrackRowView extends Component {
   }
 
   drawAudioNotes = (pattern, viewLength, update) => {
-    let svgId = 'svgimg' + this.id;
+    let canvasWaveformId = 'canvasWaveform_' + this.id;
     let trackId = this.id;
     let buffer = this.player.buffer;
     let duration = buffer.duration / this.props.playbackRate;
@@ -374,13 +374,12 @@ export const TrackRowView = observer(class TrackRowView extends Component {
 
     if(!this.img.src || update || (this.props.bar && this.props.strSVG !== this.img.src)){
       if(!this.props.bar || this.props.bar === 1){
-        renderSVG(buffer.toArray(0), '#' + svgId, imgWidth, this.canvasHeight).then(() => {
-          let svgDiv = document.getElementById('svgimg' + trackId);
+        renderWaveform(buffer.toArray(0), '#' + canvasWaveformId, imgWidth, this.canvasHeight).then(() => {
+          let svgDiv = document.getElementById('canvasWaveform_' + trackId);
           if(svgDiv){
-            let svgImg = svgDiv.childNodes[0];
-            let svgData = (new XMLSerializer()).serializeToString(svgImg);
-            svgDiv.removeChild(svgImg);
-            this.img.src = "data:image/svg+xml;base64," + btoa(svgData);
+            let canvasWaveform = svgDiv.childNodes[0];
+            this.img.src = canvasWaveform.toDataURL();
+            svgDiv.removeChild(canvasWaveform);
           }
         });
       }
@@ -578,7 +577,7 @@ export const TrackRowView = observer(class TrackRowView extends Component {
         <canvas id={"canvas" + this.id} className={"canvasTrack " + strSelected} onTouchStart={this.handleMouseDown} onTouchEnd={this.handleMouseUp} 
         onMouseDown={this.handleMouseDown} onMouseUp={this.handleMouseUp}  style={sDisplay}></canvas>
         { mixView }
-        <div id={"svgimg" + this.id} className="svgdiv"></div>
+        <div id={"canvasWaveform_" + this.id} className="divCanvasWaveformContainer"></div>
       </div>
     )
   }

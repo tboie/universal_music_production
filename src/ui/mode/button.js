@@ -7,7 +7,7 @@ import { ToneObjs } from '../../models/models.js';
 import { applyDraggableGrid } from '../utils.js';
 import { TrackRowView } from './trackrow/trackrow.js';
 import { GridTimeline } from './timeline/timeline.js';
-import { renderSVG } from '../utils.js';
+import { renderWaveform } from '../utils.js';
 
 export const GridButtonView = observer(class ButtonView extends Component {
     componentDidMount(){
@@ -229,7 +229,7 @@ export const GridButtonView = observer(class ButtonView extends Component {
       
       this.ensureBufferIsLoaded(this.player.buffer).then(() => {
         interact('#divGridButton_' + this.props.keyValue).fire({type: 'dragmove', target: eleButton});
-        renderSVG(this.player.buffer.toArray(0), eleButton, 100, 100);
+        renderWaveform(this.player.buffer.toArray(0), eleButton, 100, 100);
       });
     }
   

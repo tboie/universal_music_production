@@ -243,7 +243,7 @@ wave {
   image-rendering: pixelated;
 }
 
-.svgdiv {
+.divCanvasWaveformContainer {
   display:none;
 }
 
@@ -442,9 +442,8 @@ wave {
   display: flex;
 }
 
-.divGridButton svg{
-  position:absolute;
-  left:0;
+.divGridButton canvas, .divGridButtonSelected canvas {
+  z-index:2;
 }
 
 .divGridButtonSelected {
@@ -456,12 +455,6 @@ wave {
   border:1px solid #2671ea;
   margin: 6px;
   display: flex;
-}
-
-.divGridButtonSelected svg{
-  position:absolute;
-  left:0;
-  pointer-events:none;
 }
 
 .divGridButtonProgress {

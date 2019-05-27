@@ -1,11 +1,11 @@
 
 import { store } from '../data/store.js';
-import * as d3 from 'd3-selection';
 import interact from 'interactjs';
 import Tone from 'tone';
 import Microphone from 'recorder-js/src/microphone.js';
 import { toneObjNames } from '../data/tonenames.js';
 import { ToneObjs } from '../models/models.js';
+import { select } from 'd3-selection';
 
 export function toggleFullScreen() {
   let doc = window.document;
@@ -159,40 +159,34 @@ export function audioBufferToWav(buffer, opt) {
   });
 }
 
-export function renderSVG(data, id, width, height) {
+export function renderWaveform(data, id, width, height) {
   return new Promise(function (resolve, reject) {
     let worker = new Worker(process.env.PUBLIC_URL + "/Worker_DrawBuffer.js");
 
     worker.onmessage = function (e) {
-      let summary = e.data;
-      let multiplier = 50;
-      let w = 1;
+      let summary = e.data, multiplier = height;
+      let canvas = select(id).append("canvas").attr("width", width).attr("height", height);
+      
+      if(canvas){
+        if(canvas.node()){
+          if(canvas.node().getContext("2d")){
+            let ctx = canvas.node().getContext("2d");
 
-      resolve(d3.select(id)
-        .append('svg')
-        .attr('xmlns', 'http://www.w3.org/2000/svg')
-        .attr('width', width)
-        .attr('height', height)
-        .selectAll('circle')
-        .data(summary)
-        .enter()
-        .append('rect')
-        .style('fill', '#ff6000')
-        .attr('x', function (d, i) {
-          return (i * w) /* + 25 */;
-        })
-        .attr('y', function (d, i) {
-          return (height / 2) - (multiplier * d[1]);
-        })
-        .attr('width', w)
-        .attr('height', function (d) {
-          let h = multiplier * (d[1] - d[0]);
-          if (!isNaN(h))
-            return h;
-          else
-            return 0;
-        })
-      );
+            ctx.beginPath();
+            [...Array(summary.length).keys()].forEach(i => {
+              let h = multiplier * (summary[i][1] - summary[i][0]);
+              let y = (height / 2) - h;
+
+              ctx.strokeStyle = '#ff6000';
+              ctx.moveTo(i, y);
+              ctx.lineTo(i, y + (h * 2));
+            });
+            ctx.stroke();
+          }
+        }
+      }
+
+      resolve();
     }
 
     worker.postMessage({ buffer: data, width: width });
