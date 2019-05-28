@@ -151,7 +151,7 @@ export const Draw = observer(class Draw extends Component {
     draw = () => {
       this.drawPlayhead();
 
-      if(this.props.mixMode && this.objMeterCanvas){
+      if((this.props.mixMode || store.ui.viewMode === 'edit' || store.ui.viewMode === 'button') && this.objMeterCanvas){
         this.drawTrackMixMeters();
       }
       
