@@ -18,6 +18,13 @@ export const ToolSampleEditor = observer(class ToolSampleEditor extends Componen
     }
   
     componentDidUpdate(prevProps){
+      if(prevProps.selectedGroup !== 'M' && this.props.selectedGroup === 'M'){
+        this.toggleSelectDisable(true);
+      }
+      if(prevProps.selectedGroup === 'M' && this.props.selectedGroup !== 'M'){
+        this.toggleSelectDisable(false);
+      }
+
       if(prevProps.objId !== this.props.objId || prevProps.file !== this.props.file){
         this.sample.destroy();
         this.drawAudio();
@@ -310,6 +317,13 @@ export const ToolSampleEditor = observer(class ToolSampleEditor extends Componen
       if(this.sample)
         this.sample.destroy();
     }
+
+    toggleSelectDisable = (disabled) => {
+      document.getElementById('btnSampleSelectToggle').disabled = disabled;
+      if(disabled && this.bSelect){
+        this.toggleSelect();
+      }
+    }
   
     toggleSelect = () => {
       this.bSelect = !this.bSelect;
@@ -410,7 +424,7 @@ export const ToolSampleEditor = observer(class ToolSampleEditor extends Componen
             <button onClick={this.delRegion} id="btnDelRegion" style={{position:'absolute',right:'5px', backgroundColor:'transparent', top:'4px', border:0}}>
               <i id="iconSampleDelete" className="material-icons i-28 colorRed" style={{opacity:0.5}}>delete</i>
             </button>
-            <button onClick={this.toggleSelect} style={{position:'absolute',right:'80px', backgroundColor:'transparent', top:'4px', border:0}}>
+            <button id='btnSampleSelectToggle' onClick={this.toggleSelect} style={{position:'absolute',right:'80px', backgroundColor:'transparent', top:'4px', border:0}}>
               <i id="iconSampleSelect" className="material-icons i-28">layers_clear</i>
             </button>
             <button onClick={this.togglePlay} style={{position:'absolute',right:'140px', backgroundColor:'transparent', top:'4px', border:0}}>

@@ -557,6 +557,17 @@ export const ListBrowser = observer(class ListBrowser extends Component {
       let item = this.list.find(i => i.selected === true && i.name === this.props.selectedFile);
     }
     */
+
+    //disable/enable load button for Master group selection
+    if(prevProps.selectedGroup !== 'M' && this.props.selectedGroup === 'M'){
+      disableBrowseBtnClick(true, this.props.id);
+    }
+    if(prevProps.selectedGroup === 'M' && this.props.selectedGroup !== 'M'){
+      let item = this.list.find(i => i.selected === true);
+      if(item){
+        toggleBrowseBtnLoad(item, this.props.id);
+      }
+    }
   }
 
   btnMainClick = (e) => {

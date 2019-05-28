@@ -9,9 +9,15 @@ export const ToolEditor = props => {
   
   if(props.objId){
     if(props.objId.split("_")[0] === "player" || props.objId.split("_")[0] === "sample"){
-      type = <ToolSampleEditor store={props.store} file={props.file} tracks={props.tracks} objId={props.objId} 
-                selectedTrack={props.store.ui.selectedTrack} winWidth={props.store.ui.windowWidth}
-                selectedToolbar={props.store.ui.selectedToolbar}/>
+      type = <ToolSampleEditor store={props.store} 
+                  file={props.file} 
+                  tracks={props.tracks} 
+                  objId={props.objId} 
+                  selectedTrack={props.store.ui.selectedTrack} 
+                  winWidth={props.store.ui.windowWidth}
+                  selectedToolbar={props.store.ui.selectedToolbar} 
+                  selectedGroup={props.store.ui.selectedGroup}
+                />
     }
     else if(props.objId.split("_")[0] === "record"){
       type = <ToolRecord store={props.store} objId={props.objId}/>

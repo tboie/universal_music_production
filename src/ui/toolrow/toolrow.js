@@ -208,18 +208,21 @@ export const ToolRow = observer(class ToolRow extends Component {
         toolBrowse =  <div id="divToolBrowse" className="divToolRowPanelContainer">
                         <div style={{width:'50%', height:'100%', float:'left', position:'relative'}}>
                           <ListBrowser selectedDir={this.props.store.ui.toolbar.browser.browser1.selectedDir} id={'browser1'}
-                              numSamples={this.props.store.numSamples} numRegions={this.props.store.numRegions}/>
+                              numSamples={this.props.store.numSamples} numRegions={this.props.store.numRegions}
+                              selectedGroup={this.props.store.ui.selectedGroup}/>
                         </div>
                         <div style={{width:'50%', height:'100%', float:'left', position:'relative'}}>
                           <ListBrowser selectedDir={this.props.store.ui.toolbar.browser.browser2.selectedDir} id={'browser2'}
-                              numSamples={this.props.store.numSamples} numRegions={this.props.store.numRegions}/>
+                              numSamples={this.props.store.numSamples} numRegions={this.props.store.numRegions}
+                              selectedGroup={this.props.store.ui.selectedGroup}/>
                         </div>
                       </div>
       }
       else{
         toolBrowse = <div id="divToolBrowse" className="divToolRowPanelContainer">
                         <ListBrowser selectedDir={this.props.store.ui.toolbar.browser.browser1.selectedDir} id={'browser1'}
-                            numSamples={this.props.store.numSamples} numRegions={this.props.store.numRegions}/>
+                            numSamples={this.props.store.numSamples} numRegions={this.props.store.numRegions}
+                            selectedGroup={this.props.store.ui.selectedGroup}/>
                       </div>
       }
       

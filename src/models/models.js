@@ -4273,25 +4273,27 @@ export const RootStore = types.model("RootStore", {
             })
         }
         function addTrack(id, type, mute, solo, sample, region) {
-            self.tracks.push(Track.create({ id: id, type: type, mute: mute, solo: solo, sample: sample, region: region, group: self.ui.selectedGroup }));
+            if(self.ui.selectedGroup !== 'M'){
+                self.tracks.push(Track.create({ id: id, type: type, mute: mute, solo: solo, sample: sample, region: region, group: self.ui.selectedGroup }));
 
-            let panvolId = 'panvol_' + randomId();
-            self.components.panvols.push(PanVol.create({ id: panvolId, track: id }));
+                let panvolId = 'panvol_' + randomId();
+                self.components.panvols.push(PanVol.create({ id: panvolId, track: id }));
 
-            //panvol -> master group solo
-            store.addConnection('connection_' + randomId(), id, panvolId, 'mix_solo_' + self.ui.selectedGroup, "component", "component");
+                //panvol -> master group solo
+                store.addConnection('connection_' + randomId(), id, panvolId, 'mix_solo_' + self.ui.selectedGroup, "component", "component");
 
-            if (type === "audio") {
-                let playerId = 'player_' + randomId();
-                store.instruments.add('player', { id: playerId, track: id, sample: sample, region: region });
-                store.addConnection('connection_' + randomId(), id, playerId, panvolId, "instrument", "component");
+                if (type === "audio") {
+                    let playerId = 'player_' + randomId();
+                    store.instruments.add('player', { id: playerId, track: id, sample: sample, region: region });
+                    store.addConnection('connection_' + randomId(), id, playerId, panvolId, "instrument", "component");
+                }
+
+                self.scenes.forEach(function (scene) {
+                    self.addPattern('pattern_' + randomId(), 16, id, scene.id, []);
+                })
+
+                store.ui.selectTrack(id);
             }
-
-            self.scenes.forEach(function (scene) {
-                self.addPattern('pattern_' + randomId(), 16, id, scene.id, []);
-            })
-
-            store.ui.selectTrack(id);
         }
         function duplicateTrack(id){
             let track = self.getTrack(id);
