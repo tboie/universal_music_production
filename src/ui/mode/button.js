@@ -228,6 +228,12 @@ export const GridButtonView = observer(class ButtonView extends Component {
       
       this.ensureBufferIsLoaded(this.player.buffer).then(() => {
         interact('#divGridButton_' + this.props.keyValue).fire({type: 'dragmove', target: eleButton});
+        
+        //remove previous canvas
+        let eleCanvas = document.querySelector('#divGridButton_' + this.props.keyValue + ' > canvas');
+        if(eleCanvas)
+          document.querySelector('#divGridButton_' + this.props.keyValue).removeChild(eleCanvas);
+        
         renderWaveform(this.player.buffer.toArray(0), eleButton, 75, 75);
       });
     }
