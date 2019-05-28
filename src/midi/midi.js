@@ -2,6 +2,7 @@ import Tone from 'tone';
 import { ToneObjs } from '../models/models.js';
 import { store } from '../data/store.js';
 import * as throttle from 'lodash/throttle';
+import { hex_to_ascii, mapVal } from '../ui/utils.js';
 
 let btDevice, btCharacteristic;
 const serviceId = '03B80E5A-EDE8-4B33-A751-6CE34EC4C700'.toLowerCase();
@@ -75,19 +76,6 @@ function getMIDIMessage(message) {
         default:
             break;
     }
-}
-
-function hex_to_ascii(str1){
-	let hex  = str1.toString();
-	let str = '';
-	for (let n = 0; n < hex.length; n += 2) {
-		str += String.fromCharCode(parseInt(hex.substr(n, 2), 16));
-	}
-	return str;
-}
-
-function mapVal (num, in_min, in_max, out_min, out_max) {
-    return (num - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
 const GroupChange = (group) => {

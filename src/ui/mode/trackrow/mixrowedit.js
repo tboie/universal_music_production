@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { observer } from "mobx-react";
 import Tone from 'tone';
 import { MixMeters } from './mixrow.js';
+import { hex_to_ascii, mapVal } from '../../utils.js';
 
 
 export const MixRowViewEdit = observer(class MixRowViewEdit extends Component{
@@ -60,7 +61,10 @@ export const MixRowViewEdit = observer(class MixRowViewEdit extends Component{
       e.stopPropagation();
   
       if(this.mixSelection === "Vel"){
-        this.props.note.setVelocity(parseFloat(e.target.value));
+        if(this.props.track.type === 'audio')
+          this.props.note.setVelocity(mapVal(parseFloat(e.target.value), 0, 1, -40, 0));
+        else
+          this.props.note.setVelocity(parseFloat(e.target.value));
       }
       else if(this.mixSelection === "Prb"){
         this.props.note.setProbability(parseFloat(e.target.value));
@@ -117,12 +121,13 @@ export const MixRowViewEdit = observer(class MixRowViewEdit extends Component{
       //TODO: 1 slider, change attributes on selection
       switch (this.mixSelection) {
         case "Vel":
+          let val = this.props.note.velocity;
+          
           if(this.props.track.type === "audio")
-            eleSlider = <input type="range" min="-40" max="0" value={this.props.note.velocity} className="trackMixSlider" step="0.05" id={"velSlider" + this.props.trackId} 
-                            onChange={this.changeSlider} onInput={this.changeSlider} onMouseDown={this.onPressDown} onMouseUp={this.onPressUp} onTouchStart={this.onPressDown} onTouchEnd={this.onPressUp}/>;
-          else
-            eleSlider = <input type="range" min="0" max="1" value={this.props.note.velocity} className="trackMixSlider" step="0.01" id={"velSlider" + this.props.trackId} 
-                            onChange={this.changeSlider} onInput={this.changeSlider} onMouseDown={this.onPressDown} onMouseUp={this.onPressUp} onTouchStart={this.onPressDown} onTouchEnd={this.onPressUp}/>;
+            val = mapVal(val, -40, 0, 0, 1);
+
+          eleSlider = <input type="range" min="0" max="1" value={val} className="trackMixSlider" step="0.01" id={"velSlider" + this.props.trackId} 
+                          onChange={this.changeSlider} onInput={this.changeSlider} onMouseDown={this.onPressDown} onMouseUp={this.onPressUp} onTouchStart={this.onPressDown} onTouchEnd={this.onPressUp}/>;
           break;
         case "Prb":
           eleSlider = <input type="range" min="0" max="1" value={this.props.note.probability} className="trackMixSlider" step="0.01" id={"velSlider" + this.props.trackId} 

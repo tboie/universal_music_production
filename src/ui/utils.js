@@ -7,6 +7,19 @@ import { toneObjNames } from '../data/tonenames.js';
 import { ToneObjs } from '../models/models.js';
 import { select } from 'd3-selection';
 
+export function hex_to_ascii(str1){
+	let hex  = str1.toString();
+	let str = '';
+	for (let n = 0; n < hex.length; n += 2) {
+		str += String.fromCharCode(parseInt(hex.substr(n, 2), 16));
+	}
+	return str;
+}
+
+export function mapVal (num, in_min, in_max, out_min, out_max) {
+  return (num - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
+
 export function toggleFullScreen() {
   let doc = window.document;
   let docEl = doc.documentElement;
