@@ -20,7 +20,7 @@ export const TrackRowView = observer(class TrackRowView extends Component {
   mStopPos;
   mouseHold;
   id;
-  currPlaybackRate;
+  bSelectedNote;
 
   componentDidMount(){
     if(this.props.track.type !== "master"){
@@ -38,7 +38,7 @@ export const TrackRowView = observer(class TrackRowView extends Component {
     }
 
     //update waveforms on zoom in out
-    document.getElementById("gridContainer").addEventListener("transitionend", this.redrawInit);
+    document.getElementById("gridContainer").addEventListener("transitionend", this.initRenderWaveform);
 
     interact("#canvas" + this.id).on('hold', event => {
       this.mouseHold = true;
@@ -75,19 +75,137 @@ export const TrackRowView = observer(class TrackRowView extends Component {
         }
       }
       
-      /*
-      if(this.props.store.ui.viewMode === 'sequencer'){
-        //perform individual prop checks here to only re-draw updated tracks?
-        //is this necessary?
-      }
-      */
+      //only update sequencer tracks that are modified
+      if(store.ui.viewMode === 'sequencer' && !store.ui.mixMode){
+        if(prevProps.selectedTrack !== this.props.selectedTrack){
+          return;
+        }
 
-      this.init();
+        if(prevProps.playbackRate !== this.props.playbackRate){
+          this.init();
+          return;
+        }
+
+        if(prevProps.bpm !== this.props.bpm){
+          this.init();
+          return;
+        }
+
+        if(prevProps.songLength !== this.props.songLength){
+          this.init();
+          return;
+        }
+
+        //transition eventlistener calls init
+        if(prevProps.viewLength !== this.props.viewLength){
+          return;
+        }
+        
+        //same selected note before and after update
+        if(prevProps.selectedNote && this.props.selectedNote){
+          if(prevProps.selectedNote.id === this.props.selectedNote.id){
+            if(prevProps.selectedNoteDuration !== this.props.selectedNoteDuration || prevProps.selectedNoteOffset !== this.props.selectedNoteOffset){
+              this.init();
+              return;
+            }
+            //updated blank selectednote to same selectedkey (select key, create new note, select same key)
+            if(prevProps.selectedNoteValue !== this.props.selectedNoteValue && prevProps.selectedKey === this.props.selectedKey){
+              this.init();
+              return;
+            }
+          }
+        }
+
+        //update previous/current track containing selectednote
+        if(prevProps.selectedNote !== this.props.selectedNote){
+          if(this.props.selectedNote){
+            if(this.props.selectedNote.getPattern().track.id === this.props.track.id){
+              this.bSelectedNote = true;
+              //console.log('selected note this track '  + this.props.track.id)
+              this.init();
+              return;
+            }
+            else if(this.bSelectedNote){
+              //console.log('selected note was in this track, but not anymore: ' + this.props.track.id)
+              this.bSelectedNote = false;
+              this.init();
+              return;
+            }
+          }
+          //note was de-selected
+          else{
+            //console.log('no selected note right now and note was in this track prev: ' + this.props.track.id);
+            this.bSelectedNote = false;
+            this.init();
+            return;
+          }
+        }
+        
+        if(prevProps.selectedKey !== this.props.selectedKey){
+          if(this.props.selectedNote){
+            if(this.props.selectedNote.getPattern().track.id === this.props.track.id){
+              this.init();
+              return;
+            }
+          }
+        }
+
+        if(prevProps.selectedPattern !== this.props.selectedPattern){
+          if(prevProps.selectedPattern){
+            if(prevProps.selectedPattern.track.id === this.props.track.id){
+              this.init();
+              return;
+            }
+          }
+
+          if(this.props.selectedPattern){
+            if(this.props.selectedPattern.track.id === this.props.track.id){
+              this.init();
+              return;
+            }
+          }
+        }
+        //update quantization(resolution) change for this track's selected pattern
+        else if(prevProps.selectedPattern && this.props.selectedPattern){
+          if(this.props.selectedPattern.track.id === this.props.track.id){
+            if(prevProps.selectedPatternRes !== this.props.selectedPatternRes){
+              this.init();
+              return;
+            }
+            else if(prevProps.selectedPatternNotes !== this.props.selectedPatternNotes){
+              this.init();
+              return;
+            }
+          }
+        }
+
+        /*      
+        if(prevProps.notes !== this.props.notes){
+          console.log('notes changed for track; ' + this.props.track.id)
+          this.init();
+        }
+        */
+
+        if(prevProps.selectedScene !== this.props.selectedScene){
+          this.init();
+          return;
+        }
+      
+        if(prevProps.selectedGroup !== this.props.selectedGroup){
+          this.init();
+          return;
+        }
+      }
+      //all other views
+      else{
+        this.init();
+      }
     }
   }
 
   //used for eventlisteners (so we can detach the instance when unmounting)
-  redrawInit = () => {
+  //triggers audio waveform render
+  initRenderWaveform = () => {
     this.init(true);
   }
 
@@ -112,7 +230,7 @@ export const TrackRowView = observer(class TrackRowView extends Component {
 
   componentWillUnmount(){
     interact("#canvas" + this.id).unset();
-    document.getElementById("gridContainer").removeEventListener("transitionend", this.redrawInit);
+    document.getElementById("gridContainer").removeEventListener("transitionend", this.initRenderWaveform);
   }
   
   handleMouseUp = (e) => {
@@ -149,8 +267,6 @@ export const TrackRowView = observer(class TrackRowView extends Component {
 
   handleClick = (e, hold) => {
     //e.stopPropagation();
-
-    store.ui.selectTrack(this.props.track.id)
 
     if(hold)
       e.preventDefault();
@@ -559,7 +675,7 @@ export const TrackRowView = observer(class TrackRowView extends Component {
     else if(this.props.mixMode || this.props.track.type === "master"){
       mixView = <MixRowView store={this.props.store} track={this.props.track} viewLength={this.props.viewLength} playbackRate={this.props.playbackRate}/>
     }
-
+    
     let strSelected = "";
     if(this.props.selectedTrack && this.props.store.ui.viewMode === "sequencer"){
       if(this.props.selectedTrack.id === this.props.track.id){
