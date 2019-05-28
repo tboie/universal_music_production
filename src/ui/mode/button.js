@@ -228,7 +228,7 @@ export const GridButtonView = observer(class ButtonView extends Component {
       
       this.ensureBufferIsLoaded(this.player.buffer).then(() => {
         interact('#divGridButton_' + this.props.keyValue).fire({type: 'dragmove', target: eleButton});
-        renderWaveform(this.player.buffer.toArray(0), eleButton, 100, 100);
+        renderWaveform(this.player.buffer.toArray(0), eleButton, 75, 75);
       });
     }
   

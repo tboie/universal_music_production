@@ -428,8 +428,8 @@ wave {
 }
 
 .divGridButton {
-  height:100px;
-  width:100px;
+  height:75px;
+  width:75px;
   background-color: rgba(0,0,0,0.5);
   float:left;
   border-radius:2px;
@@ -443,8 +443,8 @@ wave {
 }
 
 .divGridButtonSelected {
-  height:100px;
-  width:100px;
+  height:75px;
+  width:75px;
   background-color: rgba(0,0,0,0.5);
   float:left;
   border-radius:2px;
