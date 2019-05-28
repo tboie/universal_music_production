@@ -576,11 +576,16 @@ export const TrackRowView = observer(class TrackRowView extends Component {
     if(this.props.bar)
       playhead = <div className="progressLine" id={'playhead_' + this.id} style={{display:'none'}}></div>
 
+    let lblBarNum = null;
+    if(this.props.bar){
+      lblBarNum = <label style={{position:'absolute', top:'10px', left:'10px', fontSize:'18px', color:'white', opacity:0.6}}>{this.props.bar}</label>
+    }
     return (
       <div className="track-row">
         { playhead }
         <canvas id={"canvas" + this.id} className={"canvasTrack " + strSelected} onTouchStart={this.handleMouseDown} onTouchEnd={this.handleMouseUp} 
         onMouseDown={this.handleMouseDown} onMouseUp={this.handleMouseUp}  style={sDisplay}></canvas>
+        { lblBarNum }
         { mixView }
         <div id={"canvasWaveform_" + this.id} className="divCanvasWaveformContainer"></div>
       </div>
