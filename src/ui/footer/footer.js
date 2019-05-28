@@ -102,12 +102,30 @@ export const FooterView = observer(class FooterView extends Component{
         
         ToneObjs.instruments.forEach(instrument => {
           let name = instrument.id.split('_')[0];
-          if(name === "player")
+          if(name === "player"){
             instrument.obj.stop();
-          else if(name !== "noisesynth" && name !== "plucksynth" && name !== "membranesynth" && name !== "metalsynth")
+
+            //stop gridbutton animations
+            if(store.ui.viewMode === 'button'){
+              if(store.ui.selectedTrack.id === instrument.track){
+                let divGridButton = document.getElementById('divGridButton_' + instrument.track);
+      
+                if(divGridButton){
+                  let divProgress = divGridButton.querySelector('.divGridButtonProgress');
+                  
+                  if(divProgress){
+                      divProgress.style.animation = 'none';
+                  }
+                }
+              }
+            }
+          }
+          else if(name !== "noisesynth" && name !== "plucksynth" && name !== "membranesynth" && name !== "metalsynth"){
             instrument.obj.releaseAll();
-          else
+          }
+          else{
             instrument.obj.triggerRelease();
+          }
         })
         ToneObjs.sources.forEach(source => {
           source.obj.stop();
