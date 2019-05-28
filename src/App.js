@@ -31,6 +31,7 @@ const AppView = observer(class AppView extends Component {
 
   componentDidMount() {
     Tone.start();
+    ToneObjs.initMetronome();
 
     console.log(Tone.context.sampleRate)
 

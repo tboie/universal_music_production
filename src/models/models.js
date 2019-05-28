@@ -25,6 +25,36 @@ export let ToneObjs = {
     sources: [],
     parts: [],
     custom: [],
+    metronome: undefined,
+
+    initMetronome(){
+        if(!ToneObjs.metronome){
+            let noise = new Tone.Synth({
+                volume: 10,
+                oscillator: {
+                    type  : 'square'
+                },
+                envelope: {
+                    attack: 0.001 ,
+                    decay: 0.05,
+                    sustain: 0.05,
+                    release: 0.05,
+                }
+            }).toMaster();
+
+            ToneObjs.metronome = new Tone.Loop(time => {
+                let beat = parseInt(Tone.Transport.position.split(':')[1], 10);
+
+                if(beat === 0)
+                    noise.triggerAttackRelease('C6', '0.001s', time);
+                else
+                    noise.triggerAttackRelease('C5', '0.001s', time);
+                
+            }, '0:1').start(0);
+
+            ToneObjs.metronome.mute = !store.ui.recordMode; 
+        }
+    },
 
     //instruments, effects, components, sources
     addAudioObj(name, objSelf, type) {
@@ -3671,6 +3701,8 @@ const UI = types.model("UI", {
     }
     function toggleRecordMode() {
         self.recordMode = !self.recordMode;
+
+        ToneObjs.metronome.mute = !self.recordMode;
     }
     function toggleSettings() {
         self.settings = !self.settings;

@@ -9,6 +9,7 @@ import { toggleFullScreen } from "../utils.js";
 export const FooterView = observer(class FooterView extends Component{
     playing = false;
     tempoMode;
+    metronome;
   
     componentDidMount(){
       this.tempoMode = "bpm";
