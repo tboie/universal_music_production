@@ -3842,8 +3842,12 @@ const UI = types.model("UI", {
                         self.selectNote(undefined);
                     }
                 }
+                
                 if(self.editMode)
                     self.editMode = false;
+
+                if(self.selectedGroup === 'M')
+                    self.selectedGroup = 'A';
                 
                 self.viewMode = "button";
             }

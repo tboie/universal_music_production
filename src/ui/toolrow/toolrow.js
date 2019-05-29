@@ -292,8 +292,12 @@ const ToggleModeIcons = props => {
         group = 'C'
       else if(props.selectedGroup === 'C')
         group = 'D'
-      else if(props.selectedGroup === 'D')
-        group = 'M'
+      else if(props.selectedGroup === 'D'){
+        if(store.ui.viewMode === 'button')
+          group = 'A';
+        else
+          group = 'M';
+      }
     }
     else {
       if(!e.target.id)
@@ -340,10 +344,14 @@ const ToggleModeIcons = props => {
   
   if(props.windowWidth > 550){
     groupIcons = ['A','B','C','D','M'].map((group, idx) => {
+                  //no master option for button view
+                  if(group === 'M' && store.ui.viewMode === 'button')
+                    return;
+                  
                   let opacity = 0.3;
                   if(props.selectedGroup === group)
                     opacity = 1;
-
+                  
                   return <button key={idx} id={"btnToggleGroup_" + group} className="btnUIZoom" onClick={toggleGroup} style={{display:showGroupIcon, float:'left', position:'relative', top:'-6px', opacity:opacity}}>
                             <i key={idx} className="material-icons i-36">{group}</i>
                           </button>
