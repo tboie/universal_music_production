@@ -10,11 +10,11 @@ export const ToolSynth = observer(class ToolSynth extends Component {
     arrayOctave;
     mouseDown;
     bTouched;
-    selectedElement; // used for touch events
     selectedKey;
     arrayChords;
     selectedChord;
     slider;
+    ongoingTouches = [];
   
     componentDidMount(){
       this.mouseDown = false;
@@ -62,37 +62,220 @@ export const ToolSynth = observer(class ToolSynth extends Component {
         }
       }
     }
+
+    copyTouch = (touch) => {
+      return { identifier: touch.identifier, pageX: touch.pageX, pageY: touch.pageY, element: touch.target};
+    }
+
+    ongoingTouchIndexById = (idToFind) => {
+      for (let i = 0; i < this.ongoingTouches.length; i++) {
+       // console.log(this.ongoingTouches[i]);
+        let id = this.ongoingTouches[i].identifier;
+        
+        if (id === idToFind) {
+          return i;
+        }
+      }
+      return -1;    // not found
+    }
+
+    cancelTouchEvent = (e) => {
+      e.preventDefault();
+
+      let touches = e.changedTouches;
+      for (var i = 0; i < touches.length; i++) {
+        let idx = this.ongoingTouchIndexById(touches[i].identifier);
+        this.noteOff(this.ongoingTouches[idx].element, false);
+        this.ongoingTouches.splice(idx, 1);  // remove it; we're done
+      }
+    }
   
     keyDown = (e, dragged) => {
-      //e.stopPropagation();
       e.preventDefault();
-  
-      let self = this;
-      let ele = e.target;
-      
-      if(!dragged){
-        if(e.type === "touchstart"){
-          this.selectedElement = e.target;
+
+      if(e.changedTouches){
+        let touches = e.changedTouches;
+        if(!dragged){
           this.bTouched = true;
+          for (let i = 0; i < touches.length; i++) {
+            this.noteOn(touches[i].target, dragged);
+            this.ongoingTouches.push(this.copyTouch(touches[i]));
+          }
         }
         else{
+          for (let i = 0; i < touches.length; i++) {
+            let idx = this.ongoingTouchIndexById(touches[i].identifier);
+            if(idx >= 0){
+              this.noteOn(this.ongoingTouches[idx].element, dragged)
+            }
+          }
+        }
+      }
+      else{
+        if(!dragged){
           this.mouseDown = true;
         }
+        this.noteOn(e.target, dragged)
       }
-      else {
-        if(this.bTouched){
-          ele = this.selectedElement;
+    }
+    
+    keyUp = (e, dragged) => {
+      e.preventDefault();
+
+      if(e.changedTouches){
+        if(!dragged){
+          this.bTouched = false;
+  
+          for (let i = 0; i < e.changedTouches.length; i++) {
+            let idx = this.ongoingTouchIndexById(e.changedTouches[i].identifier);
+            if(idx >= 0){
+              this.noteOff(this.ongoingTouches[idx].element, dragged);
+              this.ongoingTouches.splice(idx, 1);  // remove it; we're done
+            }
+          }
+        }
+        else{
+          for (let i = 0; i < e.changedTouches.length; i++) {
+            let idx = this.ongoingTouchIndexById(e.changedTouches[i].identifier);
+            if(idx >= 0){
+              this.noteOff(this.ongoingTouches[idx].element, dragged)
+            }
+          }
         }
       }
+      else{
+        if(!dragged){
+          this.mouseDown = false;
+        }
+        this.noteOff(e.target, dragged);
+      }
+    }
+  
+    mouseLeaveKey = (e) => {
+      e.preventDefault();
+  
+      if(this.mouseDown && !this.bTouched)
+        this.keyUp(e, true);
+    }
+  
+    mouseLeaveContainer = (e) => {
+      e.preventDefault();
+  
+      if(this.mouseDown && !this.bTouched){
+        this.mouseDown = false;
+        this.keyUp(e, true);
+        //this.mouseDown = false;
+      }
+    }
+  
+    mouseEnterKey = (e) => {
+      e.preventDefault();
+    
+      if(this.mouseDown && !this.bTouched){
+        this.keyDown(e, true);
+      }
+    }
+  
+    touchMove = (e) => {
+      e.preventDefault(); //prevents offset on ios safari
+
+      let touches = e.changedTouches;
+
+      for (let i = 0; i < touches.length; i++) {
+        let idx = this.ongoingTouchIndexById(touches[i].identifier);
+    
+        if (idx >= 0) {
+          let hoverKey = document.elementFromPoint(touches[i].pageX, touches[i].pageY);
+    
+          if(this.ongoingTouches[idx].element && hoverKey){
+            if(this.ongoingTouches[idx].element.id !== hoverKey.id && hoverKey.parentNode.className === "divSynthRow"){
+              this.keyUp(e, true);
+              this.ongoingTouches[idx].element = hoverKey;
+              this.keyDown(e, true);
+            }
+          }
+        }
+      }
+    }
+
+    noteOff = (ele, dragged) => {
+      let notes = [];
+    
+      if(!this.selectedChord)
+        notes[0] = ele.id;
+      else
+        notes = ele.dataset.notes.split(',');
       
-      //console.log('keydown ' + ele.id)
+      if(this.props.selectedTrack){
+        ToneObjs.instruments.filter(o => o.track === this.props.selectedTrack.id).forEach(row => {
+          if(row.obj){
+            let type = row.id.split('_')[0];
+  
+            if(type === "metalsynth" || type === "membranesynth" || type === "noisesynth"){
+              row.obj.triggerRelease();
+            }
+            else if(type !== "player" && type !== "plucksynth"){
+              //row.obj.releaseAll();
+              row.obj.triggerRelease(notes.map(n => Note.freq(n)));
+            }
+          }
+        });
+        
+        ToneObjs.sources.filter(o => o.track === this.props.selectedTrack.id).forEach(row => {
+          if(row.obj){
+            row.obj.stop();
+          }
+        });
+        //now unmute patterns that were muted on press
+        if(!this.mouseDown){
+          ToneObjs.parts.filter(p => p.track === this.props.selectedTrack.id).forEach(o => {
+            if(o.obj.mute)
+              o.obj.mute = false; 
+          });
+        }
+
+
+        ToneObjs.custom.filter(o => o.track === this.props.selectedTrack.id).forEach(row => {
+          if(row.obj){ 
+            let ch = store.instruments.getInstrumentByTypeId("tinysynth", row.id).channel;
+  
+            if(!this.selectedChord){
+              let noteNum = Note.midi(notes[0]); //C4 is 60
+              row.obj.send([0x80 + ch, noteNum, 0], Tone.context.currentTime)
+            }
+            else{
+              notes.forEach(n => {
+                let midi = Note.midi(n)
+                if(midi)
+                  row.obj.send([0x80 + ch, midi, 0], Tone.context.currentTime)
+              })
+            }
+          }
+        });
+      }
+
+      //reset color
+      if(dragged){
+        if(ele.id.length > 2)
+          ele.style.backgroundColor = 'black';
+        else
+          ele.style.backgroundColor = 'white';
+      }
+      else{
+        if(store.ui.selectedKey === ele.id)
+          ele.style.backgroundColor = '#181f87';
+      }
+    }
+
+    noteOn = (ele, dragged) => {
+      let self = this;
       let notes = [];
       
       if(!this.selectedChord)
         notes[0] = ele.id;
       else
         notes = ele.dataset.notes.split(',');
-  
+
       if(this.props.selectedTrack){
         ToneObjs.instruments.filter(o => o.track === this.props.selectedTrack.id).forEach(function(row){
           if(row.obj){
@@ -150,169 +333,30 @@ export const ToolSynth = observer(class ToolSynth extends Component {
         });
       }
   
-      ele.style.backgroundColor = '#2671ea';//'#181f87';
+       ele.style.backgroundColor = '#2671ea';//'#181f87';
   
-      //reset previous selectedkey color
-      if(store.ui.selectedKey){
-        if(store.ui.selectedKey !== e.target.id){
-          let key = document.getElementById(store.ui.selectedKey);
-          if(key){
-            if(key.id.length > 2)
-              key.style.backgroundColor = 'black';
-            else
-              key.style.backgroundColor = 'white';
-          }
-        }
-      }
-  
-      if(store.ui.selectedNote){
-        store.ui.selectedNote.setNote(notes)
-      }
-      
-      //hacky way to trigger when same key is set to trackview
-      if(store.ui.selectedKey === notes[0])
-        store.ui.selectKey('');
-  
-      store.ui.selectKey(notes[0]);
-    }
-    
-    keyUp = (e, dragged) => {
-      //e.stopPropagation();
-      e.preventDefault();
-  
-      let self = this;
-      let ele = e.target;
-  
-      if(!dragged){
-        if(e.type === "touchend"){
-          this.bTouched = false;
-  
-          //touchend always called, setting final element
-          if(this.selectedElement)
-            ele = this.selectedElement;
-        }
-        else{
-          this.mouseDown = false;
-        }
-      }
-      else if(this.bTouched){
-        ele = this.selectedElement;
-      }
-  
-      //console.log('keyup ' + ele.id)
-  
-      let notes = [];
-    
-      if(!this.selectedChord)
-        notes[0] = ele.id;
-      else
-        notes = ele.dataset.notes.split(',');
-      
-      if(this.props.selectedTrack){
-        ToneObjs.instruments.filter(o => o.track === this.props.selectedTrack.id).forEach(function(row){
-          if(row.obj){
-            let type = row.id.split('_')[0];
-  
-            if(type === "metalsynth" || type === "membranesynth" || type === "noisesynth"){
-              row.obj.triggerRelease();
-            }
-            else if(type !== "player" && type !== "plucksynth"){
-              //row.obj.releaseAll();
-              row.obj.triggerRelease(notes.map(n => Note.freq(n)));
-            }
-          }
-        });
-        
-        ToneObjs.sources.filter(o => o.track === this.props.selectedTrack.id).forEach(function(row){
-          if(row.obj){
-            row.obj.stop();
-          }
-        });
-        //now unmute patterns that were muted on press
-        if(!this.mouseDown){
-          ToneObjs.parts.filter(p => p.track === self.props.selectedTrack.id).forEach(o => {
-            if(o.obj.mute)
-              o.obj.mute = false; 
-          });
-        }
-
-
-        ToneObjs.custom.filter(o => o.track === this.props.selectedTrack.id).forEach(function(row){
-          if(row.obj){ 
-            let ch = store.instruments.getInstrumentByTypeId("tinysynth", row.id).channel;
-  
-            if(!self.selectedChord){
-              let noteNum = Note.midi(notes[0]); //C4 is 60
-              row.obj.send([0x80 + ch, noteNum, 0], Tone.context.currentTime)
-            }
-            else{
-              notes.forEach(n => {
-                let midi = Note.midi(n)
-                if(midi)
-                  row.obj.send([0x80 + ch, midi, 0], Tone.context.currentTime)
-              })
-            }
-          }
-        });
-      }
-  
-      //reset color
-      if(dragged){
-        if(ele.id.length > 2)
-          ele.style.backgroundColor = 'black';
-        else
-          ele.style.backgroundColor = 'white';
-      }
-      else{
-        if(store.ui.selectedKey === ele.id)
-          ele.style.backgroundColor = '#181f87';
-      }
-    }
-  
-    mouseLeaveKey = (e) => {
-      //e.stopPropagation();
-      //e.preventDefault();
-  
-      if(this.mouseDown && !this.bTouched)
-        this.keyUp(e, true);
-    }
-  
-    mouseLeaveContainer = (e) => {
-      //e.stopPropagation();
-      //e.preventDefault();
-  
-      if(this.mouseDown && !this.bTouched){
-        this.mouseDown = false;
-        this.keyUp(e, true);
-        //this.mouseDown = false;
-      }
-    }
-  
-    mouseEnterKey = (e) => {
-      //e.stopPropagation();
-      //e.preventDefault();
-    
-      if(this.mouseDown && !this.bTouched){
-        this.keyDown(e, true);
-      }
-    }
-  
-    touchMove = (e) => {
-      //e.stopPropagation();
-      e.preventDefault(); //prevents offset on ios safari
-  
-      if(!this.selectedElement)
-        this.selectedElement = e.target;
-  
-      let hoverKey = document.elementFromPoint(e.touches[0].pageX, e.touches[0].pageY);
-  
-      if(this.selectedElement && hoverKey){
-        if(this.selectedElement.id !== hoverKey.id && hoverKey.parentNode.className === "divSynthRow"){
-          this.keyUp(e, true);
-          this.selectedElement = hoverKey;
-          this.keyDown(e, true);
-        }
-      }
+       //reset previous selectedkey color
+       if(store.ui.selectedKey){
+         if(store.ui.selectedKey !== ele.id){
+           let key = document.getElementById(store.ui.selectedKey);
+           if(key){
+             if(key.id.length > 2)
+               key.style.backgroundColor = 'black';
+             else
+               key.style.backgroundColor = 'white';
+           }
+         }
+       }
+   
+       if(store.ui.selectedNote){
+         store.ui.selectedNote.setNote(notes)
+       }
+       
+       //hacky way to trigger when same key is set to trackview
+       if(store.ui.selectedKey === notes[0])
+         store.ui.selectKey('');
+   
+       store.ui.selectKey(notes[0]);
     }
   
     setupSlider = () => {
@@ -437,6 +481,7 @@ export const ToolSynth = observer(class ToolSynth extends Component {
             <div key={index} id={note} className="divSynthKey" data-notes={Chord.notes(note, this.selectedChord)} style={{touchAction: 'manipulation', width: (100 / self.arrayOctave.length) + '%', color:'gray',  textAlign:'center'}}
               onMouseDown={this.keyDown} onMouseUp={this.keyUp} 
               onTouchStart={this.keyDown} onTouchEnd={this.keyUp} 
+              onTouchCancel={this.cancelTouchEvent} 
               onMouseEnter={this.mouseEnterKey} onMouseLeave={this.mouseLeaveKey} >
             </div>
           ) 
