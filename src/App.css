@@ -434,6 +434,7 @@ wave {
   float:left;
   border-radius:2px;
   border:1px solid #19937a;
+  box-sizing:border-box;
   margin: 6px;
   display: flex;
   align-items: center;
