@@ -436,6 +436,9 @@ wave {
   border:1px solid #19937a;
   margin: 6px;
   display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
 
 .divGridButton canvas, .divGridButtonSelected canvas {
@@ -448,9 +451,13 @@ wave {
   background-color: rgba(0,0,0,0.5);
   float:left;
   border-radius:2px;
-  border:1px solid #2671ea;
+  border:3px solid #2671ea;
+  box-sizing:border-box;
   margin: 6px;
   display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
 
 .divGridButtonProgress {
@@ -458,6 +465,21 @@ wave {
   background-color:blue;
   position:absolute;
   pointer-events:none;
+  left:0;
+}
+
+.ulGridButton {
+  padding: 0; 
+  list-style-type: none;
+}
+
+.lblGridButton {
+  color: white;
+  font-size: 11px;
+  width: 100%;
+  text-align: center;
+  vertical-align: middle;
+  float: left;
 }
 
 #divEditViewBG {
