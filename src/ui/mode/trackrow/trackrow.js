@@ -643,14 +643,25 @@ export const TrackRowView = observer(class TrackRowView extends Component {
     let total = parseInt(squares.split(":")[0], 10) + parseInt(squares.split(":")[1], 10);
 
     ctx.strokeStyle = "#133e83";
+    
     ctx.lineWidth = 1.5;
     ctx.beginPath();
-
     for(let k=0; k<=total; k++){
+      //skip every 4 lines
+      if(k % 4 !== 0){
+        ctx.moveTo((k * w) + sceneStart, 0);
+        ctx.lineTo((k * w) + sceneStart, this.canvasHeight); 
+      }
+    }
+    ctx.stroke();
+    
+    //every 4 lines is a bit thicker
+    ctx.lineWidth = 3.5;
+    ctx.beginPath();
+    for(let k=0; k<=total; k+=4){
       ctx.moveTo((k * w) + sceneStart, 0);
       ctx.lineTo((k * w) + sceneStart, this.canvasHeight); 
     }
-
     ctx.stroke();
   }
 
