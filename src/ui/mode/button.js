@@ -373,27 +373,29 @@ export const GridButtonView = observer(class ButtonView extends Component {
           if(player && !this.props.store.ui.editMode && player.buffer.loaded){
             player.start(Tone.context.currentTime);
 
-            let tNow = new Date().getTime(), percent = 0;
-            let tDelta = ((this.tStart - tNow) / 1000) * -1;
-            
-            let duration = player.buffer.duration / player.playbackRate;
+            if(divGridButton && this.divProgress){
+              let tNow = new Date().getTime(), percent = 0;
+              let tDelta = ((this.tStart - tNow) / 1000) * -1;
+              
+              let duration = player.buffer.duration / player.playbackRate;
 
-            if(tDelta < duration)
-              percent = (tDelta / duration) * 100;
+              if(tDelta < duration)
+                percent = (tDelta / duration) * 100;
 
-            this.tStart = new Date().getTime();
+              this.tStart = new Date().getTime();
 
-            //restarting animation after % played of duration seems to fix problems with animations not starting after ~80% complete
-            if(player.state === 'started' || (percent > 80 && percent < 99)){
-              this.divProgress.style.animation = 'none';
-              window.requestAnimationFrame(time => {
+              //restarting animation after % played of duration seems to fix problems with animations not starting after ~80% complete
+              if(player.state === 'started' || (percent > 80 && percent < 99)){
+                this.divProgress.style.animation = 'none';
                 window.requestAnimationFrame(time => {
-                  this.divProgress.style.animation = 'progressWidth ' + duration + 's linear';
+                  window.requestAnimationFrame(time => {
+                    this.divProgress.style.animation = 'progressWidth ' + duration + 's linear';
+                  });
                 });
-              });
-            }
-            else{
-              this.divProgress.style.animation = 'progressWidth ' + duration + 's linear';
+              }
+              else{
+                this.divProgress.style.animation = 'progressWidth ' + duration + 's linear';
+              }
             }
           }
   

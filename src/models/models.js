@@ -3341,6 +3341,31 @@ const Pattern = types.model("Pattern", {
                     }
                 }
             });
+
+            //Grid button animations
+            if(store.ui.viewMode === 'button' && store.getTrack(part.track).type === 'audio'){
+                let divGridButton = document.getElementById('divGridButton_' + part.track);
+                let divProgress = divGridButton.querySelector('.divGridButtonProgress');
+                let player = tObjs.instruments.find(inst => inst.track === part.track).obj;
+ 
+                Tone.Draw.schedule(() => {
+                    if(divGridButton && divProgress && player){
+                        let duration = player.buffer.duration / player.playbackRate;
+                        
+                        if(player.state === 'started'){
+                            divProgress.style.animation = 'none';
+                            window.requestAnimationFrame(time => {
+                                window.requestAnimationFrame(time => {
+                                divProgress.style.animation = 'progressWidth ' + duration + 's linear';
+                                });
+                            });
+                        }
+                        else{
+                            divProgress.style.animation = 'progressWidth ' + duration + 's linear';
+                        }   
+                    }
+                }, time)
+            }
         }).start(self.scene.start).stop(self.scene.end);
     }
     function afterAttach() {
