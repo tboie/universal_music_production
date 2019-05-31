@@ -45,6 +45,16 @@ export const Draw = observer(class Draw extends Component {
         || (this.props.numTracks !== prevProps.numTracks && this.props.viewMode === 'button')){
         this.initAddButtonObjs();
       }
+
+      //cleanup if not being used
+      if((prevProps.viewMode === 'edit' && prevProps.editViewMode === 'graph') 
+        && (this.props.viewMode !== 'edit' || this.props.editViewMode !== 'graph')){
+        this.resetObjArray(this.objEditCanvas);
+      }
+
+      if(prevProps.viewMode === 'button' && this.props.viewMode !== 'button'){
+        this.resetObjArray(this.objButtonCanvas);
+      }
     }
   
     initPlayhead = () => {
@@ -64,15 +74,22 @@ export const Draw = observer(class Draw extends Component {
   
       this.hdrPlayhead = document.getElementById("hdrPlayhead");
     }
+
+    resetObjArray = (objs) => {
+      if(objs){
+        objs.forEach(row => {
+          if(row.waveform){
+            row.waveform.dispose();
+            row.waveform = null;
+          }
+        })
+        
+        objs = [];
+      }
+    }
     
     initEditObjs = () => {
-      //TODO: don't reset entire array
-      this.objEditCanvas.forEach(row => {
-        row.waveform.dispose();
-        row.waveform = null;
-      })
-
-      this.objEditCanvas = [];
+      this.resetObjArray(this.objEditCanvas);
       
       ToneObjs.instruments.filter(o => o.track === this.props.selectedTrack.id)
         .forEach(obj => {
@@ -114,12 +131,7 @@ export const Draw = observer(class Draw extends Component {
     }
 
     initAddButtonObjs = () => {
-      this.objButtonCanvas.forEach(row => {
-        row.waveform.dispose();
-        row.waveform = null;
-      })
-
-      this.objButtonCanvas = [];
+      this.resetObjArray(this.objButtonCanvas);
 
       store.getTracksByGroup(store.ui.selectedGroup).filter(t => t.type === 'instrument').forEach(track => {
         let rowPanVol = ToneObjs.components.find(c => c.id === track.getPanVol().id);
