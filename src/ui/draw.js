@@ -20,7 +20,6 @@ export const Draw = observer(class Draw extends Component {
       this.reqVal = requestAnimationFrame(this.draw);
 
       this.initPlayhead();
-      this.initEditObjs();
     }
   
     componentWillUnmount(){
@@ -37,9 +36,14 @@ export const Draw = observer(class Draw extends Component {
       
       if(this.props.viewMode === 'edit' && this.props.editViewMode === 'graph'){
         if(prevProps.objs.length !== this.props.objs.length || prevProps.viewMode !== 'edit' || prevProps.editViewMode === 'bar' 
-            || prevProps.selectedTrack !== this.props.selectedTrack){
+          || prevProps.selectedTrack !== this.props.selectedTrack){
           this.initEditObjs();
         }
+      }
+
+      if(this.props.viewMode === 'button' && prevProps.viewMode !== 'button' 
+        || (this.props.numTracks !== prevProps.numTracks && this.props.viewMode === 'button')){
+        this.initAddButtonObjs();
       }
     }
   
@@ -91,7 +95,7 @@ export const Draw = observer(class Draw extends Component {
             this.addObjEditCanvas(obj);
       })
     }
-  
+    
     addObjEditCanvas = (obj) => {
       let ele = document.getElementById('canvas_' + obj.id);
       let ctx = ele.getContext('2d');
@@ -107,6 +111,36 @@ export const Draw = observer(class Draw extends Component {
       obj.obj.connect(waveform);
   
       this.objEditCanvas.push({id: obj.id, obj: obj.obj, waveform: waveform, gradient: waveformGradient, ctx: ctx, width: ctx.canvas.width, height: ctx.canvas.height})
+    }
+
+    initAddButtonObjs = () => {
+      this.objButtonCanvas.forEach(row => {
+        row.waveform.dispose();
+        row.waveform = null;
+      })
+
+      this.objButtonCanvas = [];
+
+      store.getTracksByGroup(store.ui.selectedGroup).filter(t => t.type === 'instrument').forEach(track => {
+        let rowPanVol = ToneObjs.components.find(c => c.id === track.getPanVol().id);
+
+        if(rowPanVol){
+          let ele = document.getElementById('canvasGridButton_' + track.id);
+          let ctx = ele.getContext('2d');
+          ctx.canvas.width = ele.width;
+          ctx.canvas.height = ele.height;
+      
+          let waveformGradient = ctx.createLinearGradient(0, 0, ctx.canvas.width, ctx.canvas.height);
+          waveformGradient.addColorStop(0, "#ddd");
+          waveformGradient.addColorStop(1, "#ddd");
+
+          //be sure to disconnect/dispose later
+          let waveform = new Tone.Waveform(1024);
+          rowPanVol.obj.connect(waveform);
+      
+          this.objButtonCanvas.push({id: rowPanVol.id, obj: rowPanVol.obj, waveform: waveform, gradient: waveformGradient, ctx: ctx, width: ctx.canvas.width, height: ctx.canvas.height})
+        }
+      })
     }
   
     initMeters = () => {
@@ -158,8 +192,39 @@ export const Draw = observer(class Draw extends Component {
       if(this.props.store.ui.viewMode === "edit"){
         this.drawEditViewObjs();
       }
+      
+      if(store.ui.viewMode === 'button'){
+        this.drawButtonViewObjs();
+      }
   
       requestAnimationFrame(this.draw);
+    }
+
+    drawButtonViewObjs = () => {
+      if(!this.objButtonCanvas){
+        this.initAddButtonObjs();
+      }
+  
+      this.objButtonCanvas.forEach(obj => {
+        if(obj.waveform){
+          let values = obj.waveform.getValue();
+          obj.ctx.clearRect(0, 0,  obj.width,  obj.height);
+          obj.ctx.beginPath();
+          obj.ctx.lineJoin = "round";
+          obj.ctx.lineWidth = 6;
+          obj.ctx.strokeStyle = obj.gradient;
+          obj.ctx.moveTo(0, (values[0] / 255) *  obj.height);
+          
+          for (let i = 1, len = values.length; i < len; i++){
+            let val = (values[i] + 1) / 2;
+            let x =  obj.width * (i / len);
+            let y = val *  obj.height;
+            obj.ctx.lineTo(x, y);
+          }
+    
+          obj.ctx.stroke();
+        }
+      })
     }
   
     drawEditViewObjs = () => {

@@ -446,6 +446,13 @@ wave {
   z-index:2;
 }
 
+.canvasGridButtonInst {
+  height: 75px;
+  width: 75px;
+  position: absolute;
+  z-index: -1 !important;
+}
+
 .divGridButtonSelected {
   height:75px;
   width:75px;

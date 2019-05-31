@@ -319,6 +319,7 @@ export const GridButtonView = observer(class ButtonView extends Component {
   
       return(
         <div id={'divGridButton_' + this.props.keyValue} className={strClass} onMouseLeave={this.noteOff} onTouchEnd={this.noteOff}>
+          <canvas id={'canvasGridButton_' + this.props.keyValue} className='canvasGridButtonInst'></canvas>
           <ul key={'ulGridButton_' + this.props.keyValue} className='ulGridButton'>
             <li key={'li_' + this.props.keyValue}><b><label className='lblGridButton'>{this.props.keyValue}</label></b></li>
             { store.instruments.getAllByTrack(this.props.keyValue).map(inst => 
