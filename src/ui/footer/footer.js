@@ -106,20 +106,22 @@ export const FooterView = observer(class FooterView extends Component{
           if(name === "player"){
             instrument.obj.stop();
 
-            //stop gridbutton animations
-            if(store.ui.viewMode === 'button'){
-              if(store.ui.selectedTrack.id === instrument.track){
-                let divGridButton = document.getElementById('divGridButton_' + instrument.track);
-      
-                if(divGridButton){
-                  let divProgress = divGridButton.querySelector('.divGridButtonProgress');
-                  
-                  if(divProgress){
-                      divProgress.style.animation = 'none';
+            //delay stopping gridbutton animation for better results
+            setTimeout(() => {
+              if(store.ui.viewMode === 'button'){
+                if(store.getTrack(instrument.track).group === store.ui.selectedGroup){
+                  let divGridButton = document.getElementById('divGridButton_' + instrument.track);
+        
+                  if(divGridButton){
+                    let divProgress = divGridButton.querySelector('.divGridButtonProgress');
+                    
+                    if(divProgress){
+                        divProgress.style.animation = 'none';
+                    }
                   }
                 }
               }
-            }
+            }, 100)
           }
           else if(name !== "noisesynth" && name !== "plucksynth" && name !== "membranesynth" && name !== "metalsynth"){
             instrument.obj.releaseAll();
