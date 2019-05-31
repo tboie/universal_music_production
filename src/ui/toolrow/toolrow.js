@@ -354,7 +354,7 @@ const ToggleModeIcons = props => {
     groupIcons = ['A','B','C','D','M'].map((group, idx) => {
                   //no master option for button view
                   if(group === 'M' && store.ui.viewMode === 'button')
-                    return;
+                    return null;
                   
                   let opacity = 0.3;
                   if(props.selectedGroup === group)

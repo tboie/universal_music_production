@@ -1,4 +1,3 @@
-import Tone from 'tone';
 import { ToneObjs } from '../models/models.js';
 import { store } from '../data/store.js';
 import * as throttle from 'lodash/throttle';

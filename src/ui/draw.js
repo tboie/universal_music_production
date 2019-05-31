@@ -41,7 +41,7 @@ export const Draw = observer(class Draw extends Component {
         }
       }
 
-      if(this.props.viewMode === 'button' && prevProps.viewMode !== 'button' 
+      if((this.props.viewMode === 'button' && prevProps.viewMode !== 'button')
         || (this.props.numTracks !== prevProps.numTracks && this.props.viewMode === 'button')){
         this.initAddButtonObjs();
       }

@@ -429,6 +429,7 @@ const MixRowButtonToggleEditViewMode = observer(class MixRowButtonToggleEditView
   }
 });
 
+/*
 const MixRowButtonDeleteTrack = observer(class MixRowButtonDeleteTrack extends Component{
   componentDidMount(){}
   componentWillUnmount(){}
@@ -450,3 +451,4 @@ const MixRowButtonDeleteTrack = observer(class MixRowButtonDeleteTrack extends C
     );
   }
 });
+*/

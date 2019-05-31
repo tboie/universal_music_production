@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { observer } from "mobx-react";
 import Tone from 'tone';
 import { MixMeters } from './mixrow.js';
-import { hex_to_ascii, mapVal } from '../../utils.js';
+import { mapVal } from '../../utils.js';
 
 
 export const MixRowViewEdit = observer(class MixRowViewEdit extends Component{

@@ -154,6 +154,9 @@ export const UIMultibandCompressor = observer(class UIMultibandCompressor extend
                       <UICustomRangeControl obj={this.obj} propName='knee' min={-50} max={50} mode={'range'} step={0.01} density={1} numType={'float'} signal={true} child={section}/>
                     </div>
             }
+            else{
+              return null;
+            }
           }) 
         }
       </div>
@@ -301,6 +304,9 @@ export const UIMultibandSplit = observer(class UIMultibandSplit extends Componen
                         <UICustomRangeControl obj={this.obj} propName='frequency' min={0} max={10000} mode={'range'} step={null} density={1} numType={'float'} signal={true} child={section}/>
                         <UIFilterRolloffControl obj={this.obj} propName={"rolloff"} child={section}/>
                       </div>
+            }
+            else{
+              return null;
             }
           }) 
         }

@@ -7,7 +7,6 @@ import { store } from '../../../data/store.js';
 import { renderWaveform } from "../../utils.js";
 import { MixRowView } from "./mixrow.js";
 import { MixRowViewEdit } from "./mixrowedit.js";
-import * as debounce from 'lodash/debounce';
 
 
 export const TrackRowView = observer(class TrackRowView extends Component {

@@ -106,6 +106,9 @@ export const GridButtonView = observer(class ButtonView extends Component {
                         editMode={this.props.editMode}
                       />
                 }
+                else{
+                  return null;
+                }
               })
             }
          </div>
