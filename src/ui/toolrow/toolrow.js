@@ -64,6 +64,14 @@ export const ToolRow = observer(class ToolRow extends Component {
       if(prevProps.selectedToolbar !== this.props.selectedToolbar){
         this.displayTool(this.props.selectedToolbar)
       }
+
+      //hide zoom icons for manager mode
+      if(prevProps.mode !== 'manager' && this.props.mode === 'manager'){
+        document.getElementById('divZoom').style.display = 'none';
+      }
+      else{
+        document.getElementById('divZoom').style.display = 'block';
+      }
     }
   
     applyResizable = () => {
@@ -333,7 +341,7 @@ const ToggleModeIcons = props => {
   if(props.viewMode === "button"){
     showEditIcon = 'hidden';
   }
-  else if(props.viewMode === 'edit' && props.editViewMode === 'bar'){
+  else if((props.viewMode === 'edit' && props.editViewMode === 'bar') || props.viewMode === 'manager'){
     showEditIcon = 'hidden';
     bgVisibility = 'hidden';
   }

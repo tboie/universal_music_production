@@ -13,6 +13,7 @@ import { HeaderView } from "./ui/header/header.js";
 import { SequencerView } from "./ui/mode/sequencer.js";
 import { GridButtonView } from "./ui/mode/button.js";
 import { EditView } from './ui/mode/edit.js';
+import { ManagerView } from './ui/mode/manager.js';
 import { DropZone } from './ui/mode/dropzone.js';
 import { Draw } from './ui/draw.js';
 import { ListBrowser } from "./ui/toolrow/browse/browse.js";
@@ -151,7 +152,6 @@ const AppView = observer(class AppView extends Component {
       viewWindow = <GridButtonView
                       store={this.props.store}
                       selectedTrack={this.props.store.ui.selectedTrack}
-                      editMode={this.props.store.ui.editMode}
                     />
     else if (this.props.store.ui.viewMode === "edit" && this.props.store.ui.selectedTrack)
       viewWindow = <EditView
@@ -161,6 +161,12 @@ const AppView = observer(class AppView extends Component {
                       windowHeight={this.props.store.ui.windowHeight} 
                       windowWidth={this.props.store.ui.windowWidth}
                       editViewMode={this.props.store.ui.views.edit.mode}
+                    />
+    else if (this.props.store.ui.viewMode === "manager")
+      viewWindow = <ManagerView
+                      store={this.props.store}
+                      selectedScene={this.props.store.ui.selectedScene}
+                      selectedTrack={this.props.store.ui.selectedTrack}
                     />
 
 

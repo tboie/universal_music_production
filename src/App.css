@@ -917,6 +917,28 @@ input {
   display:none;
 }
 
+#divManager {
+  position:absolute;
+  top:40px; 
+  bottom:80px;
+  height:100%;
+  width:100%;
+  background-color:rgba(0,0,0,0.7);
+  overflow:scroll;
+}
+
+#tableManager {
+  width:100%;
+  color:white;
+  border-collapse: collapse;
+  overflow:scroll;
+  text-align:center;
+}
+
+#tableManager th, td {
+  border-bottom: 1px solid rgba(255,255,255,0.4);
+}
+
 /***************************/
 
 /*!

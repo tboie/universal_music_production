@@ -3514,7 +3514,7 @@ const UIToolbar = types.model("UIToolbar", {
 
 
 const UI = types.model("UI", {
-    viewMode: types.optional(types.union(types.literal("sequencer"), types.literal("button"), types.literal("edit")), "sequencer"),
+    viewMode: types.optional(types.union(types.literal("sequencer"), types.literal("button"), types.literal("edit"), types.literal("manager")), "sequencer"),
     views: UIMainViews,
     toolbar: UIToolbar,
     mixMode: types.optional(types.boolean, false),
@@ -3735,6 +3735,7 @@ const UI = types.model("UI", {
         ToneObjs.metronome.mute = !self.recordMode;
     }
     function toggleSettings() {
+        //self.toggleViewMode('manager');
         self.settings = !self.settings;
     }
     function setViewLength(val) {
@@ -3912,6 +3913,9 @@ const UI = types.model("UI", {
         }
         else if (mode === "sequencer") {
             self.viewMode = "sequencer";
+        }
+        else if (mode === "manager") {
+            self.viewMode = "manager";
         }
     }
     function setDevice() {
