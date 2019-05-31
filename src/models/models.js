@@ -3878,6 +3878,8 @@ const UI = types.model("UI", {
 
                 if(self.selectedGroup === 'M')
                     self.selectedGroup = 'A';
+
+                self.selectedPattern = store.getPatternByTrackScene(self.selectedTrack.id, self.selectedScene.id);
                 
                 self.viewMode = "button";
             }
