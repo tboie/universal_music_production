@@ -83,7 +83,7 @@ export const Draw = observer(class Draw extends Component {
             row.waveform = null;
           }
         })
-        
+
         objs = [];
       }
     }
@@ -201,7 +201,7 @@ export const Draw = observer(class Draw extends Component {
         this.drawTrackMixMeters();
       }
       
-      if(this.props.store.ui.viewMode === "edit"){
+      if(store.ui.viewMode === "edit" && this.props.editViewMode === 'graph'){
         this.drawEditViewObjs();
       }
       
