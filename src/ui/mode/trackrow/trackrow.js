@@ -101,21 +101,6 @@ export const TrackRowView = observer(class TrackRowView extends Component {
             return;
           }
           
-          //same selected note before and after update
-          if(prevProps.selectedNote && this.props.selectedNote){
-            if(prevProps.selectedNote.id === this.props.selectedNote.id){
-              if(prevProps.selectedNoteDuration !== this.props.selectedNoteDuration || prevProps.selectedNoteOffset !== this.props.selectedNoteOffset){
-                this.init();
-                return;
-              }
-              //updated blank selectednote to same selectedkey (select key, create new note, select same key)
-              if(prevProps.selectedNoteValue !== this.props.selectedNoteValue && prevProps.selectedKey === this.props.selectedKey){
-                this.init();
-                return;
-              }
-            }
-          }
-
           //update previous/current track containing selectednote
           if(prevProps.selectedNote !== this.props.selectedNote){
             if(this.props.selectedNote){
@@ -376,7 +361,6 @@ export const TrackRowView = observer(class TrackRowView extends Component {
               }
               else if(this.props.selectedNote === note){
                 store.ui.selectNote(undefined);
-                note.getPattern().deleteNote(note);
               }
               else{
                 store.ui.selectNote(note);

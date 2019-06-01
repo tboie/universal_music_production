@@ -3833,31 +3833,23 @@ const UI = types.model("UI", {
         self.selectedGroup = group;
     }
     function selectNote(note){
-        //let prevNote = self.selectedNote;
+        let prevNote = self.selectedNote;
 
         self.selectedNote = note;
 
-        //delete prev selected note if no value was applied
-        //warning: node being used after destroy
-        /*
         if(prevNote){
             if(self.selectedNote !== prevNote){
                 if(prevNote.getPattern().track.type === 'instrument'){
                     let noteVals = prevNote.getNote();
                     if(noteVals){
                         if(noteVals[0] === ''){
-                            //throws warnings
-                            console.log('prevNote: ' + prevNote.id)
-                            console.log('currNote: ' + self.selectedNote.id)
                             let pattern = prevNote.getPattern();
                             pattern.deleteNote(prevNote);
-                            
                         }
                     }
                 }
             }
         }
-        */
     }
     function selectKey(key){
         self.selectedKey = key;
