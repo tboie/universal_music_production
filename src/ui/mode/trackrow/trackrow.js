@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { observer } from "mobx-react";
+import { isAlive } from "mobx-state-tree";
 import Tone from 'tone';
 import interact from 'interactjs';
 import { ToneObjs } from '../../../models/models.js';
@@ -99,6 +100,22 @@ export const TrackRowView = observer(class TrackRowView extends Component {
           //transition eventlistener calls init
           if(prevProps.viewLength !== this.props.viewLength){
             return;
+          }
+
+          if(prevProps.selectedNote && this.props.selectedNote){
+            if(isAlive(prevProps.selectedNote)){
+              if(prevProps.selectedNote.id === this.props.selectedNote.id){
+                if(prevProps.selectedNoteDuration !== this.props.selectedNoteDuration || prevProps.selectedNoteOffset !== this.props.selectedNoteOffset){
+                  this.init();
+                  return;
+                }
+                //updated blank selectednote to same selectedkey (select key, create new note, select same key)
+                if(prevProps.selectedNoteValue !== this.props.selectedNoteValue && prevProps.selectedKey === this.props.selectedKey){
+                  this.init();
+                  return;
+                }
+              }
+            }
           }
           
           //update previous/current track containing selectednote
@@ -361,6 +378,10 @@ export const TrackRowView = observer(class TrackRowView extends Component {
               }
               else if(this.props.selectedNote === note){
                 store.ui.selectNote(undefined);
+                if(isAlive(note)){
+                  if(note.note)
+                    note.getPattern().deleteNote(note);
+                }
               }
               else{
                 store.ui.selectNote(note);
