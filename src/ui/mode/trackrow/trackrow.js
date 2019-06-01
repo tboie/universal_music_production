@@ -359,12 +359,8 @@ export const TrackRowView = observer(class TrackRowView extends Component {
           } 
           else{
             if(pattern.track.type === "audio"){
-              if(!note.mute && note !== this.props.selectedNote){
+              if(note !== this.props.selectedNote){
                 store.ui.selectNote(note);
-              }
-              else if(note.mute && note !== this.props.selectedNote){
-                store.ui.selectNote(note);
-                note.toggle();
               }
               else{
                 store.ui.selectNote(undefined);
@@ -372,16 +368,14 @@ export const TrackRowView = observer(class TrackRowView extends Component {
               }
             }
             else if(pattern.track.type === "instrument"){
-              if(note.mute && note !== this.props.selectedNote){
-                note.toggle();
-                store.ui.selectNote(note);
-              }
-              else if(this.props.selectedNote === note){
+              //unselect and delete
+              if(this.props.selectedNote === note && this.props.selectedNote.getNote()[0]){  
                 store.ui.selectNote(undefined);
-                if(isAlive(note)){
-                  if(note.note)
-                    note.getPattern().deleteNote(note);
-                }
+                note.getPattern().deleteNote(note);
+              }
+              //unselect (selectnote() will delete empty note)
+              else if(this.props.selectedNote === note && !this.props.selectedNote.getNote()[0]){  
+                store.ui.selectNote(undefined);
               }
               else{
                 store.ui.selectNote(note);
