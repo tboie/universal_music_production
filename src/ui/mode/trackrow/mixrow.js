@@ -345,7 +345,7 @@ const MixRowButtonToggleGroup = observer(class MixRowButtonToggleGroup extends C
     this.id = 'btnMixToggleGroup_' + this.props.track.id;
     
     return (
-      <button id={this.id} className='btn-mix' onClick={this.toggleGroup}>{this.props.track.group}</button>
+      <button id={this.id} className='btn-mix' disabled={this.props.track.group === 'M' ? true : false} onClick={this.toggleGroup}>{this.props.track.group}</button>
     );
   }
 });
