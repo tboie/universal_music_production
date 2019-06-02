@@ -3752,7 +3752,10 @@ const UI = types.model("UI", {
         }
     }
     function setViewScene(scene) {
-        self.setViewLength(Tone.Time(store.getSceneLength(scene.id)).toBarsBeatsSixteenths())
+        if(scene.id !== self.selectedScene.id){
+            self.setViewLength(Tone.Time(store.getSceneLength(scene.id)).toBarsBeatsSixteenths());
+        }
+        
         /*
         let pxStart = self.windowWidth * (Tone.Time(scene.start) / Tone.Time(self.viewLength));
         let ele = document.getElementById('gridContainer');
