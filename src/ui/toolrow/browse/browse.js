@@ -411,7 +411,7 @@ class Row extends Component {
                   if(result.data){
                     if(result.data instanceof Blob){
                       let blobUrl = window.URL.createObjectURL(result.data);
-                      browsePlayer.load(blobUrl, function(){
+                      browsePlayer.load(blobUrl, () => {
                         if(url === store.ui.toolbar.browser[this.browserId].selectedFile)
                           browsePlayerStart(item, eleAnim, e.target);
                         
@@ -487,7 +487,7 @@ class Row extends Component {
     if(item.dir + '/' + item.name === store.ui.toolbar.browser[this.browserId].selectedFile){
       classSelected = ' itemSelected';
 
-      if(item.type === 'sample' && !browsePlayer.loaded){
+      if(item.type === 'sample' && !browsePlayer.loaded && item.name !== '...Import' && item.name !== '...Record'){
         showLoadIcon = 'block';
       }
     }
