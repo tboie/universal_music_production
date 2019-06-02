@@ -3755,28 +3755,6 @@ const UI = types.model("UI", {
         if(scene.id !== self.selectedScene.id){
             self.setViewLength(Tone.Time(store.getSceneLength(scene.id)).toBarsBeatsSixteenths());
         }
-        
-        /*
-        let pxStart = self.windowWidth * (Tone.Time(scene.start) / Tone.Time(self.viewLength));
-        let ele = document.getElementById('gridContainer');
-        let x = pxStart * -1, y = ele.getAttribute('data-y') || 0;
-
-        ele.setAttribute('data-x', x);
-        ele.setAttribute('data-y', y);
-        ele.style.webkitTransform = ele.style.transform = 'translate(' + x + 'px,' + y + 'px)';
-
-        //interact('#gridContainer').fire({type: 'dragmove', target: ele});
-        //Mix rows
-        //TODO: bugfix the mixrow on first load when selecting track and enabling mixview
-        //     mixrow toggle doesn't call function to adjust position
-
-        let elements = document.getElementsByClassName('track-rowmix');
-        if (elements.length > 0)
-            for (var i = 0; i < elements.length; i++)
-                elements[i].style.webkitTransform = elements[i].style.transform = 'translate(' + (x * -1) + 'px)';
-        
-        */
-
     }
     function selectScene(id) {
         self.selectedScene = store.getScene(id);
