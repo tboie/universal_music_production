@@ -374,7 +374,7 @@ export const GridButtonView = observer(class ButtonView extends Component {
           },
         })
         .on('down', event => {
-          if(player && !this.props.store.ui.editMode && player.buffer.loaded){
+          if(player && !this.props.editMode && player.buffer.loaded){
             player.start(Tone.context.currentTime);
 
             if(divGridButton && this.divProgress){

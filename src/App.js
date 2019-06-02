@@ -152,6 +152,7 @@ const AppView = observer(class AppView extends Component {
       viewWindow = <GridButtonView
                       store={this.props.store}
                       selectedTrack={this.props.store.ui.selectedTrack}
+                      editMode={this.props.store.ui.editMode}
                     />
     else if (this.props.store.ui.viewMode === "edit" && this.props.store.ui.selectedTrack)
       viewWindow = <EditView
