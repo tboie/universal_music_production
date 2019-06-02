@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { observer } from "mobx-react";
 import Tone from 'tone';
 import { store } from "../../../../data/store.js";
-import Microphone from 'recorder-js/src/microphone.js';
+import Recorder from 'recorder-js';
 import { randomId } from "../../../../models/models.js";
 import { ToolSampleEditor } from '../sample/sample.js';
 
@@ -12,30 +12,35 @@ export const ToolRecord = observer(class ToolRecord extends Component {
     sampleId;
     status = 'stopped';
     icon;
+    count;
     interval;
     objId;
-  
+
     componentDidMount(){
-      //console.log('toolrecord mounted')
       this.source = new Tone.UserMedia();
-      this.source.open().then(() => {});
-      this.recorder = new Microphone(this.source.output);
+
+      this.source.open().then(() => {
+        this.recorder = new Recorder(this.source._mediaStream.context, {
+          // An array of 255 Numbers
+          //onAnalysed: data => console.log(data),
+        });
+        
+        this.recorder.init(this.source._stream);
+      });
+     
       this.icon = document.getElementById('btnToggleRecord').children[0];
     }
   
     componentDidUpdate(prevProps, prevState, snapshot){
-      //console.log('toolrecord updated')
       if(!this.sampleId){
         this.icon = document.getElementById('btnToggleRecord').children[0];
   
-        //open mic again for new session
         if(this.source.state !== 'started')
           this.source.open().then(() => { });
       }
     }
   
     componentWillUnmount(){
-      //console.log('toolrecord unmounting')
       if(this.source){
         this.source.close();
         this.source.dispose();
@@ -44,7 +49,6 @@ export const ToolRecord = observer(class ToolRecord extends Component {
   
       if(this.recorder){
         this.recorder.stop();
-        this.recorder.clear();
         this.recorder = undefined;
       }
       
@@ -53,7 +57,6 @@ export const ToolRecord = observer(class ToolRecord extends Component {
     }
   
     init = () => {
-      //console.log('init called.   thisObjId: ' + this.objId + '  props.objID: '+ this.props.objId)
       if(this.objId !== this.props.objId){
         this.objId = this.props.objId;
         this.status = 'stopped';
@@ -62,75 +65,56 @@ export const ToolRecord = observer(class ToolRecord extends Component {
     }
   
     startRecord = () => {
-      //console.log('startRecord ' + this.status);
-      let self = this;
-  
-      //input has been opened && recording stopped
-      if(self.source.state === 'started' && this.status === 'stopped'){
-        let count = 4;
-        self.icon.innerHTML = 'looks_' + count;
-  
-        this.interval = setInterval(Timer, 1000);
-  
-        function Timer() {
-          count -= 1;
-  
-          if(count === 0){
-            clearInterval(self.interval);
-            self.icon.innerHTML = 'stop';
-            self.recorder.clear();
-            self.recorder.record(self.source._stream);
-  
-            return;
-          }
-  
-          let strNum = count;
-          if(count === 2)
-            strNum = 'two';
-          else if(count === 1)
-            strNum = 'one';
-  
-          self.icon.innerHTML = 'looks_' + strNum;
-        }
+      if(this.source.state === 'started' && this.status === 'stopped'){
+        this.count = 4;
+        this.icon.innerHTML = 'looks_' + this.count;
+        this.interval = setInterval(this.Timer, 1000);
       }
+    }
+
+    Timer = () => {
+      this.count -= 1;
   
-      self.status = 'recording';
+      if(this.count === 0){
+        clearInterval(this.interval);
+        this.icon.innerHTML = 'stop';
+        this.recorder.start(this.source._stream);
+        this.status = 'recording';
+        return;
+      }
+
+      let strNum = this.count;
+      if(this.count === 2)
+        strNum = 'two';
+      else if(this.count === 1)
+        strNum = 'one';
+
+      this.icon.innerHTML = 'looks_' + strNum;
     }
   
     stopRecord = () => {
-      //console.log('stopRecord: ' + this.status)
-      let self = this;
-      
       clearInterval(this.interval);
       this.icon.innerHTML = 'fiber_manual_record';
-      this.status = 'stopped';
-      
-      if(this.recorder.recording){
-        this.recorder.stop();
-        this.recorder.getBuffer((buffer) => {
-          this.recorder.exportWAV(blob => {
-            //Microphone.forceDownload(blob, 'output.wav');
-            let sampleId = 'sample_' + randomId();
-            let newFile = new File([blob], 'rec' + randomId() + ' ' + new Date().toLocaleTimeString());
-  
-            store.DBSaveAudioFile({
-              id: sampleId,
-              data: newFile
-            }).then(function(){
-              self.sampleId = sampleId;
-              self.recorder.clear();
-              self.source.close();
-  
-              //fileTree.children[4].children.push({name: newFile.name, id: sampleId , type: 'sample'});
-              self.forceUpdate();
-            });
+
+      if(this.status === 'recording'){
+        this.status = 'stopped';
+        this.recorder.stop().then(({blob, buffer}) => {
+          let sampleId = 'sample_' + randomId();
+          let newFile = new File([blob], 'rec' + randomId() + ' ' + new Date().toLocaleTimeString());
+
+          store.DBSaveAudioFile({
+            id: sampleId,
+            data: newFile
+          }).then(() => {
+            this.sampleId = sampleId;
+            this.source.close();
+            this.forceUpdate();
           });
         });
       }
-    }
+    };
   
     toggleRecord = (e) => {
-      //console.log('toggleRecord: ' + this.status)
       if(this.status === 'stopped'){
         this.startRecord();
       } else {
