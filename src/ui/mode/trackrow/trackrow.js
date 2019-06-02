@@ -705,7 +705,7 @@ export const TrackRowView = observer(class TrackRowView extends Component {
 
     let lblBarNum = null;
     if(this.props.bar){
-      lblBarNum = <label style={{position:'absolute', top:'10px', left:'10px', fontSize:'18px', color:'white', opacity:0.6}}>{this.props.bar}</label>
+      lblBarNum = <label className='lblTrackBar'>{this.props.bar}</label>
     }
     return (
       <div className="track-row">

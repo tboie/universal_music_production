@@ -85,6 +85,16 @@ html {
   z-index: 10;
 }
 
+.lblTrackBar {
+  pointer-events: none;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 18px;
+  color: white;
+  opacity: 0.6;
+}
+
 .canvasMeterL {
   width:100%;
   height:5px;
