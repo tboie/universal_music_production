@@ -4,7 +4,6 @@ import Tone from 'tone';
 import { store } from "../../../../data/store.js";
 import Microphone from 'recorder-js/src/microphone.js';
 import { randomId } from "../../../../models/models.js";
-import fileTree from '../../../../data/filetree.js';
 import { ToolSampleEditor } from '../sample/sample.js';
 
 export const ToolRecord = observer(class ToolRecord extends Component {
@@ -122,7 +121,7 @@ export const ToolRecord = observer(class ToolRecord extends Component {
               self.recorder.clear();
               self.source.close();
   
-              fileTree.children[4].children.push({name: newFile.name, id: sampleId , type: 'sample'});
+              //fileTree.children[4].children.push({name: newFile.name, id: sampleId , type: 'sample'});
               self.forceUpdate();
             });
           });

@@ -3,7 +3,6 @@
 import { types, getParent, destroy, getMembers, applySnapshot, getSnapshot } from "mobx-state-tree";
 import Tone from 'tone';
 import idb from 'idb';
-import fileTree from '../data/filetree.js';
 import { Note as TonalNote } from "tonal";
 import { store } from "../data/store.js";
 //import { UndoManager } from "mst-middlewares";
@@ -4533,7 +4532,7 @@ export const RootStore = types.model("RootStore", {
 
                     //add samples to browser
                     e.target.result.samples.forEach(s => {
-                        fileTree.children[4].children.push({name: s.url, id: s.id , type: 'sample'});
+                        //fileTree.children[4].children.push({name: s.url, id: s.id , type: 'sample'});
                     })
 
                     //console.log(JSON.stringify(store));
