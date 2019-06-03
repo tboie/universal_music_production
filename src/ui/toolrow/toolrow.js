@@ -243,6 +243,7 @@ export const ToolRow = observer(class ToolRow extends Component {
             <button id="btnUIZoomOut" className="btnUIZoom" onClick={this.UIZoomOut}><i className="material-icons i-36" style={{marginLeft: '-4px'}}>remove_circle</i></button>
             <button id="btnUIZoomIn" className="btnUIZoom" onClick={this.UIZoomIn}><i className="material-icons i-36" style={{marginLeft: '-4px'}}>add_circle</i></button>
           </div>
+          <div id='divToolRowIconsBG'></div>
           <div id="divToolRow">
             <div id="divToolRowHandle" className="divToolRowHandleBG">
               <div id="divToolRowHandleThumb" className="divToolRowHandleBG">
