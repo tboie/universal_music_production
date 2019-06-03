@@ -54,10 +54,9 @@ byte groups[4] = {0x41, 0x42, 0x43, 0x44};
 byte selectGroup[6] = {0xf0, 0x7f, 0x7f, 0x06, groups[0], 0xf7};
 byte selectedGroup;
 
-//MIDI_CREATE_BLE_INSTANCE(blemidi);
-MIDI_CREATE_DEFAULT_INSTANCE();
-
-const int pots[] = {PIN_A0, PIN_A1, PIN_A2, PIN_A3}; 
+//BLE or serial
+MIDI_CREATE_BLE_INSTANCE(blemidi);
+//MIDI_CREATE_DEFAULT_INSTANCE();
 
 //board
 const int pins[] = {28, 29, 12, 13, 14, 8, 20, 16, 15, 7, 11, 30, 27};
@@ -69,14 +68,33 @@ const int pinsmcp[] = {0, 1, 2, 3, 4, 5, 6, 7};
 int states2[] = {0, 0, 0, 0, 0, 0, 0, 0};
 const int notes2[] = {0, 1, 2, 3, 4, 62, 63, 61};
 
-//Pot Smoothing
-const int numReadings = 10;
-int readings[numReadings];      // the readings from the analog input
-int readIndex = 0;              // the index of the current reading
-int total = 0;                  // the running total
-int average = 0;                // the average
-int prevAverage = -1;           // prev average used for bounds padding
+//Potentiometer
+class Potentiometer
+{
+  public:
+  
+  int pin;
+  
+  //Pot Smoothing
+  const int numReadings = 10;
+  int readings[10];      // the readings from the analog input
+  int readIndex = 0;              // the index of the current reading
+  int total = 0;                  // the running total
+  int average = 0;                // the average
+  int prevAverage = -1;           // prev average used for bounds padding
 
+  Potentiometer(int pinId)
+  {
+    pin = pinId;
+  }
+ 
+  void Update()
+  {
+    
+  }
+};
+
+Potentiometer pots[] = {Potentiometer(PIN_A0), Potentiometer(PIN_A1), Potentiometer(PIN_A2), Potentiometer(PIN_A3)};
 
 void setup()
 {
@@ -97,8 +115,10 @@ void setup()
     mcp.pullUp(pinsmcp[thisPin], HIGH);  // turn on a 100K pullup internally
   }
 
-  for (int thisReading = 0; thisReading < numReadings; thisReading++) {
-    readings[thisReading] = 0;
+  for (int k=0; k < 4; k++){
+    for (int thisReading = 0; thisReading < pots[k].numReadings; thisReading++) {
+      pots[k].readings[thisReading] = 0;
+    }
   }
 
   Serial.println("Adafruit Bluefruit52 MIDI over Bluetooth LE Example");
@@ -127,6 +147,10 @@ void setup()
  
   // Do the same for MIDI Note Off messages.
   //MIDI.setHandleNoteOff(handleNoteOff);
+
+  // Start BLE Battery Service
+  //blebas.begin();
+  //blebas.write(100);
  
   // Set up and start advertising
   startAdv();
@@ -281,34 +305,41 @@ void loop()
     }
   }
 
-  // subtract the last reading:
-  total = total - readings[readIndex];
-  // read from the sensor:
-  readings[readIndex] = analogRead(pots[0]);
-  // add the reading to the total:
-  total = total + readings[readIndex];
-  // advance to the next position in the array:
-  readIndex = readIndex + 1;
 
-  // if we're at the end of the array...
-  if (readIndex >= numReadings) {
-    // ...wrap around to the beginning:
-    readIndex = 0;
+  // potentiometers
+  for(int k=0; k < 4; k++){
+    // subtract the last reading:
+    pots[k].total = pots[k].total - pots[k].readings[pots[k].readIndex];
+    // read from the sensor:
+    pots[k].readings[pots[k].readIndex] = analogRead(pots[k].pin);
+    // add the reading to the total:
+    pots[k].total = pots[k].total + pots[k].readings[pots[k].readIndex];
+    // advance to the next position in the array:
+    pots[k].readIndex = pots[k].readIndex + 1;
+  
+    // if we're at the end of the array...
+    if (pots[k].readIndex >= pots[k].numReadings) {
+      // ...wrap around to the beginning:
+      pots[k].readIndex = 0;
+    }
+  
+    // calculate the average:
+    pots[k].average = pots[k].total / pots[k].numReadings;
+  
+    // create bounds padding for varying values
+    if ((pots[k].average + 5) <= pots[k].prevAverage || (pots[k].average - 5) >= pots[k].prevAverage) {
+      //Serial.println(pots[k].average);
+      pots[k].prevAverage = pots[k].average;
+      
+      int mappedAvg = map(pots[k].average, 0, 940, 1, 127);
+      //Serial.println(mappedAvg);
+      
+      //https://www.midi.org/specifications-old/item/table-3-control-change-messages-data-bytes-2
+      MIDI.sendControlChange(k+1, mappedAvg, 1);
+    }
   }
 
-  // calculate the average:
-  average = total / numReadings;
-
-  // create bounds padding for varying values
-  if ((average + 5) <= prevAverage || (average - 5) >= prevAverage) {
-    //Serial.println(average);
-    prevAverage = average;
-    
-    int mappedAvg = map(average, 0, 940, 1, 127);
-    //Serial.println(mappedAvg);
-    MIDI.sendControlChange(1, mappedAvg, 1);
-  }    
-
+  
   delay(3);
 }
 

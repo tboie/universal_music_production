@@ -39,11 +39,13 @@ let throttlePlayerModelRateChange = throttle(changePlayerModelRate, 50);
 function getMIDIMessage(message) {
     let command, val, velocity;
 
+    //notes and controlchanges
     if(message.data.length === 3){
         command = message.data[0];
         val = message.data[1];
         velocity = message.data[2];
     }
+    //sysex
     else if(message.data.length === 6){
         val = message.data[4].toString(16)
         if(val >= 41 && val <= 44){
@@ -55,10 +57,23 @@ function getMIDIMessage(message) {
     }
 
     switch (command) {
+        //controlchanges
+        //https://www.midi.org/specifications-old/item/table-3-control-change-messages-data-bytes-2
         case 176:
-            val = parseFloat(mapVal(velocity, 0, 127, 0, 2).toFixed(2));
-            throttlePlayerModelRateChange(val);
-            changePlayerRate(val);
+            if(val === 1){
+                let mappedVal = parseFloat(mapVal(velocity, 0, 127, 0, 2).toFixed(2));
+                throttlePlayerModelRateChange(mappedVal);
+                changePlayerRate(mappedVal);
+            }
+            else if(val === 2){
+                //console.log(val)
+            }
+            else if(val === 3){
+                //console.log(val);
+            }
+            else if(val === 4){
+                //console.log(val);
+            }
             break;
         case 144:
             noteOn(val);
@@ -295,7 +310,8 @@ async function onDisconnected() {
 }
 
 function handleValueChange(event) {
-    console.log('handleValueChange')
+    //console.log(event);
+
     if(event.target.value){
         let action = event.target.value.getUint8(2);
         let note = event.target.value.getUint8(3);
