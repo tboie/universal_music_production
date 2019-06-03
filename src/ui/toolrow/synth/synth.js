@@ -206,53 +206,7 @@ export const ToolSynth = observer(class ToolSynth extends Component {
       else
         notes = ele.dataset.notes.split(',');
       
-      if(this.props.selectedTrack){
-        ToneObjs.instruments.filter(o => o.track === this.props.selectedTrack.id).forEach(row => {
-          if(row.obj){
-            let type = row.id.split('_')[0];
-  
-            if(type === "metalsynth" || type === "membranesynth" || type === "noisesynth"){
-              row.obj.triggerRelease();
-            }
-            else if(type !== "player" && type !== "plucksynth"){
-              //row.obj.releaseAll();
-              row.obj.triggerRelease(notes.map(n => Note.freq(n)));
-            }
-          }
-        });
-        
-        ToneObjs.sources.filter(o => o.track === this.props.selectedTrack.id).forEach(row => {
-          if(row.obj){
-            row.obj.stop();
-          }
-        });
-        //now unmute patterns that were muted on press
-        if(!this.mouseDown){
-          ToneObjs.parts.filter(p => p.track === this.props.selectedTrack.id).forEach(o => {
-            if(o.obj.mute)
-              o.obj.mute = false; 
-          });
-        }
-
-
-        ToneObjs.custom.filter(o => o.track === this.props.selectedTrack.id).forEach(row => {
-          if(row.obj){ 
-            let ch = store.instruments.getInstrumentByTypeId("tinysynth", row.id).channel;
-  
-            if(!this.selectedChord){
-              let noteNum = Note.midi(notes[0]); //C4 is 60
-              row.obj.send([0x80 + ch, noteNum, 0], Tone.context.currentTime)
-            }
-            else{
-              notes.forEach(n => {
-                let midi = Note.midi(n)
-                if(midi)
-                  row.obj.send([0x80 + ch, midi, 0], Tone.context.currentTime)
-              })
-            }
-          }
-        });
-      }
+      ToneObjs.trackInstNoteOff(this.props.selectedTrack.id, notes, this.mouseDown)
 
       //reset color
       if(dragged){
@@ -268,7 +222,6 @@ export const ToolSynth = observer(class ToolSynth extends Component {
     }
 
     noteOn = (ele, dragged) => {
-      let self = this;
       let notes = [];
       
       if(!this.selectedChord)
@@ -276,87 +229,32 @@ export const ToolSynth = observer(class ToolSynth extends Component {
       else
         notes = ele.dataset.notes.split(',');
 
-      if(this.props.selectedTrack){
-        ToneObjs.instruments.filter(o => o.track === this.props.selectedTrack.id).forEach(function(row){
-          if(row.obj){
-            let type = row.id.split('_')[0];
+      ToneObjs.trackInstNoteOn(this.props.selectedTrack.id, notes);
   
-            if(type === 'metalsynth'){
-              row.obj.frequency.setValueAtTime(notes[0], undefined, Math.random()*0.5 + 0.5);
-              row.obj.triggerAttack(undefined, 1);
-            }
-            else if(type === 'noisesynth'){
-              row.obj.triggerAttack();
-            }
-            else if(type === 'plucksynth' || type === 'membranesynth'){
-              row.obj.triggerAttack(Note.freq(notes[0]));
-            }
-            else if(type !== 'player'){
-              row.obj.triggerAttack(notes.map(n => Note.freq(n)));
-            }
-          }
-        });
-        //Sources are monophonic. this interrupts pattern events, so patterns are muted while playing
-        let bPatternsMuted = false;
-        ToneObjs.sources.filter(o => o.track === this.props.selectedTrack.id).forEach(function(row){
-          if(!bPatternsMuted){
-            ToneObjs.parts.filter(p => p.track === self.props.selectedTrack.id).forEach(o => {
-              if(!o.obj.mute)
-                o.obj.mute = true;
-            });
-            bPatternsMuted = true;
-          }
-
-          if(row.obj){
-            if(row.id.split('_')[0] !== 'noise')
-              row.obj.frequency.value = Note.freq(notes[0]);
-
-            row.obj.start();
-          }
-        });
-        ToneObjs.custom.filter(o => o.track === this.props.selectedTrack.id).forEach(function(row){
-          if(row.obj){
-            let ch = store.instruments.getInstrumentByTypeId("tinysynth", row.id).channel;
-  
-            if(!self.selectedChord){
-              let noteNum = Note.midi(notes[0]); //C4 is 60
-              row.obj.send([0x90 + ch, noteNum, 100], Tone.context.currentTime)
-            }
-            else{
-              notes.forEach(n => {
-                let midi = Note.midi(n)
-                if(midi)
-                  row.obj.send([0x90 + ch, midi, 100], Tone.context.currentTime)
-              })
-            }
-          }
-        });
-      }
-  
-       ele.style.backgroundColor = '#2671ea';//'#181f87';
+      ele.style.backgroundColor = '#2671ea';//'#181f87';
   
        //reset previous selectedkey color
-       if(store.ui.selectedKey){
-         if(store.ui.selectedKey !== ele.id){
-           let key = document.getElementById(store.ui.selectedKey);
-           if(key){
-             if(key.id.length > 2)
-               key.style.backgroundColor = 'black';
-             else
-               key.style.backgroundColor = 'white';
-           }
-         }
-       }
+      if(store.ui.selectedKey){
+        if(store.ui.selectedKey !== ele.id){
+          let key = document.getElementById(store.ui.selectedKey);
+          if(key){
+            if(key.id.length > 2)
+              key.style.backgroundColor = 'black';
+            else
+              key.style.backgroundColor = 'white';
+          }
+        }
+      }
    
-       if(store.ui.selectedNote){
-         store.ui.selectedNote.setNote(notes)
-       }
+      if(store.ui.selectedNote){
+        store.ui.selectedNote.setNote(notes)
+      }
        
-       //hacky way to trigger when same key is set to trackview
-       if(store.ui.selectedKey === notes[0])
-         store.ui.selectKey('');
+      //hacky way to trigger when same key is set to trackview
+      if(store.ui.selectedKey === notes[0])
+        store.ui.selectKey('');
    
-       store.ui.selectKey(notes[0]);
+      store.ui.selectKey(notes[0]);
     }
   
     setupSlider = () => {

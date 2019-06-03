@@ -147,6 +147,112 @@ export let ToneObjs = {
                 }
             }
         }
+    },
+    trackInstNoteOn: (trackId, notes) => {
+        ToneObjs.instruments.filter(o => o.track === trackId).forEach(row => {
+            if(row.obj){
+                let type = row.id.split('_')[0];
+        
+                if(type === 'metalsynth'){
+                    row.obj.frequency.setValueAtTime(notes[0], undefined, Math.random()*0.5 + 0.5);
+                    row.obj.triggerAttack(undefined, 1);
+                }
+                else if(type === 'noisesynth'){
+                    row.obj.triggerAttack();
+                }
+                else if(type === 'plucksynth' || type === 'membranesynth'){
+                    row.obj.triggerAttack(TonalNote.freq(notes[0]));
+                }
+                else if(type !== 'player'){
+                    row.obj.triggerAttack(notes.map(n => TonalNote.freq(n)));
+                }
+            }
+        });
+    
+          //mute pattern on keypress for monophonic 
+        let bPatternsMuted = false;
+        ToneObjs.sources.filter(o => o.track === trackId).forEach(row => {
+            if(!bPatternsMuted){
+                ToneObjs.parts.filter(p => p.track === trackId).forEach(o => {
+                    if(!o.obj.mute)
+                        o.obj.mute = true;
+                    });
+                bPatternsMuted = true;
+            }
+    
+            if(row.obj){
+                if(row.id.split('_')[0] !== 'noise')
+                    row.obj.frequency.value = TonalNote.freq(notes[0]);
+    
+                row.obj.start();
+            }
+          });
+    
+          ToneObjs.custom.filter(o => o.track === trackId).forEach(row => {
+            if(row.obj){
+                let ch = store.instruments.getInstrumentByTypeId("tinysynth", row.id).channel;
+    
+                if(!store.ui.selectedChord){
+                    let noteNum = TonalNote.midi(notes[0]); //C4 is 60
+                    row.obj.send([0x90 + ch, noteNum, 100], Tone.context.currentTime)
+                }
+                else{
+                    notes.forEach(n => {
+                        let midi = TonalNote.midi(n)
+                        if(midi)
+                            row.obj.send([0x90 + ch, midi, 100], Tone.context.currentTime)
+                    })
+                }
+            }
+        });
+    },
+
+    trackInstNoteOff: (trackId, notes, mouseDown) => {
+        ToneObjs.instruments.filter(o => o.track === trackId).forEach(row => {
+            if(row.obj){
+              let type = row.id.split('_')[0];
+    
+              if(type === "metalsynth" || type === "membranesynth" || type === "noisesynth"){
+                row.obj.triggerRelease();
+              }
+              else if(type !== "player" && type !== "plucksynth"){
+                //row.obj.releaseAll();
+                row.obj.triggerRelease(notes.map(n => TonalNote.freq(n)));
+              }
+            }
+          });
+          
+          ToneObjs.sources.filter(o => o.track === trackId).forEach(row => {
+            if(row.obj){
+              row.obj.stop();
+            }
+          });
+    
+          //now unmute patterns that were muted on press
+          if(!mouseDown){
+            ToneObjs.parts.filter(p => p.track === trackId).forEach(o => {
+              if(o.obj.mute)
+                o.obj.mute = false; 
+            });
+          }
+    
+          ToneObjs.custom.filter(o => o.track === trackId).forEach(row => {
+            if(row.obj){ 
+                let ch = store.instruments.getInstrumentByTypeId("tinysynth", row.id).channel;
+    
+                if(!this.selectedChord){
+                    let noteNum = TonalNote.midi(notes[0]); //C4 is 60
+                    row.obj.send([0x80 + ch, noteNum, 0], Tone.context.currentTime)
+                }
+                else{
+                    notes.forEach(n => {
+                        let midi = TonalNote.midi(n)
+                        if(midi)
+                            row.obj.send([0x80 + ch, midi, 0], Tone.context.currentTime)
+                    })
+                }
+            }
+        });
     }
 }
 
