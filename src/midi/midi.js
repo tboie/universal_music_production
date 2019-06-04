@@ -168,7 +168,12 @@ const noteOn = (note) => {
                 
                 store.ui.selectTrack(track.id);
             }
+            // instrument tracks
+            else if(track.type === 'instrument'){
+                ToneObjs.trackInstNoteOn(track.id, ['C3']);
+            }
         }
+        //turn off all other audio tracks
         else{
             if(track.type === "audio"){
                 let row = ToneObjs.instruments.find(i => i.track === track.id);
@@ -195,48 +200,16 @@ const noteOn = (note) => {
             }
         }
     })
-
-    /*
-    if(store.ui.selectedTrack){
-        ToneObjs.instruments.filter(o => o.track === store.ui.selectedTrack.id).forEach(function(row){
-            if(row.obj){
-            let type = row.id.split('_')[0];
-
-            if(type === 'metalsynth'){
-                row.obj.frequency.setValueAtTime(Tone.Midi(note).toFrequency(), undefined, Math.random()*0.5 + 0.5);
-                row.obj.triggerAttack(undefined, 1);
-            }
-            else if(type === 'noisesynth'){
-                row.obj.triggerAttack();
-            }
-            else if(type === 'plucksynth' || type === 'membranesynth'){
-                row.obj.triggerAttack(Tone.Midi(note).toFrequency());
-            }
-            else if(type !== 'player'){
-                //row.obj.triggerAttack(notes.map(n => Note.freq(n)));
-                row.obj.triggerAttack(Tone.Midi(note).toFrequency());
-            }
-            }
-        });
-    }
-    */
 }
 
 const noteOff = (note) => {
-    /*
-    ToneObjs.instruments.filter(o => o.track === store.ui.selectedTrack.id).forEach(function(row){
-        if(row.obj){
-            let type = row.id.split('_')[0];
-
-            if(type === "metalsynth" || type === "membranesynth" || type === "noisesynth"){
-            row.obj.triggerRelease();
-            }
-            else if(type !== "player" && type !== "plucksynth"){
-            row.obj.releaseAll();
+    store.getTracksByGroup(store.ui.selectedGroup).forEach((track, idx) => {
+        if(note-60 === idx){
+            if(track.type === 'instrument'){
+                ToneObjs.trackInstNoteOff(track.id, ['C3']);
             }
         }
     });
-    */
 }
 
 /*******************************
