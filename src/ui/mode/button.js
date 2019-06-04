@@ -9,7 +9,6 @@ import { TrackRowView } from './trackrow/trackrow.js';
 import { GridTimeline } from './timeline/timeline.js';
 import { renderWaveform } from '../utils.js';
 import { toneObjNames } from '../../data/tonenames.js';
-import { Note } from "tonal";
 
 
 export const GridButtonView = observer(class ButtonView extends Component {

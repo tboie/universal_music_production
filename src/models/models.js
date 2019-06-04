@@ -4677,13 +4677,11 @@ export const RootStore = types.model("RootStore", {
                 console.log('DB Save - running onupgradeneeded');
                 if (!db.objectStoreNames.contains('songs')) {
                     //console.log('DB Save - creating songs object store');
-                    let storeOS = db.createObjectStore('songs',
-                        { keyPath: 'id' });
+                    db.createObjectStore('songs', { keyPath: 'id' });
                 }
                 if (!db.objectStoreNames.contains('audio')) {
                     //console.log('DB Save - creating audio object store')
-                    let audioOS = db.createObjectStore('audio',
-                        { keyPath: 'id' });
+                    db.createObjectStore('audio', { keyPath: 'id' });
                 }
             };
 

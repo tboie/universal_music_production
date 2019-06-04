@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import { observer } from "mobx-react";
-import Tone from 'tone';
 import { store } from "../../../data/store.js";
-import { Note, Scale, Chord } from "tonal";
+import { Scale, Chord } from "tonal";
 import { ToneObjs } from "../../../models/models.js";
 import noUiSlider from 'nouislider';
 
