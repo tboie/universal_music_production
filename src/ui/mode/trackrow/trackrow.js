@@ -21,6 +21,7 @@ export const TrackRowView = observer(class TrackRowView extends Component {
   mouseHold;
   id;
   bSelectedNote;
+  waveRedrawTimeout;
 
   componentDidMount(){
     if(this.props.track.type !== "master"){
@@ -83,6 +84,11 @@ export const TrackRowView = observer(class TrackRowView extends Component {
           }
 
           if(prevProps.playbackRate !== this.props.playbackRate){
+            clearTimeout(this.waveRedrawTimeout);
+            this.waveRedrawTimeout = setTimeout(() => {
+              this.init(true);
+            }, 1000);
+
             this.init();
             return;
           }
@@ -201,6 +207,15 @@ export const TrackRowView = observer(class TrackRowView extends Component {
       }
       //all other views
       else{
+        if(this.props.track.type === 'audio'){
+          if(prevProps.playbackRate !== this.props.playbackRate){
+            clearTimeout(this.waveRedrawTimeout);
+            this.waveRedrawTimeout = setTimeout(() => {
+              this.init(true);
+            }, 1000);
+          }
+        }
+
         this.init();
       }
     }
