@@ -49,7 +49,7 @@ export let ToneObjs = {
                 else
                     noise.triggerAttackRelease('C5', '0.001s', time);
                 
-            }, '0:1').start(0);
+            }, '0:1').start(-1 * Tone.Time('1:0:0'));
 
             ToneObjs.metronome.mute = !store.ui.recordMode; 
         }

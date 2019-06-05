@@ -94,8 +94,13 @@ export const FooterView = observer(class FooterView extends Component{
       let icon = document.getElementById('iconPlay');
   
       if(this.playing === false){
-        Tone.Transport.position = this.props.store.settings.loopStart;
-        Tone.Transport.start("+0.1");
+        if(store.ui.recordMode){
+          Tone.Transport.start("+0.1", Tone.Time(store.settings.loopStart) - Tone.Time('1:0:0'));
+        }
+        else{
+          Tone.Transport.start("+0.1", store.settings.loopStart);
+        }
+
         icon.innerHTML = "stop";
       }
       else{
