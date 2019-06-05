@@ -48,9 +48,14 @@ export const MixRowView = observer(class MixRowView extends Component{
     let secondButton = <MixRowButtonToggleRes track={this.props.track}/>
     if(this.props.track.type === 'master')
       secondButton = <MixRowButtonToggleGroup track={this.props.track}/>
+
+    let cssTopGap = '';
+    if(this.props.store.ui.viewMode === 'button' || (this.props.store.ui.viewMode === 'edit' && this.props.store.ui.views.edit.mode === 'graph')){
+      cssTopGap = ' mixrowTopGap';
+    }
       
     return (
-      <div className='track-rowmix' id={'trackrowmix_' + this.props.track.id} style={{width: + this.props.store.ui.windowWidth}}>
+      <div className={'track-rowmix' + cssTopGap} id={'trackrowmix_' + this.props.track.id} style={{width: + this.props.store.ui.windowWidth}}>
         <div className='track-rowmix-left'>
           { firstButton }
           { secondButton }

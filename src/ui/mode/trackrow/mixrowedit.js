@@ -174,8 +174,13 @@ export const MixRowViewEdit = observer(class MixRowViewEdit extends Component{
     }
   
     render(){
+      let cssTopGap = '';
+      if(this.props.store.ui.viewMode === 'button' || (this.props.store.ui.viewMode === 'edit' && this.props.store.ui.views.edit.mode === 'graph')){
+        cssTopGap = ' mixrowTopGap';
+      }
+        
       return (
-        <div className="track-rowmix" id={'trackrowmixedit_' + this.props.track.id} style={{width: + this.props.store.ui.windowWidth}}>
+        <div className={"track-rowmix" + cssTopGap} id={'trackrowmixedit_' + this.props.track.id} style={{width: + this.props.store.ui.windowWidth}}>
           <div className="track-rowmix-left">
             <button id="btnMixBack" className="btn-mix" onClick={this.backButton}>{'<'}</button>
             <button id="btnMixNote_Vel" className="btn-mix btnSelected" onClick={this.selectMixButton}>Vel</button>
