@@ -844,8 +844,6 @@ input {
 .divBrowseListContainer {
   width:100%;
   height:calc(100% - 40px);
-  border-top:1px solid gray;
-  border-left:1px solid gray;
 }
 
 .itemSelected {
@@ -879,17 +877,29 @@ input {
   }
 }
 
+#divSideBarContainer { 
+  height: 100%;
+  width: 20%;
+  position: fixed;
+  z-index: 2;
+  top: 0;
+  right: 0;
+}
+
 .divBrowseMainContainer {
   height:100%;
   width:100%;
   background-color:rgb(33, 37, 43);
+  border-left:1px solid gray;
+  box-sizing:border-box;
 }
 
 .divListBrowseHdrContainer {
   height:40px;
   width:100%;
   background-color:rgb(33, 37, 43);
-  border-left:1px solid gray;
+  border-bottom: 1px solid gray;
+  box-sizing:border-box;
   position:relative;
   z-index:1;
 }
