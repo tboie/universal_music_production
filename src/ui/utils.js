@@ -326,8 +326,8 @@ export function setToneObjs(data, offline, selTrack){
   else
     tObjs = ToneObjs;
 
-  Object.keys(tObjs).forEach(toneClass => {
-    if(toneClass !== "parts" && toneClass !== "custom"){
+  Object.keys(tObjs).filter(prop => !(tObjs[prop] instanceof Function)).forEach(toneClass => {
+    if(toneClass !== "parts" && toneClass !== "custom" && toneClass !== "metronome"){
       let resultObj = data[toneClass];
 
       Object.keys(resultObj).forEach(oArray => {
