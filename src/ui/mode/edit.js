@@ -739,7 +739,7 @@ const EditViewGraph = observer(class EditViewGraph extends Component {
         cName = 'divEditViewObjSelected';
 
       if(!this.props.edit)
-        cName = cName + ' ' + ' cursorCrosshair';
+        cName = cName + ' cursorCrosshair';
   
       //text label. master track panvols display group our 'out'
       let text = this.props.obj.id.split('_')[0];
