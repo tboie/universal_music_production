@@ -62,7 +62,7 @@ export function applyDraggableGrid() {
         elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
       },
       autoScroll: false,
-      ignoreFrom: 'input',
+      ignoreFrom: '.track-rowmix',
       onmove: e => {
         dragMoveListener(e)
       },
