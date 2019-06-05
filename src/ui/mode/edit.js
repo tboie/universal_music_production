@@ -541,7 +541,11 @@ const EditViewGraph = observer(class EditViewGraph extends Component {
         timeline = <GridTimeline selectedScene={this.props.store.ui.selectedScene} ui={this.props.store.ui} windowWidth={this.props.store.ui.windowWidth}/>
         playhead = <div className="progressLine" id="playhead"></div>;
       }
-  
+
+      let cssCursor = '';
+      if(!this.props.edit)
+        cssCursor = 'cursorCrosshair'
+
       let sizes = store.ui.getGridSizes();
       return (
         <div id="gridParent" style={{width: sizes.parent.width, left: sizes.parent.left}}>
@@ -550,7 +554,7 @@ const EditViewGraph = observer(class EditViewGraph extends Component {
             { playhead }
             { trackRow }
           </div>
-          <div id='divEditViewBG' style={{width: store.ui.windowWidth + 'px'}}>
+          <div id='divEditViewBG' className={cssCursor} style={{width: store.ui.windowWidth + 'px'}}>
             { /* save for later? <canvas id="canvasEditViewBG" style={{backgroundColor: 'white', width:'100%', height:'100%', position:'fixed'}}></canvas> */ }
             { store.instruments.getAllByTrack(this.props.track.id).filter(o => o.id.split('_')[0] !== "mix" && o.id.split('_')[0] !== "tinysynth").map((obj, index) => 
               <EditViewObj key={obj.id} index={index} obj={obj} edit={this.props.edit} active={this.activateObj} drawConnection={this.drawConnection} selectedObj={this.props.store.ui.selectedObj}/>) }
@@ -733,6 +737,9 @@ const EditViewGraph = observer(class EditViewGraph extends Component {
       let cName = 'divEditViewObj';
       if(this.props.selectedObj === this.props.obj.id)
         cName = 'divEditViewObjSelected';
+
+      if(!this.props.edit)
+        cName = cName + ' ' + ' cursorCrosshair';
   
       //text label. master track panvols display group our 'out'
       let text = this.props.obj.id.split('_')[0];

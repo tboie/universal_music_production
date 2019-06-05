@@ -247,7 +247,7 @@ export const ToolRow = observer(class ToolRow extends Component {
           <div id="divToolRow">
             <div id="divToolRowHandle" className="divToolRowHandleBG">
               <div id="divToolRowHandleThumb" className="divToolRowHandleBG">
-                <i className="material-icons i-28" style={{marginLeft:'11px', marginTop:'4px', color:'#12121e'}}>swap_vert</i>
+                <i className="material-icons i-28" style={{marginLeft:'11px', marginTop:'4px', color:'#12121e', pointerEvents:'none'}}>swap_vert</i>
               </div>
             </div>
             <ToolHome store={this.props.store}/>

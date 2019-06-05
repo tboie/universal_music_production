@@ -583,6 +583,7 @@ wave {
   height:26px;
   color:red;
   border-radius:13px;
+  cursor:pointer;
 }
 
 .wavesurfer-handle-start {
@@ -616,6 +617,7 @@ wave {
 .material-icons {
   /* font-size: 36px !important; */
   color:white !important;
+  cursor: pointer;
 }
 
 .i-hdr {
@@ -667,6 +669,10 @@ canvas {
 img {
   image-rendering: crisp-edges;
   /* image-rendering: pixelated; */
+}
+
+.cursorCrosshair { 
+  cursor: crosshair;
 }
 
 /* The Modal (background) */
