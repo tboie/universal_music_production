@@ -406,6 +406,7 @@ wave {
 
 .noUi-handle {
   outline: 0 !important;
+  cursor: pointer !important;
 }
 
 .noUi-marker-large, .noUi-marker-sub { 
@@ -659,6 +660,7 @@ button:focus {
 /* firefox rounds buttons */
 button {
   border-radius: 0;
+  cursor: pointer;
 }
 
 canvas {
