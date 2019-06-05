@@ -65,7 +65,7 @@ html {
 
 .track-rowmix {
   position: relative;
-  z-index: 10;
+  z-index: 2;
   background-color:#0c0b1b;
   height:40px;
   cursor: default;
