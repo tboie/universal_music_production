@@ -2398,8 +2398,12 @@ const Player = types.model("Player", {
     fadeOut: types.optional(types.number, 0),
     volume: types.optional(types.number, 0),
 
-    ui: types.maybe(UIObj)
+    ui: types.maybe(UIObj),
+    //automation: types.array(types.late(() => Automation))
 }).actions(self => ({
+    addAutomation(patternId, signal){
+        self.automation.push({pattern: patternId, signal: signal})
+    },
     setModelPlaybackRate(val){
         self.playbackRate = val;
     },
@@ -3496,6 +3500,30 @@ const Pattern = types.model("Pattern", {
     }
     return { addNote, deleteNote, setResolution, pastePattern, deleteNotes, initPart, afterAttach, beforeDestroy }
 });
+
+
+const AutomationValue = types.model("AutomationValue", {
+    time: types.union(types.string, types.number), // BarsBeatsSixteenths string
+    value: types.union(types.string, types.number),
+    //type: types.string, //add different types?  'linearRampToValueAtTime','setValueAtTime' etc.
+}).views(self => ({
+})).actions(self => ({
+}));
+
+
+const Automation = types.model("Automation", {
+    pattern: types.reference(Pattern),
+    signal: types.maybe(types.string),
+    params: types.array(AutomationValue)
+}).views(self => ({
+    getParams(){
+        return self.params.map(p => ({time: p.time, value: p.value}));
+    }
+})).actions(self => ({
+    addParam(val, time){
+        self.params.push({value: val, time: time })
+    }
+}));
 
 
 /*******************************************

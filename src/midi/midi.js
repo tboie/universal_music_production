@@ -1,3 +1,4 @@
+import Tone from 'tone';
 import { ToneObjs } from '../models/models.js';
 import { store } from '../data/store.js';
 import * as throttle from 'lodash/throttle';
@@ -66,7 +67,37 @@ function getMIDIMessage(message) {
                 changePlayerRate(mappedVal);
             }
             else if(val === 2){
-                //console.log(val)
+                //Test parameter recording for player volume
+                //remember to mute pattern player note velocity
+
+                /*
+                let mappedVal = parseFloat(mapVal(velocity, 0, 127, -50, 10).toFixed(2));
+
+                store.getTracksByGroup(store.ui.selectedGroup).forEach((track, idx) => {
+                    if(track.type === 'audio'){
+                        let playerObj = ToneObjs.instruments.find(i => i.track === track.id && i.id.split('_')[0] === 'player').obj;
+
+                        let playerModel = store.instruments.getPlayerByTrack(track.id);
+                        let param = playerModel.automation.find(auto => auto.signal === 'volume');
+
+                        //add volume automation model
+                        if(!param){
+                            playerModel.addAutomation(track.getPatternByTrackScene(track.id, store.ui.selectedScene.id).id, 'volume');
+                        }
+
+                        if(Tone.Transport.state === 'started' && store.ui.recordMode){
+                            //add values
+                            param.addParam(mappedVal, Tone.Transport.position);              
+                            playerObj.volume.value = mappedVal;
+                        }
+                        else if(Tone.Transport.state === 'stopped'){
+                            if(param){
+                                console.log(param.getParams());
+                            }
+                        }
+                    };
+                });
+                */
             }
             else if(val === 3){
                 //console.log(val);
