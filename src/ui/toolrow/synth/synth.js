@@ -205,7 +205,9 @@ export const ToolSynth = observer(class ToolSynth extends Component {
       else
         notes = ele.dataset.notes.split(',');
       
-      ToneObjs.trackInstNoteOff(this.props.selectedTrack.id, notes, this.mouseDown)
+      if(this.props.selectedTrack){
+        ToneObjs.trackInstNoteOff(this.props.selectedTrack.id, notes, this.mouseDown)
+      }
 
       //reset color
       if(dragged){
@@ -228,11 +230,13 @@ export const ToolSynth = observer(class ToolSynth extends Component {
       else
         notes = ele.dataset.notes.split(',');
 
-      ToneObjs.trackInstNoteOn(this.props.selectedTrack.id, notes);
-  
+      if(this.props.selectedTrack){
+        ToneObjs.trackInstNoteOn(this.props.selectedTrack.id, notes);
+      }
+
       ele.style.backgroundColor = '#2671ea';//'#181f87';
-  
-       //reset previous selectedkey color
+      
+      //reset previous selectedkey color
       if(store.ui.selectedKey){
         if(store.ui.selectedKey !== ele.id){
           let key = document.getElementById(store.ui.selectedKey);
