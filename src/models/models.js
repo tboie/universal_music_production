@@ -1343,7 +1343,7 @@ const Compressor = types.model("Compressor", {
         ToneObjs.setPropVal(self.id, 'component', prop, val, signal, child);
     },
     afterCreate() {
-        if (!self.ui && self.track !== undefined)
+        if (!self.ui)
             self.ui = UIObj.create();
     },
     afterAttach() {
@@ -1431,6 +1431,7 @@ const EQ3 = types.model("EQ3", {
     high: types.optional(types.number, 0),
     lowFrequency: types.optional(types.union(types.number, types.string), 400),
     highFrequency: types.optional(types.union(types.number, types.string), 2500),
+    Q: types.optional(types.number, 1),
 
     ui: types.maybe(UIObj)
 }).views(self => ({

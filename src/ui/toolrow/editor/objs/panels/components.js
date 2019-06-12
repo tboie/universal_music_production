@@ -146,7 +146,7 @@ export const UIMultibandCompressor = observer(class UIMultibandCompressor extend
         { 
           this.arrSections.map(section => {
             if(section !== 'main'){
-              return <div style={{display:this.getDisplay(section)}}>
+              return <div key={section + '_' + this.obj.id} style={{display:this.getDisplay(section)}}>
                       <UICustomRangeControl obj={this.obj} propName='ratio' min={1} max={30} mode={'steps'} step={1} density={30} numType={'integer'} signal={true} child={section}/>
                       <UICustomRangeControl obj={this.obj} propName='threshold' min={-50} max={0} mode={'range'} step={0.01} density={1} numType={'float'} signal={true} child={section}/>
                       <UICustomRangeControl obj={this.obj} propName='attack' min={0} max={0.2} mode={'range'} step={0.001} density={1} numType={'float'} signal={true} child={section}/>
@@ -189,7 +189,7 @@ export const UIMidSideCompressor = observer(class UIMidSideCompressor extends Co
         <UIEditorHeader obj={this.obj} sections={this.arrSections} selSection={this.selSection} type={this.props.type} selectSection={this.selectSection}/>
         { 
           this.arrSections.map(section => {
-            return <div style={{display:this.getDisplay(section)}}>
+            return <div key={section + '_' + this.obj.id} style={{display:this.getDisplay(section)}}>
                       <UICustomRangeControl obj={this.obj} propName='ratio' min={1} max={30} mode={'steps'} step={1} density={30} numType={'integer'} signal={true} child={section}/>
                       <UICustomRangeControl obj={this.obj} propName='threshold' min={-50} max={0} mode={'range'} step={0.01} density={1} numType={'float'} signal={true} child={section}/>
                       <UICustomRangeControl obj={this.obj} propName='attack' min={0} max={0.2} mode={'range'} step={0.001} density={1} numType={'float'} signal={true} child={section}/>
