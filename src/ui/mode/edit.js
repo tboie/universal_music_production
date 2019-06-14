@@ -3,7 +3,7 @@ import { observer } from "mobx-react";
 import { store } from "../../data/store.js";
 import interact from 'interactjs';
 import Tone from 'tone';
-import { randomId } from '../../models/models.js';
+import { ToneObjs, randomId } from '../../models/models.js';
 import { applyDraggableGrid } from '../utils.js';
 import { TrackRowView } from './trackrow/trackrow.js';
 import { MixRowView } from './trackrow/mixrow.js';
@@ -278,9 +278,12 @@ const EditViewGraph = observer(class EditViewGraph extends Component {
         this.activeObj = id;
 
         store.getObjsByTrackObj(this.props.track).filter(o => o.id.split('_')[0] !== 'mix' && o.id !== id).forEach(o => {
-          let type = store.getObjTypeByIdTrack(o.id, self.props.track.id);
-          if((type === "effect" || type === "component") && o.id.split('_')[0] !== "tinysynth"){
+          let srcType = store.getObjTypeByIdTrack(id, this.props.track.id);
+          let destType = store.getObjTypeByIdTrack(o.id, this.props.track.id);
 
+          if(((srcType === "effect" || srcType === "component") && o.id.split('_')[0] !== "tinysynth" && o.id.split('_')[0] !== 'lfo')
+            || (id.split('_')[0] === 'lfo' && o.id.split('_')[0] === 'lfo')){
+            
             if(!store.getConnectionsByObjId(this.activeObj).find(c => c.src === this.activeObj && c.dest === o.id))
               document.getElementById(o.id).classList.add('divEditViewObjEnabled');
           }
@@ -292,12 +295,20 @@ const EditViewGraph = observer(class EditViewGraph extends Component {
           let srcType = store.getObjTypeByIdTrack(this.activeObj, this.props.track.id);
           let destType = store.getObjTypeByIdTrack(id, this.props.track.id);
   
-          //dest must be component or effect
-          if((destType === "effect" || destType === "component") && id.split('_')[0] !== "tinysynth"){
+          //dest must be component or effect, or lfo to all
+          if(((destType === "effect" || destType === "component") && id.split('_')[0] !== "tinysynth" && id.split('_')[0] !== "lfo")
+            || (this.activeObj.split('_')[0] === 'lfo' && (destType === "effect" || destType === "component" || destType === 'instrument'|| destType === 'source'))){
             //is there already a connection?
-            if(!store.getConnectionsByObjId(this.activeObj).find(c => c.src === this.activeObj && c.dest === id)){
-              let connId = 'connection_' + randomId();
-              store.addConnection(connId, this.props.track.id, this.activeObj, id, srcType, destType);
+            if(this.activeObj.split('_')[0] === 'lfo'){
+              this.objDest = store.getObjsByTrackObj(this.props.track).find(o => o.id === id);
+              this.randId = randomId();
+              this.forceUpdate();
+            }
+            else{
+              if(!store.getConnectionsByObjId(this.activeObj).find(c => c.src === this.activeObj && c.dest === id)){
+                let connId = 'connection_' + randomId();
+                store.addConnection(connId, this.props.track.id, this.activeObj, id, srcType, destType);
+              }
             }
           }
       }
@@ -307,9 +318,8 @@ const EditViewGraph = observer(class EditViewGraph extends Component {
         if(ele){
           //hover id is tone obj && not connected
           let destType = store.getObjTypeByIdTrack(id, this.props.track.id);
-          if((destType === "effect" || destType === "component") && id.split('_')[0] !== "tinysynth"
-            && !store.getConnectionsByObjId(this.activeObj).find(c => c.src === this.activeObj && c.dest === id)){
-
+          if((((destType === "effect" || destType === "component") && id.split('_')[0] !== "tinysynth" && id.split('_')[0] !== "lfo") && !store.getConnectionsByObjId(this.activeObj).find(c => c.src === this.activeObj && c.dest === id))
+            || (this.activeObj.split('_')[0] === 'lfo' && (destType === "effect" || destType === "component" || destType === 'instrument'|| destType === 'source'))){
               //remove hover style from prev ele
               let elePrev = document.getElementById(this.hoverObj);
               if(elePrev){
@@ -333,7 +343,6 @@ const EditViewGraph = observer(class EditViewGraph extends Component {
 
             this.hoverObj = undefined;
           }
-        
         }
       }
     }
@@ -486,8 +495,15 @@ const EditViewGraph = observer(class EditViewGraph extends Component {
     btnDeleteConnection = (e) => {
       //remove connection and button
       let connId = e.target.id.replace("delete_","");
-      if(store.getConnection(connId)){
-        store.delConnection(connId);
+      let connection = store.getConnection(connId);
+      if(connection){
+        if(connection.signal){
+          this.randId = randomId();
+          this.forceUpdate();
+        }
+        else{
+          store.delConnection(connId);
+        }
       }
     }
   
@@ -569,6 +585,7 @@ const EditViewGraph = observer(class EditViewGraph extends Component {
                 && c.src.split('_')[0] !== "mix" && c.dest.split('_')[0] !== "mix"
                 && c.dest !== 'panvol_master')) 
                   .map((obj, index) => <EditViewConnection key={obj.id} index={index} connection={obj}/>) }
+            <LFOModal randId={this.randId} objDest={this.objDest} objSrcId={this.activeObj}/>
           </div>
         </div>
       )
@@ -760,3 +777,89 @@ const EditViewGraph = observer(class EditViewGraph extends Component {
     }
   })
   
+  export const LFOModal= observer(class LFOModal extends Component {
+    componentDidMount(){
+      document.getElementById('modal_LFO_close').onclick = () => this.toggleWindow();
+    }
+
+    rowClick = (e) => {
+      let row = e.target.parentNode;
+      let signal = row.children[1].innerText;
+
+      let connection = store.getConnectionsByObjId(this.props.objDest.id).find(c => c.dest === this.props.objDest.id && c.signal === signal);
+      if(connection){
+        store.delConnection(connection.id);
+        row.children[0].innerHTML = '';
+      }
+      else{
+        let type = store.getObjTypeByIdTrack(this.props.objDest.id, store.ui.selectedTrack.id);
+        store.addConnection('connection_' + randomId(), store.ui.selectedTrack.id, this.props.objSrcId, this.props.objDest.id, "component", type, signal);
+        row.children[0].innerHTML = '<i class="material-icons">check_circle</i>';
+      }
+    }
+  
+    componentDidUpdate(prevProps){
+      if(this.props.objSrcId.split('_')[0] === 'lfo'){
+        this.toggleWindow();
+
+        let table = document.getElementById('tableConnections');
+        while(table.hasChildNodes()){
+          table.removeChild(table.firstChild);
+        }
+
+        let obj = ToneObjs[store.getObjTypeByIdTrack(this.props.objDest.id, store.ui.selectedTrack.id) + 's'].find(o => o.id === this.props.objDest.id).obj;
+        Object.keys(this.props.objDest).filter(p => p !== 'id' && p !== 'track' && p !== 'ui' && p !== 'volume').forEach(prop => {
+          if(obj[prop].value !== undefined){
+            let row = table.insertRow(0);
+            row.onclick = this.rowClick;
+
+            let cell1 = row.insertCell(0);
+            cell1.style.width = '20%'
+            if(store.getConnectionsByObjId(this.props.objDest.id).find(c => c.dest === this.props.objDest.id && c.signal === prop))
+              cell1.innerHTML = '<i class="material-icons">check_circle</i>';
+            else
+              cell1.innerHTML = '';
+
+            let cell2 = row.insertCell(1);
+            cell2.innerHTML = prop;
+            cell2.style.width = '80%';
+          }
+        });
+      }
+    }
+
+    toggleWindow = () => {
+      let modal = document.getElementById('modal_LFO');
+  
+      if(!modal.style.display || modal.style.display === "none"){
+        modal.style.display = "block";
+      }
+      else{
+        modal.style.display = "none";
+      }
+    }
+  
+    componentWillUnmount(){}
+  
+    render(){
+      return (
+        <div id="modal_LFO" className="modal" style={{position:'absolute'}}>
+          <div id="modal_LFO_content" className="modal-content" style={{width:'300px'}}>
+            <div style={{width:'100%'}}>
+              <span id='modal_LFO_close' className='modalClose'>&times;</span>
+            </div>
+            <table id='tableConnections'>
+              <thead>
+                <tr>
+                  <th>Active</th>
+                  <th>Input</th>
+                </tr>
+              </thead>
+              <tbody>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )
+    }
+  })

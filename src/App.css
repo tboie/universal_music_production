@@ -704,7 +704,7 @@ img {
 }
 
 /* The Close Button */
-#modalClose {
+.modalClose {
   color: red;
   float: right;
   font-size: 28px;
@@ -714,7 +714,7 @@ img {
   z-index: 999;
 }
 
-#modalClose:hover, .modalClose:focus {
+.modalClose:hover, .modalClose:focus {
   color: darkred;
   text-decoration: none;
   cursor: pointer;
@@ -1015,6 +1015,17 @@ input {
 
 #tableManager th, td {
   border-bottom: 1px solid rgba(255,255,255,0.4);
+}
+
+#tableConnections {
+  width:100%;
+  color:white;
+  border-collapse: collapse;
+  overflow:scroll;
+}
+
+#tableConnections tr, td {
+  height:28px;
 }
 
 /***************************/

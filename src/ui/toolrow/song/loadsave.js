@@ -113,7 +113,7 @@ export const LoadSaveModal = observer(class LoadSaveModal extends Component {
         <div id="myModal" className="modal">
           <div id="modalContent" className="modal-content">
             <div style={{width:'100%'}}>
-              <span id='modalClose'>&times;</span>
+              <span id='modalClose' className='modalClose'>&times;</span>
               <input id="inputSong" type="text" placeholder="song name" onInput={this.inputText}></input>
             </div>
             <br/>

@@ -92,11 +92,11 @@ export const UILimiter = props => {
     <div className='divToolRowEditorContainer'>
       <UIEditorHeader obj={obj} type={props.type}/>
       <UIWaveTypeControl obj={obj} propName={"type"}/>
-      <UICustomRangeControl obj={obj} propName={'min'} min={-100} max={100} mode={'range'} step={1} density={1} numType={'integer'} signal={false}/>
-      <UICustomRangeControl obj={obj} propName={'max'} min={-100} max={100} mode={'range'} step={1} density={1} numType={'integer'} signal={false}/>
+      <UICustomRangeControl obj={obj} propName={'min'} min={-10000} max={10000} mode={'range'} step={1} density={1} numType={'integer'} signal={false}/>
+      <UICustomRangeControl obj={obj} propName={'max'} min={-10000} max={10000} mode={'range'} step={1} density={1} numType={'integer'} signal={false}/>
       <UICustomRangeControl obj={obj} propName={'phase'} min={0} max={360} mode={'range'} step={1} density={1} numType={'integer'} signal={false}/>
       <UITimeControl obj={obj} propName="frequency"/>
-      <UICustomRangeControl obj={obj} propName={'amplitude'} min={-100} max={100} mode={'range'} step={0.1} density={1} numType={'float'} signal={true}/>
+      <UICustomRangeControl obj={obj} propName={'amplitude'} min={0} max={1} mode={'range'} step={0.01} density={1} numType={'float'} signal={true}/>
     </div>
   )
 }

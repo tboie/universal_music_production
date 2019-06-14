@@ -80,7 +80,14 @@ export let ToneObjs = {
         }
         else{
             if(!ToneObjs[type].find(row => row.id === objSelf.id)){
-                ToneObjs[type].push({ id: objSelf.id, track: objSelf.track.id, obj: new Tone[name](args) });
+                let id = objSelf.id.split('_')[0];
+                if(id === 'lfo' || id === 'autofilter' || id === 'autopanner' || id === 'tremolo'){
+                    ToneObjs[type].push({ id: objSelf.id, track: objSelf.track.id, obj: new Tone[name](args).start('0:0:0') });
+                    ToneObjs[type].find(o => o.id === objSelf.id).obj.sync();
+                }
+                else{
+                    ToneObjs[type].push({ id: objSelf.id, track: objSelf.track.id, obj: new Tone[name](args) });
+                }
             }
         }
     },
@@ -411,7 +418,8 @@ const Connection = types.model("Connection", {
     srcType: types.maybe(types.string), //component, instrument, etc..
     destType: types.maybe(types.string),
     numOut: types.optional(types.number, 0),
-    numIn: types.optional(types.number, 0)
+    numIn: types.optional(types.number, 0),
+    signal: types.maybe(types.string)
 }).actions(self => ({
     addConnection(offline) {
         let objSrc, objDest;
@@ -430,7 +438,11 @@ const Connection = types.model("Connection", {
         if (self.src !== "master" && self.dest !== "master") {
             objSrc = arraySrc.find(i => i.id === self.src).obj;
             objDest = arrayDest.find(i => i.id === self.dest).obj;
-            objSrc.connect(objDest, self.numOut, self.numIn);
+
+            if(self.signal)
+                objSrc.connect(objDest[self.signal]);
+            else
+                objSrc.connect(objDest, self.numOut, self.numIn);
         }
         else if(self.dest === "master") {
             objSrc = arraySrc.find(i => i.id === self.src).obj;
@@ -452,7 +464,11 @@ const Connection = types.model("Connection", {
         if (self.src !== "master" && self.dest !== "master") {
             objSrc = arraySrc.find(i => i.id === self.src).obj;
             objDest = arrayDest.find(i => i.id === self.dest).obj;
-            objSrc.disconnect(objDest, self.numOut, self.numIn);
+
+            if(self.signal)
+                objSrc.disconnect(objDest[self.signal]);
+            else
+                objSrc.disconnect(objDest, self.numOut, self.numIn);
         }
         else if(self.dest === "master") {
             objSrc = arraySrc.find(i => i.id === self.src).obj;
@@ -529,7 +545,6 @@ const AutoFilter = types.model("AutoFilter", {
     },
     afterAttach() {
         getParent(self, 2).addToneObj("AutoFilter", self);
-        ToneObjs.effects.find(o => o.id === self.id).obj.start("0:0:0");
     },
     beforeDestroy() {
         getParent(self, 2).delToneObj(self.id);
@@ -559,7 +574,6 @@ const AutoPanner = types.model("AutoPanner", {
     },
     afterAttach() {
         getParent(self, 2).addToneObj("AutoPanner", self)
-        ToneObjs.effects.find(o => o.id === self.id).obj.start("0:0:0");
     },
     beforeDestroy() {
         getParent(self, 2).delToneObj(self.id);
@@ -1026,7 +1040,6 @@ const Tremolo = types.model("Tremolo", {
     },
     afterAttach() {
         getParent(self, 2).addToneObj("Tremolo", self);
-        ToneObjs.effects.find(o => o.id === self.id).obj.start("0:0:0");
     },
     beforeDestroy() {
         getParent(self, 2).delToneObj(self.id);
@@ -4531,7 +4544,7 @@ export const RootStore = types.model("RootStore", {
             
             //copy connections to new track
             conns.forEach(c => {
-                store.addConnection('connection_' + randomId(), newTrackId, c.src, c.dest, c.srcType, c.destType, c.numOut, c.numIn);
+                store.addConnection('connection_' + randomId(), newTrackId, c.src, c.dest, c.srcType, c.destType, c.signal, c.numOut, c.numIn);
             })
             
             //copy patterns
@@ -4589,8 +4602,8 @@ export const RootStore = types.model("RootStore", {
 
             destroy(self.getTrack(id));
         }
-        function addConnection(id, track, src, dest, srcType, destType, numOut, numIn) {
-            self.connections.push(Connection.create({ id: id, track: track, src: src, dest: dest, srcType: srcType, destType: destType, numOut: numOut, numIn: numIn }))
+        function addConnection(id, track, src, dest, srcType, destType, signal, numOut, numIn) {
+            self.connections.push(Connection.create({ id: id, track: track, src: src, dest: dest, srcType: srcType, destType: destType, signal: signal, numOut: numOut, numIn: numIn }))
         }
         function delConnectionsByObj(id) {
             self.getConnectionsByObjId(id).forEach(function (connection) {
