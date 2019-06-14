@@ -267,8 +267,6 @@ const EditViewGraph = observer(class EditViewGraph extends Component {
     }
   
     activateObj = (id, action) => {
-      let self = this;
-
       //remove tags from nested elements if part of id
       id = id.replace('canvas_','');
       id = id.replace('label_','');
@@ -279,7 +277,6 @@ const EditViewGraph = observer(class EditViewGraph extends Component {
 
         store.getObjsByTrackObj(this.props.track).filter(o => o.id.split('_')[0] !== 'mix' && o.id !== id).forEach(o => {
           let srcType = store.getObjTypeByIdTrack(id, this.props.track.id);
-          let destType = store.getObjTypeByIdTrack(o.id, this.props.track.id);
 
           if(((srcType === "effect" || srcType === "component") && o.id.split('_')[0] !== "tinysynth" && o.id.split('_')[0] !== 'lfo')
             || (id.split('_')[0] === 'lfo' && o.id.split('_')[0] === 'lfo')){
@@ -793,8 +790,9 @@ const EditViewGraph = observer(class EditViewGraph extends Component {
       }
       else{
         let type = store.getObjTypeByIdTrack(this.props.objDest.id, store.ui.selectedTrack.id);
+        console.log('connecting to : ' + signal)
         store.addConnection('connection_' + randomId(), store.ui.selectedTrack.id, this.props.objSrcId, this.props.objDest.id, "component", type, signal);
-        row.children[0].innerHTML = '<i class="material-icons">check_circle</i>';
+        row.children[0].innerHTML = '<i class="material-icons" style="pointer-events:none">check_circle</i>';
       }
     }
   
@@ -807,25 +805,40 @@ const EditViewGraph = observer(class EditViewGraph extends Component {
           table.removeChild(table.firstChild);
         }
 
-        let obj = ToneObjs[store.getObjTypeByIdTrack(this.props.objDest.id, store.ui.selectedTrack.id) + 's'].find(o => o.id === this.props.objDest.id).obj;
+        let type = store.getObjTypeByIdTrack(this.props.objDest.id, store.ui.selectedTrack.id);
+        let name = this.props.objDest.id.split('_')[0];
+        let obj = ToneObjs[type + 's'].find(o => o.id === this.props.objDest.id).obj;
+
         Object.keys(this.props.objDest).filter(p => p !== 'id' && p !== 'track' && p !== 'ui' && p !== 'volume').forEach(prop => {
-          if(obj[prop].value !== undefined){
-            let row = table.insertRow(0);
-            row.onclick = this.rowClick;
-
-            let cell1 = row.insertCell(0);
-            cell1.style.width = '20%'
-            if(store.getConnectionsByObjId(this.props.objDest.id).find(c => c.dest === this.props.objDest.id && c.signal === prop))
-              cell1.innerHTML = '<i class="material-icons">check_circle</i>';
-            else
-              cell1.innerHTML = '';
-
-            let cell2 = row.insertCell(1);
-            cell2.innerHTML = prop;
-            cell2.style.width = '80%';
+          if(type === "instrument" && name !== "player" && name !== "noisesynth" && name !== "plucksynth" && name !== "membranesynth" && name !== "metalsynth" && name !== "tinysynth"){
+            let strPropType = obj.voices[0][Object.keys(obj.get(prop))[0]].toString();
+            if(strPropType === 'Signal' || strPropType === 'Multiply'){
+              this.setTableRow(table, prop);
+            }
+          }
+          else if(obj[prop]){
+            if(obj[prop].value !== undefined){
+              this.setTableRow(table, prop);
+            }
           }
         });
       }
+    }
+
+    setTableRow = (table, prop) => {
+      let row = table.insertRow(0);
+      row.onclick = this.rowClick;
+
+      let cell1 = row.insertCell(0);
+      cell1.style.width = '20%'
+      if(store.getConnectionsByObjId(this.props.objDest.id).find(c => c.dest === this.props.objDest.id && c.signal === prop))
+        cell1.innerHTML = '<i class="material-icons" style="pointer-events:none">check_circle</i>';
+      else
+        cell1.innerHTML = '';
+
+      let cell2 = row.insertCell(1);
+      cell2.innerHTML = prop;
+      cell2.style.width = '80%';
     }
 
     toggleWindow = () => {

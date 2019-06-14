@@ -439,10 +439,20 @@ const Connection = types.model("Connection", {
             objSrc = arraySrc.find(i => i.id === self.src).obj;
             objDest = arrayDest.find(i => i.id === self.dest).obj;
 
-            if(self.signal)
-                objSrc.connect(objDest[self.signal]);
-            else
+            if(self.signal){
+                let name = self.dest.split('_')[0];
+                if(self.signal !== 'detune' && self.destType === "instrument" && name !== "player" && name !== "noisesynth" && name !== "plucksynth" && name !== "membranesynth" && name !== "metalsynth" && name !== "tinysynth"){
+                    objDest.voices.forEach(v => {
+                        objSrc.connect(v[self.signal]);
+                    })
+                }
+                else{
+                    objSrc.connect(objDest[self.signal]);
+                }
+            }
+            else{
                 objSrc.connect(objDest, self.numOut, self.numIn);
+            }
         }
         else if(self.dest === "master") {
             objSrc = arraySrc.find(i => i.id === self.src).obj;
@@ -465,8 +475,17 @@ const Connection = types.model("Connection", {
             objSrc = arraySrc.find(i => i.id === self.src).obj;
             objDest = arrayDest.find(i => i.id === self.dest).obj;
 
-            if(self.signal)
-                objSrc.disconnect(objDest[self.signal]);
+            if(self.signal){
+                let name = self.dest.split('_')[0];
+                if(self.signal !== 'detune' && self.destType === "instrument" && name !== "player" && name !== "noisesynth" && name !== "plucksynth" && name !== "membranesynth" && name !== "metalsynth" && name !== "tinysynth"){
+                    objDest.voices.forEach(v => {
+                        objSrc.disconnect(v[self.signal]);
+                    })
+                }
+                else{
+                    objSrc.disconnect(objDest[self.signal]);
+                }
+            }
             else
                 objSrc.disconnect(objDest, self.numOut, self.numIn);
         }

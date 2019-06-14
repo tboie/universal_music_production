@@ -701,6 +701,7 @@ img {
   height:98%;
   z-index:998;
   position:relative;
+  cursor:pointer;
 }
 
 /* The Close Button */
