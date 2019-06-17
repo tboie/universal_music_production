@@ -359,7 +359,7 @@ const EditViewGraph = observer(class EditViewGraph extends Component {
           eleDelete = document.createElement('button');
           eleDelete.setAttribute("id", "delete_" + connection.id);
           eleDelete.setAttribute("class", "btnEditViewDelete");
-          eleDelete.innerHTML = 'X';
+          eleDelete.innerHTML = connection.src.split('_')[0] === 'lfo' ? 'i' : 'X';
           eleDelete.onclick = this.btnDeleteConnection;
           document.getElementById('divEditViewBG').appendChild(eleDelete);
         }
