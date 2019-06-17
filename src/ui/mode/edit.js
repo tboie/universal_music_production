@@ -863,7 +863,7 @@ const EditViewGraph = observer(class EditViewGraph extends Component {
         <div id="modal_LFO" className="modal" style={{position:'absolute'}}>
           <div id="modal_LFO_content" className="modal-content" style={{width:'300px'}}>
             <div style={{width:'100%'}}>
-              <label>{title}</label>
+              <label className='modal-title'>{title}</label>
               <span id='modal_LFO_close' className='modalClose'>&times;</span>
             </div>
             <table id='tableConnections'>

@@ -704,6 +704,13 @@ img {
   cursor:pointer;
 }
 
+.modal-title {
+  top:10px;
+  left:4px;
+  position:relative;
+  font-weight: bold;
+}
+
 /* The Close Button */
 .modalClose {
   color: red;
