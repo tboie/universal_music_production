@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { observer } from "mobx-react";
 import { store } from "../../data/store.js";
+import { toneObjNames } from "../../data/tonenames.js";
 import interact from 'interactjs';
 import Tone from 'tone';
 import { ToneObjs, randomId } from '../../models/models.js';
@@ -495,6 +496,7 @@ const EditViewGraph = observer(class EditViewGraph extends Component {
       let connection = store.getConnection(connId);
       if(connection){
         if(connection.signal){
+          this.activeObj = connection.src;
           this.objDest = store.getObjsByTrackObj(this.props.track).find(o => o.id === connection.dest);
           this.randId = randomId();
           this.forceUpdate();
@@ -506,14 +508,13 @@ const EditViewGraph = observer(class EditViewGraph extends Component {
     }
   
     refreshConnections = () => {
-      let self = this;
       store.getConnectionsByTrack(this.props.track.id)
         .filter(c => (c.src !== "master" && c.dest !== "master" 
           && c.src.split('_')[0] !== "mix" && c.dest.split('_')[0] !== "mix"
           && c.dest !== 'panvol_master'))
-            .forEach(function(connection){
-              self.drawConnection(connection);
-      })
+            .forEach(connection => {
+              this.drawConnection(connection);
+            })
     }
     
     render() {
@@ -797,7 +798,7 @@ const EditViewGraph = observer(class EditViewGraph extends Component {
     }
   
     componentDidUpdate(prevProps){
-      if(this.props.objSrcId.split('_')[0] === 'lfo'){
+      if(this.props.objSrcId.split('_')[0] === 'lfo' && prevProps.randId !== this.props.randId){
         this.toggleWindow();
 
         let table = document.getElementById('tableConnections');
@@ -810,14 +811,12 @@ const EditViewGraph = observer(class EditViewGraph extends Component {
         let obj = ToneObjs[type + 's'].find(o => o.id === this.props.objDest.id).obj;
 
         Object.keys(this.props.objDest).filter(p => p !== 'id' && p !== 'track' && p !== 'ui' && p !== 'volume').forEach(prop => {
+          let objOption = obj[prop];
           if(type === "instrument" && name !== "player" && name !== "noisesynth" && name !== "plucksynth" && name !== "membranesynth" && name !== "metalsynth" && name !== "tinysynth"){
-            let strPropType = obj.voices[0][Object.keys(obj.get(prop))[0]].toString();
-            if(strPropType === 'Signal' || strPropType === 'Multiply'){
-              this.setTableRow(table, prop);
-            }
+            objOption = obj.voices[0][Object.keys(obj.get(prop))[0]];
           }
-          else if(obj[prop]){
-            if(obj[prop].toString() === 'Signal' || obj[prop].toString() === 'Multiply'){
+          if(objOption){
+            if(objOption.toString() === 'Signal' || objOption.toString() === 'Multiply' || objOption.constructor.name === 'AudioParam'){
               this.setTableRow(table, prop);
             }
           }
@@ -855,21 +854,21 @@ const EditViewGraph = observer(class EditViewGraph extends Component {
     componentWillUnmount(){}
   
     render(){
+      let title = this.props.objDest ? this.props.objDest.id.split('_')[0] : '';
+      if(title){
+        title = toneObjNames.find(line => line.toLowerCase() === title.toLowerCase());
+      }
+
       return (
         <div id="modal_LFO" className="modal" style={{position:'absolute'}}>
           <div id="modal_LFO_content" className="modal-content" style={{width:'300px'}}>
             <div style={{width:'100%'}}>
+              <label>{title}</label>
               <span id='modal_LFO_close' className='modalClose'>&times;</span>
             </div>
             <table id='tableConnections'>
-              <thead>
-                <tr>
-                  <th>Active</th>
-                  <th>Input</th>
-                </tr>
-              </thead>
-              <tbody>
-              </tbody>
+              <thead></thead>
+              <tbody></tbody>
             </table>
           </div>
         </div>
