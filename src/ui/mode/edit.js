@@ -282,7 +282,7 @@ const EditViewGraph = observer(class EditViewGraph extends Component {
           if(((srcType === "effect" || srcType === "component") && o.id.split('_')[0] !== "tinysynth" && o.id.split('_')[0] !== 'lfo')
             || (id.split('_')[0] === 'lfo' && o.id.split('_')[0] === 'lfo')){
             
-            if(!store.getConnectionsByObjId(this.activeObj).find(c => c.src === this.activeObj && c.dest === o.id))
+            if((!store.getConnectionsByObjId(this.activeObj).find(c => c.src === this.activeObj && c.dest === o.id) || id.split('_')[0] === 'lfo'))
               document.getElementById(o.id).classList.add('divEditViewObjEnabled');
           }
         })
