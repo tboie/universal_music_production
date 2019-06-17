@@ -486,8 +486,9 @@ const Connection = types.model("Connection", {
                     objSrc.disconnect(objDest[self.signal]);
                 }
             }
-            else
+            else{
                 objSrc.disconnect(objDest, self.numOut, self.numIn);
+            }
         }
         else if(self.dest === "master") {
             objSrc = arraySrc.find(i => i.id === self.src).obj;

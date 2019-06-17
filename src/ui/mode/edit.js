@@ -495,6 +495,7 @@ const EditViewGraph = observer(class EditViewGraph extends Component {
       let connection = store.getConnection(connId);
       if(connection){
         if(connection.signal){
+          this.objDest = store.getObjsByTrackObj(this.props.track).find(o => o.id === connection.dest);
           this.randId = randomId();
           this.forceUpdate();
         }
@@ -790,7 +791,6 @@ const EditViewGraph = observer(class EditViewGraph extends Component {
       }
       else{
         let type = store.getObjTypeByIdTrack(this.props.objDest.id, store.ui.selectedTrack.id);
-        console.log('connecting to : ' + signal)
         store.addConnection('connection_' + randomId(), store.ui.selectedTrack.id, this.props.objSrcId, this.props.objDest.id, "component", type, signal);
         row.children[0].innerHTML = '<i class="material-icons" style="pointer-events:none">check_circle</i>';
       }
@@ -817,7 +817,7 @@ const EditViewGraph = observer(class EditViewGraph extends Component {
             }
           }
           else if(obj[prop]){
-            if(obj[prop].value !== undefined){
+            if(obj[prop].toString() === 'Signal' || obj[prop].toString() === 'Multiply'){
               this.setTableRow(table, prop);
             }
           }
