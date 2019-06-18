@@ -3425,7 +3425,8 @@ const Pattern = types.model("Pattern", {
                     }
                 }
             })
-            tObjs.sources.filter(src => src.track === part.track).forEach(function (source) {
+
+            tObjs.sources.filter(src => src.track === part.track).forEach(source => {
                 let type = source.id.split('_')[0];
                 if (!value.mute){
                     if(value.note !== undefined){
@@ -3433,13 +3434,24 @@ const Pattern = types.model("Pattern", {
                         //source.obj.stop(time + offset);
 
                         if(type !== 'noise')
-                            source.obj.frequency.setValueAtTime(value.note[0], time + offset)
-                        
+                            source.obj.frequency.setValueAtTime(value.note[0], time + offset);
+
+                        let timeStop = time + Tone.Time(value.duration);
+
+                        //if connected to amplitude envelope, stop note at end of longest envelope release
+                        let connectionsEnv = store.getConnectionsByObjId(source.id).filter(c => c.dest.split('_')[0] === 'amplitudeenvelope')               
+                        if(connectionsEnv.length > 0){
+                            let envs = [];
+                            connectionsEnv.forEach(c => envs.push(store.components.getComponentByTypeId('amplitudeenvelope', c.dest)));
+                            timeStop += envs.sort((a, b) => b.release - a.release)[0].release;
+                        }
+
                         source.obj.start(time + offset);
-                        source.obj.stop(time + Tone.Time(value.duration));
+                        source.obj.stop(timeStop);
                     }
                 }
             })
+
             tObjs.components.filter(src => src.track === part.track && src.id.split('_')[0] === 'amplitudeenvelope').forEach(function (component) {
                 if (!value.mute){
                     if(value.note !== undefined){
@@ -3453,6 +3465,7 @@ const Pattern = types.model("Pattern", {
                     }
                 }
             })
+
             tObjs.custom.filter(o => o.track === part.track).forEach(function(row){
                 if(row.obj){
                     if(!value.mute){
