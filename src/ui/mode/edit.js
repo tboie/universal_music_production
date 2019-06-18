@@ -9,6 +9,7 @@ import { applyDraggableGrid } from '../utils.js';
 import { TrackRowView } from './trackrow/trackrow.js';
 import { MixRowView } from './trackrow/mixrow.js';
 import { MixRowViewEdit } from './trackrow/mixrowedit.js';
+import { MixRowViewBars } from "./trackrow/mixrowbars.js";
 import { GridTimeline } from './timeline/timeline.js';
 
 
@@ -35,6 +36,7 @@ export const EditView = observer(class EditView extends Component {
                     selectedNote={this.props.store.ui.selectedNote}
                     viewLength={this.props.store.ui.viewLength}
                     sceneLength={store.getSceneLength(this.props.store.ui.selectedScene.id)}
+                    editMode={this.props.edit}
                   />               
     }
 
@@ -70,7 +72,11 @@ const EditViewBars = observer(class EditViewBars extends Component {
 
   render(){
     let mixRow;
-    if(this.props.selectedNote){
+
+    if(store.ui.viewMode === 'edit' && store.ui.views.edit.mode === 'bar' && this.props.editMode){
+      mixRow = <MixRowViewBars store={this.props.store} track={this.props.track} selectedBars={this.props.selectedBars}/>
+    }
+    else if(this.props.selectedNote){
       if(this.props.selectedNote.getPattern().track.id === this.props.track.id){
         mixRow = <MixRowViewEdit trackId={this.props.track.id} store={this.props.store} track={this.props.track} note={this.props.selectedNote} viewLength={this.props.viewLength}/>
       }
@@ -95,6 +101,7 @@ const EditViewBars = observer(class EditViewBars extends Component {
           patterns={this.props.store.getPatternsByTrack(track.id)} 
           scenes={this.props.store.getScenesAsc()} 
           mixMode={this.props.store.ui.mixMode}
+          editMode={this.props.store.ui.editMode}
           viewLength={this.props.store.ui.viewLength} 
           songLength={this.props.store.getSongLength()} 
           bpm={this.props.store.settings.bpm} 
@@ -116,6 +123,7 @@ const EditViewBars = observer(class EditViewBars extends Component {
           selectedNoteOffset={this.props.store.ui.getSelectedNoteOffset()}
           strSVG={this.strSVG}
           setSVG={this.setSVG}
+          selectedBars={this.props.store.ui.views.edit.selectedBars}
         />)
     }
 

@@ -3615,11 +3615,15 @@ const UIButtonView = types.model("UIButtonView", {
 
 const UIEditView = types.model("UIEditView", {
     mode: types.optional(types.union(types.literal("graph"), types.literal("bar")), "bar"),
-    selectedBars: types.maybe(types.array(types.number)),
-    copiedBars: types.maybe(types.array(types.number)),
-    selectMode: types.optional(types.boolean, false)
+    selectedBars: types.array(types.number),
+    copiedBars: types.array(types.number),
 }).views(self => ({
-
+    isBarSelected(bar){
+        return self.selectedBars.find(b => b === bar);
+    },
+    get getNumSelectedBars(){
+        return self.selectedBars.length;
+    }
 })).actions(self => ({
     toggleMode() {
         if(self.mode === 'graph'){
@@ -3627,8 +3631,23 @@ const UIEditView = types.model("UIEditView", {
             self.mode = 'bar';
         }
         else{
-            self.mode = 'graph'
+            self.mode = 'graph';
         }
+    },
+    toggleBarSelect(bar){
+        if(self.isBarSelected(bar))
+            self.selectedBars = self.selectedBars.filter(b => b !== bar);
+        else
+            self.selectedBars.push(bar);
+    },
+    copySelectedBars(){
+        self.copiedBars = [...self.selectedBars];
+    },
+    clearSelectedBars(){
+        self.selectedBars = [];
+    },
+    clearCopiedBars(){
+        self.copiedBars = [];
     }
 }))
 
@@ -3911,6 +3930,11 @@ const UI = types.model("UI", {
     }
     function toggleEditMode() {
         self.editMode = !self.editMode;
+
+        if(store.ui.viewMode === 'edit' && store.ui.views.edit.mode === 'bar' && !self.editMode){
+            store.ui.views.edit.clearSelectedBars();
+            store.ui.views.edit.clearCopiedBars();
+        }
     }
     function toggleRecordMode() {
         self.recordMode = !self.recordMode;
@@ -3946,6 +3970,8 @@ const UI = types.model("UI", {
             self.setViewScene(self.selectedScene)
     }
     function selectTrack(id) {
+        store.ui.views.edit.clearSelectedBars();
+
         if(!id){
             if(store.ui.viewMode === "edit")
                 store.ui.toggleViewMode('sequencer');

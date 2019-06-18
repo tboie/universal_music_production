@@ -272,7 +272,6 @@ export const TrackRowView = observer(class TrackRowView extends Component {
   }
   
   handleMouseDown = (e) => {
-    //e.stopPropagation();
     if(e.touches){
       if(e.touches.length > 0){
         this.mStartPos = {x: e.touches[0].clientX, y: e.touches[0].clientY};
@@ -284,7 +283,10 @@ export const TrackRowView = observer(class TrackRowView extends Component {
   }
 
   handleClick = (e, hold) => {
-    //e.stopPropagation();
+    if(store.ui.viewMode === 'edit' && store.ui.views.edit.mode === 'bar' && store.ui.editMode){
+      store.ui.views.edit.toggleBarSelect(this.props.bar);
+      return;
+    }
 
     if(hold)
       e.preventDefault();
@@ -418,7 +420,18 @@ export const TrackRowView = observer(class TrackRowView extends Component {
       else if(this.props.track.type === "instrument"){
         this.drawInstNotes(pattern, this.props.viewLength);
       }
+
+      if(store.ui.viewMode === 'edit' && store.ui.views.edit.mode === 'bar' && this.props.editMode
+        && store.ui.views.edit.isBarSelected(this.props.bar)){
+          this.highlightTrack(this.ctx, this.c.width, this.canvasHeight)
+      }
     }
+  }
+
+  highlightTrack = (ctx, w, h) => {
+    ctx.fillStyle = 'white';
+    ctx.globalAlpha = 0.4;
+    ctx.fillRect(0, 0, w, h);
   }
 
   drawInstNotes = (pattern, viewLength) => {
