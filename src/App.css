@@ -301,6 +301,20 @@ wave {
   border:none;
 }
 
+.btnToolRowIconsLeft {
+  height:40px;
+  width:40px;
+  margin:0 auto;
+  background-color:rgba(0,0,0,0) !important;
+  border:none;
+  float:left;
+  position:relative;
+}
+
+.editViewIconsBottom {
+  bottom:4px;
+}
+
 .btnToolRowNav {
   width: 20%;
   height:40px;

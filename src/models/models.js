@@ -3615,6 +3615,9 @@ const UIButtonView = types.model("UIButtonView", {
 
 const UIEditView = types.model("UIEditView", {
     mode: types.optional(types.union(types.literal("graph"), types.literal("bar")), "bar"),
+    selectedBars: types.maybe(types.array(types.number)),
+    copiedBars: types.maybe(types.array(types.number)),
+    selectMode: types.optional(types.boolean, false)
 }).views(self => ({
 
 })).actions(self => ({

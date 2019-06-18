@@ -273,10 +273,15 @@ export const ToolRow = observer(class ToolRow extends Component {
 const ToggleModeIcons = props => {
   const setEditIcon = () => {
     if(props.viewMode === "edit"){
-      if(props.editMode)
-        return "open_with";
-      else
-        return "arrow_right_alt";
+      if(props.editViewMode === 'graph'){
+        if(props.editMode)
+          return "open_with";
+        else
+          return "arrow_right_alt";
+      }
+      else if(props.editViewMode === 'bar'){
+        return "file_copy";
+      }
     }
     else if(props.viewMode === "button"){
       if(props.editMode)
@@ -330,24 +335,25 @@ const ToggleModeIcons = props => {
   let bgVisibility= 'visible';
 
   let iconOpacity = 1;
-  if(props.viewMode === "sequencer" && !props.mixMode)
+  if((props.viewMode === "sequencer" && !props.mixMode) || (props.viewMode === 'edit' && props.editViewMode === 'bar' && !props.editMode))
       iconOpacity = 0.3;
   
-  let showGroupIcon = 'block';
+  let showGroupIcon = 'block', iconStyleClass = '';
   if(props.viewMode === "edit"){
     showGroupIcon = 'none';
+    iconStyleClass = ' editViewIconsBottom';
   }
 
   let showEditIcon = 'visible';
   if(props.viewMode === "button"){
     showEditIcon = 'hidden';
   }
-  else if((props.viewMode === 'edit' && props.editViewMode === 'bar') || props.viewMode === 'manager'){
+  else if(props.viewMode === 'manager'){
     showEditIcon = 'hidden';
     bgVisibility = 'hidden';
   }
 
-  let groupIcons =  <button id="btnToggleGroup" className="btnUIZoom" onClick={e => toggleGroup(e, true)} style={{visibility: showGroupIcon, float:'left', position:'relative', top:'-6px'}}>
+  let groupIcons =  <button id="btnToggleGroup" className="btnToolRowIconsLeft" onClick={e => toggleGroup(e, true)} style={{visibility:showGroupIcon, top:'-6px'}}>
                       <i className="material-icons i-36">{props.selectedGroup}</i>
                     </button>
   
@@ -361,7 +367,7 @@ const ToggleModeIcons = props => {
                   if(props.selectedGroup === group)
                     opacity = 1;
                   
-                  return <button key={idx} id={"btnToggleGroup_" + group} className="btnUIZoom" onClick={toggleGroup} style={{display:showGroupIcon, float:'left', position:'relative', top:'-6px', opacity:opacity}}>
+                  return <button key={idx} id={"btnToggleGroup_" + group} className="btnToolRowIconsLeft" onClick={toggleGroup} style={{display:showGroupIcon, opacity:opacity, top:'-6px'}}>
                             <i key={idx} className="material-icons i-36">{group}</i>
                           </button>
                 });
@@ -370,7 +376,7 @@ const ToggleModeIcons = props => {
   return (
     <div id="divToggleMode" style={{visibility: bgVisibility}}>
       { groupIcons }
-      <button id="btnToggleMode" className="btnUIZoom" onClick={toggleMode} style={{visibility: showEditIcon, float:'left', opacity:iconOpacity}}>
+      <button id="btnToggleMode" className={"btnToolRowIconsLeft" + iconStyleClass} onClick={toggleMode} style={{visibility:showEditIcon, opacity:iconOpacity}}>
         <i id="iconEdit" className="material-icons i-36">{setEditIcon()}</i>
       </button>
     </div>
