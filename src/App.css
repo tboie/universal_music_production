@@ -677,10 +677,11 @@ button:focus {
   outline:0;
 }
 
-/* firefox rounds buttons */
+/* firefox rounds buttons & prevent blue background on mobile touch*/
 button {
   border-radius: 0;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 canvas {
