@@ -353,9 +353,11 @@ const ToggleModeIcons = props => {
     bgVisibility = 'hidden';
   }
 
-  let groupIcons =  <button id="btnToggleGroup" className="btnToolRowIconsLeft" onClick={e => toggleGroup(e, true)} style={{visibility:showGroupIcon, top:'-6px'}}>
-                      <i className="material-icons i-36">{props.selectedGroup}</i>
-                    </button>
+  let groupIcons;
+  if(store.ui.viewMode !== 'edit')
+    groupIcons = <button id="btnToggleGroup" className="btnToolRowIconsLeft" onClick={e => toggleGroup(e, true)} style={{visibility:showGroupIcon, top:'-6px'}}>
+                    <i className="material-icons i-36">{props.selectedGroup}</i>
+                  </button>
   
   if(props.windowWidth > 550){
     groupIcons = ['A','B','C','D','M'].map((group, idx) => {

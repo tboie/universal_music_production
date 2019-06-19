@@ -3621,8 +3621,14 @@ const UIEditView = types.model("UIEditView", {
     isBarSelected(bar){
         return self.selectedBars.find(b => b === bar);
     },
+    isBarCopied(bar){
+        return self.copiedBars.find(b => b === bar);
+    },
     get getNumSelectedBars(){
         return self.selectedBars.length;
+    },
+    get getNumCopiedBars(){
+        return self.copiedBars.length;
     }
 })).actions(self => ({
     toggleMode() {
@@ -3642,6 +3648,10 @@ const UIEditView = types.model("UIEditView", {
     },
     copySelectedBars(){
         self.copiedBars = [...self.selectedBars];
+        self.clearSelectedBars();
+    },
+    pasteCopiedBars(){
+        //TODO
     },
     clearSelectedBars(){
         self.selectedBars = [];

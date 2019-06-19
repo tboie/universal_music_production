@@ -2,9 +2,24 @@ import React, { Component } from 'react';
 import { observer } from "mobx-react";
 
 export const MixRowViewBars = observer(class MixRowViewBars extends Component{
-    componentDidMount(){}
+    componentDidMount(){
+      this.togglePasteButton();
+    }
+
+    componentDidUpdate(prevProps){
+      this.togglePasteButton();
+    }
+
     componentWillUnmount(){}
-    componentDidUpdate(prevProps){}
+
+    togglePasteButton = () => {
+      let eleBtn = document.getElementById('btnMixBar_Paste');
+
+      if(this.props.numSelectedBars > 0 && this.props.numCopiedBars > 0)
+        eleBtn.disabled = false;
+      else
+        eleBtn.disabled = true;
+    }
   
     selectMixButton = (e) => {
       e.preventDefault();
@@ -14,8 +29,9 @@ export const MixRowViewBars = observer(class MixRowViewBars extends Component{
           this.props.store.ui.views.edit.copySelectedBars();
           break;
         case 'Paste':
+          this.props.store.ui.views.edit.pasteCopiedBars();
           break;
-        case 'Clear':
+        case 'Del':
           break;
         case 'Rand':
           break;
@@ -26,10 +42,10 @@ export const MixRowViewBars = observer(class MixRowViewBars extends Component{
     render(){
       return (
         <div className={"track-rowmix"} id={'trackrowmixbars_' + this.props.track.id + '_' + this.props.bar} style={{width: + this.props.store.ui.windowWidth}}>
-          <button id="btnMixNote_Copy" className="btn-mix-bars" onClick={this.selectMixButton}>Copy</button>
-          <button id="btnMixNote_Paste" className="btn-mix-bars" onClick={this.selectMixButton}>Paste</button>
-          <button id="btnMixNote_Clear" className="btn-mix-bars" onClick={this.selectMixButton}>Clear</button>
-          <button id="btnMixNote_Rand" className="btn-mix-bars" onClick={this.selectMixButton}>Rand</button>
+          <button id="btnMixBar_Copy" className="btn-mix-bars" onClick={this.selectMixButton}>Copy</button>
+          <button id="btnMixBar_Paste" className="btn-mix-bars" onClick={this.selectMixButton}>Paste</button>
+          <button id="btnMixBar_Del" className="btn-mix-bars" onClick={this.selectMixButton}>Del</button>
+          <button id="btnMixBar_Rand" className="btn-mix-bars" onClick={this.selectMixButton}>Rand</button>
         </div>
       )
     }

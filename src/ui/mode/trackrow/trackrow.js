@@ -283,11 +283,6 @@ export const TrackRowView = observer(class TrackRowView extends Component {
   }
 
   handleClick = (e, hold) => {
-    if(store.ui.viewMode === 'edit' && store.ui.views.edit.mode === 'bar' && store.ui.editMode){
-      store.ui.views.edit.toggleBarSelect(this.props.bar);
-      return;
-    }
-
     if(hold)
       e.preventDefault();
 
@@ -307,6 +302,14 @@ export const TrackRowView = observer(class TrackRowView extends Component {
     }
   
     if(distance <= 60 && clickX){
+      //bar view toggle select during edit mode
+      if(store.ui.viewMode === 'edit' && store.ui.views.edit.mode === 'bar' && store.ui.editMode){
+          if(!store.ui.views.edit.isBarCopied(this.props.bar))
+            store.ui.views.edit.toggleBarSelect(this.props.bar);
+          
+          return;
+      }
+  
       //Get click Seconds and also Tone time of click
       let clickSecs = (clickX / this.props.windowWidth) * Tone.Time(this.props.viewLength).toSeconds();
     
@@ -421,15 +424,19 @@ export const TrackRowView = observer(class TrackRowView extends Component {
         this.drawInstNotes(pattern, this.props.viewLength);
       }
 
-      if(store.ui.viewMode === 'edit' && store.ui.views.edit.mode === 'bar' && this.props.editMode
-        && store.ui.views.edit.isBarSelected(this.props.bar)){
+      if(store.ui.viewMode === 'edit' && store.ui.views.edit.mode === 'bar' && this.props.editMode){
+        if(store.ui.views.edit.isBarSelected(this.props.bar) || store.ui.views.edit.isBarCopied(this.props.bar))
           this.highlightTrack(this.ctx, this.c.width, this.canvasHeight)
       }
     }
   }
 
   highlightTrack = (ctx, w, h) => {
-    ctx.fillStyle = 'white';
+    if(store.ui.views.edit.isBarCopied(this.props.bar))
+      ctx.fillStyle = '#19937a';
+    else
+      ctx.fillStyle = 'white';
+
     ctx.globalAlpha = 0.4;
     ctx.fillRect(0, 0, w, h);
   }
