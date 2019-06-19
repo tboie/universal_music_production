@@ -3260,14 +3260,14 @@ const Pattern = types.model("Pattern", {
         return store.getSceneLength(self.scene.id);
     }
 })).actions(self => {
-    function addNote(time, mute, val, dur) {
+    function addNote(time, mute, val, dur, vel, prob, offset) {
         let values;
 
         if(val){
           values = val.map(n => n)
         }
 
-        self.notes.push(Note.create({ id: 'note_' + randomId(), time: time, mute: mute, note: values, duration: dur}));
+        self.notes.push(Note.create({ id: 'note_' + randomId(), time: time, mute: mute, note: values, duration: dur, velocity: vel, probability: prob, offset: offset}));
     }
     function deleteNote(note){
         destroy(note);
@@ -3279,9 +3279,8 @@ const Pattern = types.model("Pattern", {
         if(store.ui.selectedNote)
             store.ui.selectNote(undefined);
         
-        self.getSortedNotesAsc().forEach(function(note){
-            destroy(note); // throws warnings .. need to find out why ghost notes are being read
-            //detach(note); // https://spectrum.chat/mobx-state-tree/general/using-detach-instead-of-destroying~40b2a245-659d-463e-a8c4-80bf84bd30d8
+        self.getSortedNotesAsc().forEach(note => {
+            destroy(note);
         })
     }
     function deleteNotesByBar(bar){
@@ -3294,7 +3293,7 @@ const Pattern = types.model("Pattern", {
         bar -= 1;
         notes.forEach(n => {
             let newTime = bar + ':' + n.time.split(':')[1] + ':' + n.time.split(':')[2];
-            self.addNote(newTime, n.mute, n.note, n.duration);
+            self.addNote(newTime, n.mute, n.note, n.duration, n.velocity, n.probability, n.offset);
         })
     }
     function pastePattern(src){
