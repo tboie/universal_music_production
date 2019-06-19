@@ -3334,12 +3334,16 @@ const Pattern = types.model("Pattern", {
 
         for(let i=0; i<totalBars; i++){
             for(let k=0; k<totalNotes; k++){
+                let noteTime = Tone.Time(Tone.Time((i + startBar) + ':0:0') + (Tone.Time((self.resolution + 'n')) * k)).toBarsBeatsSixteenths();
+
                 let randOctave = Math.floor(Math.random() * (maxOctave - minOctave + 1) ) + minOctave;
                 let randNote = arrayNotes[Math.floor(Math.random() * (arrayNotes.length - 0))];
-                let noteVal = randNote + randOctave;
+                let noteVal = [randNote + randOctave];
 
-                let noteTime = Tone.Time(Tone.Time((i + startBar) + ':0:0') + (Tone.Time((self.resolution + 'n')) * k)).toBarsBeatsSixteenths();
-                self.addNote(noteTime, false, [noteVal], self.resolution + 'n');
+                if(store.ui.selectedChord !== undefined)
+                    noteVal = Chord.notes(noteVal[0], store.ui.selectedChord);
+
+                self.addNote(noteTime, false, noteVal, self.resolution + 'n');
             }
         }
     }

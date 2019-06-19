@@ -21,7 +21,12 @@ export const MixRowViewBars = observer(class MixRowViewBars extends Component{
 
     toggleButtons = (btnIds) => {
       btnIds.forEach(id => {
-        document.getElementById('btnMixBar_' + id).disabled = this.props.numSelectedBars > 0 ? false : true;
+        let eleBtn = document.getElementById('btnMixBar_' + id);
+        
+        if(id === 'Rand' && this.props.track.type === 'audio')
+          eleBtn.disabled = true;
+        else
+          eleBtn.disabled = this.props.numSelectedBars > 0 ? false : true;
       })
     }
 
