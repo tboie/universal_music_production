@@ -3231,6 +3231,9 @@ const Pattern = types.model("Pattern", {
     getNote(time) {
         return self.notes.find(n => n.time === time);
     },
+    getNotesByBar(bar){
+        return self.notes.filter(n => Tone.Time(n.time) >= Tone.Time((bar - 1) + ':0:0') && Tone.Time(n.time) < Tone.Time(bar + ':0:0'))
+    },
     getSortedNotesAsc() {
         let sceneNotes = [];
         self.notes.forEach(function (note) {
@@ -3273,9 +3276,25 @@ const Pattern = types.model("Pattern", {
         self.resolution = val;
     }
     function deleteNotes(){
+        if(store.ui.selectedNote)
+            store.ui.selectNote(undefined);
+        
         self.getSortedNotesAsc().forEach(function(note){
             destroy(note); // throws warnings .. need to find out why ghost notes are being read
             //detach(note); // https://spectrum.chat/mobx-state-tree/general/using-detach-instead-of-destroying~40b2a245-659d-463e-a8c4-80bf84bd30d8
+        })
+    }
+    function deleteNotesByBar(bar){
+        if(store.ui.selectedNote)
+            store.ui.selectNote(undefined);
+        
+        self.getNotesByBar(bar).forEach(n => self.deleteNote(n));
+    }
+    function pasteNotesToBar(notes, bar){
+        bar -= 1;
+        notes.forEach(n => {
+            let newTime = bar + ':' + n.time.split(':')[1] + ':' + n.time.split(':')[2];
+            self.addNote(newTime, n.mute, n.note, n.duration);
         })
     }
     function pastePattern(src){
@@ -3545,7 +3564,7 @@ const Pattern = types.model("Pattern", {
         ToneObjs.parts.splice(ToneObjs.parts.findIndex(p => p.id === self.id), 1);
 
     }
-    return { addNote, deleteNote, setResolution, pastePattern, deleteNotes, initPart, afterAttach, beforeDestroy }
+    return { addNote, deleteNote, deleteNotesByBar, pasteNotesToBar, setResolution, pastePattern, deleteNotes, initPart, afterAttach, beforeDestroy }
 });
 
 
@@ -3651,7 +3670,23 @@ const UIEditView = types.model("UIEditView", {
         self.clearSelectedBars();
     },
     pasteCopiedBars(){
-        //TODO
+        let pattern = store.getPatternByTrackScene(store.ui.selectedTrack.id, store.ui.selectedScene.id);
+
+        let firstSelectedBarNum = self.selectedBars.sort((a, b) =>  a - b)[0];
+        let firstCopiedBarNum = self.copiedBars.sort((a, b) =>  a - b)[0];
+        let diff = firstSelectedBarNum - firstCopiedBarNum;
+
+        self.copiedBars.forEach(bar => {
+            let destBar = bar + diff;
+            let notes = pattern.getNotesByBar(bar);
+            
+            pattern.deleteNotesByBar(destBar);
+            pattern.pasteNotesToBar(notes, destBar)
+        })
+    },
+    deleteSelectedBarNotes(){
+        let pattern = store.getPatternByTrackScene(store.ui.selectedTrack.id, store.ui.selectedScene.id);
+        self.selectedBars.forEach(bar => pattern.deleteNotesByBar(bar));
     },
     clearSelectedBars(){
         self.selectedBars = [];

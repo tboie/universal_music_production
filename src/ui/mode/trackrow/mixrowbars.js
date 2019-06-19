@@ -32,6 +32,7 @@ export const MixRowViewBars = observer(class MixRowViewBars extends Component{
           this.props.store.ui.views.edit.pasteCopiedBars();
           break;
         case 'Del':
+          this.props.store.ui.views.edit.deleteSelectedBarNotes();
           break;
         case 'Rand':
           break;
