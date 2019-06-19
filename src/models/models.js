@@ -3,7 +3,7 @@
 import { types, getParent, destroy, getMembers, applySnapshot, getSnapshot } from "mobx-state-tree";
 import Tone from 'tone';
 import idb from 'idb';
-import { Note as TonalNote } from "tonal";
+import { Note as TonalNote, Chord, Scale } from "tonal";
 import { store } from "../data/store.js";
 //import { UndoManager } from "mst-middlewares";
 import * as cloneDeep from 'lodash/cloneDeep';
@@ -3318,6 +3318,32 @@ const Pattern = types.model("Pattern", {
             )
         })
     }
+    function createRandomNotes(bar){
+        let timeStart = '0:0:0', timeEnd = Tone.Time(self.getLength()).toBarsBeatsSixteenths();
+
+        if(bar){
+            timeStart = (bar - 1) + ':0:0';
+            timeEnd = bar + ':0:0';
+        }
+        
+        let startBar = parseInt(timeStart.split(':')[0], 10);
+        let totalBars = parseInt(timeEnd.split(':')[0], 10) - startBar;
+        let totalNotes = totalBars * self.resolution;
+
+        let minOctave = 0, maxOctave = 7;
+        let arrayNotes = Scale.notes(store.settings.key, store.settings.scale)
+
+        for(let i=0; i<totalBars; i++){
+            for(let k=0; k<totalNotes; k++){
+                let randOctave = Math.floor(Math.random() * (maxOctave - minOctave + 1) ) + minOctave;
+                let randNote = arrayNotes[Math.floor(Math.random() * (arrayNotes.length - 0))];
+                let noteVal = randNote + randOctave;
+
+                let noteTime = Tone.Time(Tone.Time((i + startBar) + ':0:0') + (Tone.Time((self.resolution + 'n')) * k)).toBarsBeatsSixteenths();
+                self.addNote(noteTime, false, [noteVal], self.resolution + 'n');
+            }
+        }
+    }
     function initPart(offline) {
         let tObjs = ToneObjs;
 
@@ -3564,7 +3590,7 @@ const Pattern = types.model("Pattern", {
         ToneObjs.parts.splice(ToneObjs.parts.findIndex(p => p.id === self.id), 1);
 
     }
-    return { addNote, deleteNote, deleteNotesByBar, pasteNotesToBar, setResolution, pastePattern, deleteNotes, initPart, afterAttach, beforeDestroy }
+    return { addNote, deleteNote, deleteNotesByBar, pasteNotesToBar, createRandomNotes, setResolution, pastePattern, deleteNotes, initPart, afterAttach, beforeDestroy }
 });
 
 
@@ -3695,7 +3721,12 @@ const UIEditView = types.model("UIEditView", {
         self.copiedBars = [];
     },
     randomizeSelectedBarNotes(){
-        //TODO
+        let pattern = store.getPatternByTrackScene(store.ui.selectedTrack.id, store.ui.selectedScene.id);
+
+        self.selectedBars.forEach(bar => {
+            pattern.deleteNotesByBar(bar);
+            pattern.createRandomNotes(bar);
+        })
     }
 }))
 
