@@ -3693,6 +3693,9 @@ const UIEditView = types.model("UIEditView", {
     },
     clearCopiedBars(){
         self.copiedBars = [];
+    },
+    randomizeSelectedBarNotes(){
+        //TODO
     }
 }))
 

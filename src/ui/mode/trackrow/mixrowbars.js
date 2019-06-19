@@ -4,23 +4,27 @@ import { observer } from "mobx-react";
 export const MixRowViewBars = observer(class MixRowViewBars extends Component{
     componentDidMount(){
       this.togglePasteButton();
+      this.toggleButtons(['Copy','Del','Rand']);
     }
 
     componentDidUpdate(prevProps){
       this.togglePasteButton();
+      this.toggleButtons(['Copy','Del','Rand']);
     }
 
     componentWillUnmount(){}
 
     togglePasteButton = () => {
       let eleBtn = document.getElementById('btnMixBar_Paste');
-
-      if(this.props.numSelectedBars > 0 && this.props.numCopiedBars > 0)
-        eleBtn.disabled = false;
-      else
-        eleBtn.disabled = true;
+      eleBtn.disabled = (this.props.numSelectedBars > 0 && this.props.numCopiedBars > 0) ? false : true;
     }
-  
+
+    toggleButtons = (btnIds) => {
+      btnIds.forEach(id => {
+        document.getElementById('btnMixBar_' + id).disabled = this.props.numSelectedBars > 0 ? false : true;
+      })
+    }
+
     selectMixButton = (e) => {
       e.preventDefault();
 
@@ -35,6 +39,7 @@ export const MixRowViewBars = observer(class MixRowViewBars extends Component{
           this.props.store.ui.views.edit.deleteSelectedBarNotes();
           break;
         case 'Rand':
+          this.props.store.ui.views.edit.randomizeSelectedBarNotes();
           break;
         default:
       }
