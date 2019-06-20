@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { observer } from "mobx-react";
 import { store } from "../../data/store.js";
 import Tone from 'tone';
+import { MixRowViewManagerScene } from './trackrow/mixrowmanagerscene.js';
 
 export const ManagerView = observer(class ManagerView extends Component {
     componentDidMount(){}
@@ -25,15 +26,16 @@ export const ManagerView = observer(class ManagerView extends Component {
     render() {
         return(
             <div id='divManager'>
+                <MixRowViewManagerScene store={this.props.store} selectedScene={this.props.selectedScene}/>
                 <table id='tableManager'>
                     <thead>
                     <tr>
-                        { ['scene','Len','A', 'B', 'C', 'D'].map(r => <th>{r}</th>) }
+                        { ['scene','Len','A', 'B', 'C', 'D'].map(r => <th key={'table_col_' + r}>{r}</th>) }
                     </tr>
                     </thead>
                     <tbody>
                     { store.getScenesAsc().map(s => 
-                        <tr onClick={this.rowClick} style={{height:'32px', backgroundColor: store.ui.selectedScene.id === s.id ? 'blue' : 'transparent'}}>
+                        <tr key={'table_row_' + s.id} onClick={this.rowClick} style={{height:'32px', backgroundColor: this.props.selectedScene.id === s.id ? 'blue' : 'transparent'}}>
                             <td>{s.id}</td>
                             <td>{Tone.Time(store.getSceneLength(s.id)).toBarsBeatsSixteenths().split(':')[0]}</td>
                             <td></td>

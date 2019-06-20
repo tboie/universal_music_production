@@ -36,6 +36,8 @@ export const store = RootStore.create({
       },
       "edit" : {
         "mode" : "bar"
+      },
+      "manager" : {
       }
     },
     "toolbar" : {

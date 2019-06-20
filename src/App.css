@@ -69,6 +69,22 @@ html {
   z-index:10;
 }
 
+.btn-mix-scene {
+  height:100%;
+  width:14.28%;
+  z-index:10;
+  font-size:14px;
+}
+
+.material-icons.i-btn-mix-scene {
+  pointer-events:none;
+  color: black !important;
+}
+
+.material-icons.i-btn-mix-scene.red {
+  color: red !important;
+}
+
 .track-rowmix {
   position: relative;
   z-index: 2;
@@ -1031,7 +1047,6 @@ input {
   height:100%;
   width:100%;
   background-color:rgba(0,0,0,0.7);
-  overflow:scroll;
 }
 
 #tableManager {

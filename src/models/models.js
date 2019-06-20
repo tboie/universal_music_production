@@ -3733,10 +3733,20 @@ const UIEditView = types.model("UIEditView", {
     }
 }))
 
+const UIManagerView = types.model("UIEditView", {
+   
+}).views(self => ({
+    
+})).actions(self => ({
+    
+}))
+
+
 const UIMainViews = types.model("UIMainViews", {
     sequencer: UISequencerView,
     button: UIButtonView,
-    edit: UIEditView
+    edit: UIEditView,
+    manager: UIManagerView
 }).views(self => ({
 
 })).actions(self => ({
