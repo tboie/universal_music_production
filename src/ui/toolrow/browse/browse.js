@@ -3,7 +3,7 @@ import { observer } from 'mobx-react';
 import Tone from 'tone';
 import { store } from '../../../data/store.js';
 import { randomId } from '../../../models/models.js';
-import { audioBufferToWav, exportSong, renderSong } from '../../utils.js';
+import { audioBufferToWav, exportSong, renderSong, saveSong } from '../../utils.js';
 import interact from 'interactjs';
 
 import newfileTree from '../../../data/newfiletree.json';
@@ -57,7 +57,7 @@ const procBrowseItem = (item, browserId) => {
           store.ui.toolbar.browser.setAction(item.name);
           break;
         case 'Save':
-          store.ui.toolbar.browser.setAction(item.name);
+          saveSong();
           break;
         case 'Load':
           store.ui.toolbar.browser.setAction(item.name);

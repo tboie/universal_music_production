@@ -4,7 +4,7 @@ import interact from 'interactjs';
 import Tone from 'tone';
 import Microphone from 'recorder-js/src/microphone.js';
 import { toneObjNames } from '../data/tonenames.js';
-import { ToneObjs } from '../models/models.js';
+import { ToneObjs, randomId } from '../models/models.js';
 import { select } from 'd3-selection';
 import { saveAs } from 'file-saver';
 import JSZip from 'jszip';
@@ -458,7 +458,7 @@ export const exportSong = () => {
   }
 
   let zip = new JSZip();
-  
+
   let songFolder = zip.folder(store.settings.title);
   songFolder.file("song.json", JSON.stringify(store));
 
@@ -476,4 +476,16 @@ export const exportSong = () => {
           saveAs(content, store.settings.title + '.zip')
       });
   });
+}
+
+export const saveSong = () => {
+  store.DBGetAllSongs().then(list => {
+    if(list.find(song => song.id === store.id)){
+      store.settings.setModified(Date.now());
+      store.DBSaveStore(true);
+    } else {
+      //show popup if not saved yet
+      store.ui.toolbar.browser.setAction('save_' + randomId());
+    }
+  })
 }
