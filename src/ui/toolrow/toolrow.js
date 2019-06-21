@@ -216,11 +216,15 @@ export const ToolRow = observer(class ToolRow extends Component {
         toolBrowse =  <div id="divToolBrowse" className="divToolRowPanelContainer">
                         <div style={{width:'50%', height:'100%', float:'left', position:'relative'}}>
                           <ListBrowser selectedDir={this.props.store.ui.toolbar.browser.browser1.selectedDir} id={'browser1'}
+                              songKey={this.props.store.settings.key} songScale={this.props.store.settings.scale}
+                              songSwing={this.props.store.settings.swingSubdivision} modified={this.props.store.settings.modified}
                               numSamples={this.props.store.numSamples} numRegions={this.props.store.numRegions}
                               selectedGroup={this.props.store.ui.selectedGroup}/>
                         </div>
                         <div style={{width:'50%', height:'100%', float:'left', position:'relative'}}>
                           <ListBrowser selectedDir={this.props.store.ui.toolbar.browser.browser2.selectedDir} id={'browser2'}
+                              songKey={this.props.store.settings.key} songScale={this.props.store.settings.scale}
+                              songSwing={this.props.store.settings.swingSubdivision} modified={this.props.store.settings.modified}
                               numSamples={this.props.store.numSamples} numRegions={this.props.store.numRegions}
                               selectedGroup={this.props.store.ui.selectedGroup}/>
                         </div>

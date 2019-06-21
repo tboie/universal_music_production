@@ -526,7 +526,7 @@ class Row extends Component {
     this.item = data.list[index];
     this.browserId = data.browserId;
 
-    let text, loadIcon, item = this.item;
+    let text, loadIcon, item = this.item, title = item.name;
 
     let classSelected = '', showLoadIcon = 'none';
     if(item.dir + '/' + item.name === store.ui.toolbar.browser[this.browserId].selectedFile){
@@ -549,15 +549,18 @@ class Row extends Component {
       else if(item.type === 'source')
         iconType = 'waves';
       else if(item.type === 'song'){
+        iconType = '';
+
         if(item.name === store.settings.key || item.name === store.settings.swingSubdivision || item.name === store.settings.scale)
           iconType = 'check_box';
-        else
-          iconType = '';
+        else if(item.name === 'Save' && store.settings.modified)
+          title = title + ' (' + new Date(store.settings.modified).toLocaleTimeString('en-US') + ')';
+          
       }
 
       text =  <div style={{pointerEvents: 'none'}}>
                 <i className='material-icons menuIcon'>{iconType}</i>
-                <label className='lblMain'>{item.name}</label>
+                <label className='lblMain'>{title}</label>
               </div>
     }
     else{

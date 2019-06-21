@@ -36,7 +36,6 @@ export const LoadSaveModal = observer(class LoadSaveModal extends Component {
     }
   
     componentDidUpdate(prevProps){
-      console.log('loadsavemodal updated')
       document.getElementById("inputSong").value = store.settings.title;
   
       store.DBGetAllSongs().then(list => {

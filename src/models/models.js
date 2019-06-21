@@ -4209,7 +4209,7 @@ const UI = types.model("UI", {
 
 const Settings = types.model("Settings", {
     title: types.maybe(types.string),
-    modified: types.optional(types.number, Date.now()),
+    modified: types.maybe(types.Date),
     bpm: types.optional(types.number, 90),
     swing: types.optional(types.number, 0),
     swingSubdivision: types.optional(types.string, "8n"),
