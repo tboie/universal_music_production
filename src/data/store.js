@@ -14,6 +14,7 @@ export const store = RootStore.create({
     "loopEnd" : "1:0:0",
     "scale" : Scale.names()[Math.floor(Math.random()*Scale.names().length)],
     "key" : ["C","C#","Db","D","D#","Eb","E","E#","Fb","F","F#","Gb","G","G#","Ab","A","A#","Bb","B","B#","Cb"][Math.floor(Math.random()*21)],
+    "swingSubDivision" : "16n",
     "partRender": false,
   },
   "tracks": [],

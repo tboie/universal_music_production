@@ -4239,7 +4239,7 @@ const Settings = types.model("Settings", {
         self.swing = val;
         Tone.Transport.swing = parseFloat(val);
     },
-    setSwingSubDivision(val) {
+    setSwingSubdivision(val) {
         self.swingSubdivision = val;
         Tone.Transport.swingSubdivision = val;
     },

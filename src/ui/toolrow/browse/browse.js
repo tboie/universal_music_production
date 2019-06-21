@@ -36,7 +36,7 @@ const procBrowseItem = (item, browserId) => {
   let trackId = 'track_' + randomId();
 
   if(type === 'song'){
-    let subDir = store.ui.toolbar.browser[browserId].selectedDir.split('/')[2]
+    let subDir = store.ui.toolbar.browser[browserId].selectedDir.split('/')[2];
     if(subDir){
       switch(subDir) {
         case 'Key':
@@ -46,7 +46,7 @@ const procBrowseItem = (item, browserId) => {
           store.settings.setScale(item.name)
           break;
         case 'Swing':
-          store.setting.setSwingSubDivision(item.name)
+          store.settings.setSwingSubdivision(item.name)
           break;
         default:
       }
@@ -548,8 +548,12 @@ class Row extends Component {
         iconType = 'equalizer';
       else if(item.type === 'source')
         iconType = 'waves';
-      else if(item.type === 'song')
-        iconType = '';
+      else if(item.type === 'song'){
+        if(item.name === store.settings.key || item.name === store.settings.swingSubdivision || item.name === store.settings.scale)
+          iconType = 'check_box';
+        else
+          iconType = '';
+      }
 
       text =  <div style={{pointerEvents: 'none'}}>
                 <i className='material-icons menuIcon'>{iconType}</i>

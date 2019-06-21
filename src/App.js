@@ -180,6 +180,8 @@ const AppView = observer(class AppView extends Component {
     let sideBar;
     if(this.props.store.ui.showSideBar)
       sideBar = <ToolSideBar content={ <ListBrowser id={'browser3'} selectedDir={this.props.store.ui.toolbar.browser.browser3.selectedDir} 
+                                            songKey={this.props.store.settings.key} songScale={this.props.store.settings.scale}
+                                            songSwing={this.props.store.settings.swingSubdivision} 
                                             numSamples={this.props.store.numSamples} numRegions={this.props.store.numRegions}
                                             selectedGroup={this.props.store.ui.selectedGroup}/> }/>
 
