@@ -3,7 +3,7 @@ import { observer } from 'mobx-react';
 import Tone from 'tone';
 import { store } from '../../../data/store.js';
 import { randomId } from '../../../models/models.js';
-import { audioBufferToWav, exportSong, renderSong, saveSong } from '../../utils.js';
+import { audioBufferToWav, exportSong, renderSong, saveSong, toggleFullScreen } from '../../utils.js';
 import interact from 'interactjs';
 
 import newfileTree from '../../../data/newfiletree.json';
@@ -67,6 +67,9 @@ const procBrowseItem = (item, browserId) => {
           break;
         case 'Render':
           renderSong().then(() => {});
+          break;
+        case 'Fullscreen':
+          toggleFullScreen();
           break;
       }
     }

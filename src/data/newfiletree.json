@@ -988,11 +988,12 @@
             "Swing"
         ],
         "files" : [
+            "Load",
             "Save",
             "Save As",
-            "Load",
             "Export",
-            "Render"
+            "Render",
+            "Fullscreen"
         ]
     },
     "/Song/Key" : {

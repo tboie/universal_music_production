@@ -56,7 +56,8 @@ export const store = RootStore.create({
         "browser3" : {
           "selectedDir" : "/",
           "selectedFile" : undefined
-        }
+        },
+        "action": undefined
       },
       "edit" : {
       },
