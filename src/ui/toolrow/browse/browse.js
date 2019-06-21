@@ -3,13 +3,14 @@ import { observer } from 'mobx-react';
 import Tone from 'tone';
 import { store } from '../../../data/store.js';
 import { randomId } from '../../../models/models.js';
-import { audioBufferToWav } from '../../utils.js';
+import { audioBufferToWav, exportSong, renderSong } from '../../utils.js';
 import interact from 'interactjs';
 
 import newfileTree from '../../../data/newfiletree.json';
 import { FixedSizeList as List } from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { shouldComponentUpdate } from 'react-window';
+
 
 
 let bBrowseMenuLoading = false;
@@ -62,8 +63,10 @@ const procBrowseItem = (item, browserId) => {
           store.ui.toolbar.browser.setAction(item.name);
           break;
         case 'Export':
+          exportSong();
           break;
         case 'Render':
+          renderSong().then(() => {});
           break;
       }
     }
