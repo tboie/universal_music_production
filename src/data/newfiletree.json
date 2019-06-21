@@ -6,7 +6,8 @@
             "Effects",
             "Sources",
             "Samples",
-            "Library"
+            "Library",
+            "Song"
         ],
         "files" : []
     },
@@ -978,6 +979,36 @@
             "hh088b.wav",
             "hh89a.wav",
             "hh89b.wav"
+        ]
+    },
+    "/Song" : {
+        "folders" : [
+            "Key",
+            "Scale",
+            "Swing"
+        ],
+        "files" : [
+            "Save",
+            "Save As",
+            "Load",
+            "Export",
+            "Render"
+        ]
+    },
+    "/Song/Key" : {
+        "folders" : [],
+        "files" : [
+            "C","C#","Db","D","D#","Eb","E","E#","Fb","F","F#","Gb","G","G#","Ab","A","A#","Bb","B","B#","Cb"
+        ]
+    },
+    "/Song/Scale" : {
+        "folders" : [],
+        "files" : []
+    },
+    "/Song/Swing" : {
+        "folders" : [],
+        "files" : [
+            "1n", "2n", "4n", "8n", "16n", "32n", "64n"
         ]
     }
 }

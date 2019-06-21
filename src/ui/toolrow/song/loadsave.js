@@ -36,6 +36,7 @@ export const LoadSaveModal = observer(class LoadSaveModal extends Component {
     }
   
     componentDidUpdate(prevProps){
+      console.log('loadsavemodal updated')
       document.getElementById("inputSong").value = store.settings.title;
   
       store.DBGetAllSongs().then(list => {
@@ -66,7 +67,7 @@ export const LoadSaveModal = observer(class LoadSaveModal extends Component {
 
     toggleWindow = () => {
       let modal = document.getElementById('myModal');
-  
+      
       if(!modal.style.display || modal.style.display === "none"){
         modal.style.display = "block";
         //footer zindex is wonky with modal zindex 

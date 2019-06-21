@@ -14,12 +14,15 @@ import { SequencerView } from "./ui/mode/sequencer.js";
 import { GridButtonView } from "./ui/mode/button.js";
 import { EditView } from './ui/mode/edit.js';
 import { ManagerView } from './ui/mode/manager.js';
-import { DropZone } from './ui/mode/dropzone.js';
 import { Draw } from './ui/draw.js';
+import { DropZone } from './ui/mode/dropzone.js';
+import { LoadSaveModal } from './ui/toolrow/song/loadsave.js';
 import { ListBrowser } from "./ui/toolrow/browse/browse.js";
-import { initMidi } from "./midi/midi.js";
 
+import { initMidi } from "./midi/midi.js";
 import { ToneObjs } from './models/models.js';
+import newfileTree from './data/newfiletree.json';
+import { Scale } from 'tonal';
 
 import './App.css';
 import "nouislider/distribute/nouislider.min.css";
@@ -100,6 +103,9 @@ const AppView = observer(class AppView extends Component {
     store.ui.setDevice();
 
     initMidi();
+
+    //add scales to browser JSON
+    newfileTree['/Song/Scale'].files.push.apply(newfileTree['/Song/Scale'].files, Scale.names());
 
     /*  enable persistent storage
     if (navigator.storage && navigator.storage.persist)
@@ -210,6 +216,10 @@ const AppView = observer(class AppView extends Component {
         <DropZone 
           store={this.props.store} 
           />
+        <LoadSaveModal 
+          action={this.props.store.ui.toolbar.browser.action}
+        />
+
         <img src="logobg.png" id="imgBGLogo" alt="propa.app" draggable="false"/>
       </div>
     )

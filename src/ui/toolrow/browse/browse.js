@@ -34,7 +34,41 @@ const procBrowseItem = (item, browserId) => {
   let randId = name + '_' + randomId();
   let trackId = 'track_' + randomId();
 
-  if(type === 'instrument' || type === 'source'){
+  if(type === 'song'){
+    let subDir = store.ui.toolbar.browser[browserId].selectedDir.split('/')[2]
+    if(subDir){
+      switch(subDir) {
+        case 'Key':
+          store.settings.setKey(item.name)
+          break;
+        case 'Scale':
+          store.settings.setScale(item.name)
+          break;
+        case 'Swing':
+          store.setting.setSwingSubDivision(item.name)
+          break;
+        default:
+      }
+    }
+    else{
+      switch(item.name) {
+        case 'Save As':
+          store.ui.toolbar.browser.setAction(item.name);
+          break;
+        case 'Save':
+          store.ui.toolbar.browser.setAction(item.name);
+          break;
+        case 'Load':
+          store.ui.toolbar.browser.setAction(item.name);
+          break;
+        case 'Export':
+          break;
+        case 'Render':
+          break;
+      }
+    }
+  }
+  else if(type === 'instrument' || type === 'source'){
     if(store.ui.viewMode === 'edit'){
       trackId = store.ui.selectedTrack.id;
       store[type + 's'].add(name, {id: randId, track: trackId});
@@ -194,6 +228,9 @@ const toggleBrowseBtnLoad = (item, browserId) => {
       else if(store.ui.selectedGroup !== 'M'){
         disableBrowseBtnClick(false, browserId);
       }
+    }
+    else if(item.type === 'song'){
+      disableBrowseBtnClick(false, browserId);
     }
   }
   else{
@@ -366,6 +403,11 @@ class Row extends Component {
         changeBrowseMenu(newDir, this.browserId);
         toggleBrowseBtnLoad(item, this.browserId);
       }
+      else if(item.type === 'song'){
+        item.selected = true;
+        store.ui.toolbar.browser[this.browserId].selectFile(item.name);
+        toggleBrowseBtnLoad(item, this.browserId);
+      }
       else if(item.type === 'instrument' || item.type === 'source' || item.type === 'effect' || item.type === 'component'){
         item.selected = true;
         store.ui.toolbar.browser[this.browserId].selectFile(item.name);
@@ -503,6 +545,8 @@ class Row extends Component {
         iconType = 'equalizer';
       else if(item.type === 'source')
         iconType = 'waves';
+      else if(item.type === 'song')
+        iconType = '';
 
       text =  <div style={{pointerEvents: 'none'}}>
                 <i className='material-icons menuIcon'>{iconType}</i>
@@ -616,6 +660,8 @@ export const ListBrowser = observer(class ListBrowser extends Component {
 
     if(dir === '/Instruments' || dir === '/Components' || dir === '/Effects' || dir === '/Sources')
       type = dir.replace('/', '').slice(0, -1).toLowerCase();
+    else if(dir.split('/')[1] === 'Song')
+      type = dir.split('/')[1].toLowerCase();
   
     newfileTree[dir].folders.forEach(folder  => {
       this.list.push({name: folder, type: type, folder: true, dir: dir, selected: false, tStart: undefined})

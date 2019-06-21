@@ -3767,10 +3767,13 @@ const UIToolbarBrowser = types.model("UIToolbarBrowser", {
     browser1: ListBrowser,
     browser2: ListBrowser,
     browser3: ListBrowser,
+    action: types.maybe(types.string)
 }).views(self => ({
 
 })).actions(self => ({
-
+    setAction(action){
+        self.action = action + '_' + randomId();
+    }
 }))
 
 const UIToolbarEdit= types.model("UIToolbarEdit", {
@@ -4034,7 +4037,7 @@ const UI = types.model("UI", {
         ToneObjs.metronome.mute = !self.recordMode;
     }
     function toggleSettings() {
-        //self.toggleViewMode('manager');
+        self.toggleViewMode('manager');
         self.settings = !self.settings;
     }
     function setViewLength(val) {

@@ -25,9 +25,9 @@ export const ToolSongHeader = observer(class ToolSongHeader extends Component {
   }
 
   loadSaveAs = () => {
-    this.action = "loadsaveas_" + randomId();
-    this.props.update();
-    this.forceUpdate();
+    store.ui.toolbar.browser.setAction("loadsaveas_" + randomId());
+   // this.props.update();
+   // this.forceUpdate();
   }
 
   saveSong = () => {
@@ -116,7 +116,7 @@ export const ToolSongHeader = observer(class ToolSongHeader extends Component {
   render(){
     return (
       <div id="divToolSongHeader" style={{height:'30px', width:'100%', backgroundColor:'darkgray', position:'absolute', zIndex:2}}>
-        <LoadSaveModal action={this.action}/>
+        { /* <LoadSaveModal action={this.action}/> */ }
         <button onClick={this.loadSaveAs} style={{float:'left', height:'100%'}}>Load/SaveAs</button>
         <button onClick={this.saveSong} style={{float:'left', height:'100%', marginLeft:'14px'}}>Save</button>
         <button id="btnRenderSong" onClick={this.renderSong} style={{float:'left', height:'100%', marginLeft:'14px'}}>Render</button>
