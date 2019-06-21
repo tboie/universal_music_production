@@ -212,29 +212,28 @@ export const ToolRow = observer(class ToolRow extends Component {
 
     render(){
       let toolBrowse;
+
+      let arrayBrowsers = ['browser1','browser2'].map(name => {
+              return <ListBrowser selectedDir={this.props.store.ui.toolbar.browser[name].selectedDir} id={name}
+                        songKey={this.props.store.settings.key} songScale={this.props.store.settings.scale}
+                        songSwing={this.props.store.settings.swingSubdivision} modified={this.props.store.settings.modified}
+                        numSamples={this.props.store.numSamples} numRegions={this.props.store.numRegions}
+                        selectedGroup={this.props.store.ui.selectedGroup}/>
+      })
+
       if(this.props.store.ui.windowWidth >= 480){
         toolBrowse =  <div id="divToolBrowse" className="divToolRowPanelContainer">
                         <div style={{width:'50%', height:'100%', float:'left', position:'relative'}}>
-                          <ListBrowser selectedDir={this.props.store.ui.toolbar.browser.browser1.selectedDir} id={'browser1'}
-                              songKey={this.props.store.settings.key} songScale={this.props.store.settings.scale}
-                              songSwing={this.props.store.settings.swingSubdivision} modified={this.props.store.settings.modified}
-                              numSamples={this.props.store.numSamples} numRegions={this.props.store.numRegions}
-                              selectedGroup={this.props.store.ui.selectedGroup}/>
+                          { arrayBrowsers[0] }
                         </div>
                         <div style={{width:'50%', height:'100%', float:'left', position:'relative'}}>
-                          <ListBrowser selectedDir={this.props.store.ui.toolbar.browser.browser2.selectedDir} id={'browser2'}
-                              songKey={this.props.store.settings.key} songScale={this.props.store.settings.scale}
-                              songSwing={this.props.store.settings.swingSubdivision} modified={this.props.store.settings.modified}
-                              numSamples={this.props.store.numSamples} numRegions={this.props.store.numRegions}
-                              selectedGroup={this.props.store.ui.selectedGroup}/>
+                          { arrayBrowsers[1] }
                         </div>
                       </div>
       }
       else{
         toolBrowse = <div id="divToolBrowse" className="divToolRowPanelContainer">
-                        <ListBrowser selectedDir={this.props.store.ui.toolbar.browser.browser1.selectedDir} id={'browser1'}
-                            numSamples={this.props.store.numSamples} numRegions={this.props.store.numRegions}
-                            selectedGroup={this.props.store.ui.selectedGroup}/>
+                        { arrayBrowsers[0]}
                       </div>
       }
       
