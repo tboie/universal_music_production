@@ -3735,11 +3735,13 @@ const UIEditView = types.model("UIEditView", {
 }))
 
 const UIManagerView = types.model("UIEditView", {
-   
+    copiedTrack: types.maybe(types.safeReference(Track)),
 }).views(self => ({
     
 })).actions(self => ({
-    
+    copyTrack(trackId){
+        self.copiedTrack = store.getTrack(trackId);
+    }
 }))
 
 

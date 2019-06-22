@@ -10,7 +10,7 @@ export const ManagerView = observer(class ManagerView extends Component {
     componentDidUpdate(prevProps){}
 
     rowClick = (e) => {
-        if(e.target.parentNode){
+        if(e.target.parentNode && e.target.parentNode.cells){
             let txtScene = e.target.parentNode.cells[0].innerHTML;
 
             if(txtScene){
