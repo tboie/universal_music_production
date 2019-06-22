@@ -3,7 +3,6 @@ import { observer } from "mobx-react";
 import Tone from 'tone';
 import { ToneObjs } from '../../models/models.js';
 import { store } from "../../data/store.js";
-import { toggleFullScreen } from "../utils.js";
 
 
 export const FooterView = observer(class FooterView extends Component{
@@ -35,20 +34,6 @@ export const FooterView = observer(class FooterView extends Component{
       store.ui.toggleViewMode();
     }
   
-    toggleFS = (e) => {
-      let icon = document.getElementById('btnFS').children[0]
-      if(icon){
-        if(icon.innerHTML === "fullscreen")
-          icon.innerHTML = "fullscreen_exit"; 
-        else
-          icon.innerHTML = "fullscreen";
-      }
-      
-      toggleFullScreen();
-  
-      store.ui.calibrateSizes();
-    }
-  
     toggleSlider = (e) => {
       if(e.target.innerHTML === "BPM"){
         e.target.innerHTML = "Swng";
@@ -73,7 +58,7 @@ export const FooterView = observer(class FooterView extends Component{
     }
   
     toggleSettings = (e) => {
-      this.props.store.ui.toggleSettings();
+      this.props.store.ui.toggleSettings(true);
     }
   
     tempoChange = (e) => {
@@ -150,11 +135,14 @@ export const FooterView = observer(class FooterView extends Component{
     endSlider = (e) => {
       //console.log('endSlide');
     }
+
+    hideBPMFooter = (e) => {
+      store.ui.toggleSettings(false);
+    }
   
     render(){
-      let height = 40;
-      let vDisplay = {display:'none'};
-      if(this.props.store.ui.settings){
+      let height = 40, vDisplay = {display:'none'};
+      if(this.props.settings){
         height = 80;
         vDisplay = {display:'block'};
       }
@@ -179,12 +167,12 @@ export const FooterView = observer(class FooterView extends Component{
             <button onClick={this.toggleSettings} style={{position:'absolute', right:0 , height:'100%', backgroundColor:'transparent', border:0}}><i className="material-icons i-36">settings_applications</i></button>
           </div>
           <div className="divFooterSettings" style={vDisplay}>
-            <button id="btnFS" onClick={this.toggleFS}><i className="material-icons i-36">fullscreen</i></button>
+            <button id="btnToggleTempoSlider" onClick={this.toggleSlider}>BPM</button>
             <label id="lblTempo"/>
-            <div style={{position:'relative', marginLeft:'50px', marginRight:'60px'}}> 
+            <div style={{position:'relative', marginLeft:'55px', marginRight:'50px'}}> 
               <input type="range" min="60" max="180" id="tempoSlider" step="0.5" onChange={this.tempoChange} onMouseUp={this.endSlide} onTouchEnd={this.endSlide}/>
             </div>
-            <button id="btnToggleTempoSlider" onClick={this.toggleSlider}>BPM</button>
+            <button id="btnHideFooter" onClick={this.hideBPMFooter}><i className="material-icons i-36">arrow_drop_down_circle</i></button>
           </div>
         </div>
       )

@@ -210,24 +210,36 @@ wave {
 
 .divFooterSettings {
   height:40px;
-  /*width:100%;*/
   display:flex;
   position:relative;
+  animation-name: footerAnimation;
+  animation-duration: 2s;
+}
+
+@keyframes footerAnimation {
+  from {opacity: 0}
+  to {opacity:1}
 }
 
 #btnToggleTempoSlider {
   height: 28px;
-  float: right; 
+  float: left;
+  left: 4px;
   position: absolute;
   top: 4px;
-  right: 6px;
   width: 46px;
   background-color: white !important;
   border-radius: 4px;
 }
 
+#btnHideFooter {
+  background-color:transparent;
+  border: 0px none;
+  float: right;
+}
+
 #tempoSlider {
-  top: 6px;
+  top: 7px;
   width: calc(100% - 20px);
   position: absolute;
   margin-left: 8px;
@@ -239,12 +251,6 @@ wave {
   width: 0px;
   left: 48%;
   bottom: 26px
-}
-
-#btnFS {
-  background-color:transparent;
-  border: 0px none;
-  float: left;
 }
 
 .btnScene {

@@ -4,7 +4,7 @@ import interact from 'interactjs';
 import Tone from 'tone';
 import Microphone from 'recorder-js/src/microphone.js';
 import { toneObjNames } from '../data/tonenames.js';
-import { ToneObjs, randomId } from '../models/models.js';
+import { ToneObjs } from '../models/models.js';
 import { select } from 'd3-selection';
 import { saveAs } from 'file-saver';
 import { Scale } from 'tonal';
@@ -41,6 +41,8 @@ export function toggleFullScreen() {
   else {
     cancelFullScreen.call(doc);
   }
+
+  store.ui.calibrateSizes();
 }
 
 export function applyDraggableGrid() {

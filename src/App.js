@@ -127,6 +127,7 @@ const AppView = observer(class AppView extends Component {
           store={this.props.store} 
           viewMode={this.props.store.ui.viewMode} 
           bpm={this.props.store.settings.bpm} 
+          settings={this.props.store.ui.settings}
           />
         <Draw 
           store={this.props.store} 

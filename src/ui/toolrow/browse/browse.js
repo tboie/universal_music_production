@@ -71,6 +71,10 @@ const procBrowseItem = (item, browserId) => {
         case 'Fullscreen':
           toggleFullScreen();
           break;
+        case 'BPM':
+          store.ui.toggleSettings(false);
+          break;
+        default:
       }
     }
   }

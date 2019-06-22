@@ -993,7 +993,8 @@
             "Save As",
             "Export",
             "Render",
-            "Fullscreen"
+            "Fullscreen",
+            "BPM"
         ]
     },
     "/Song/Key" : {

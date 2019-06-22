@@ -4037,8 +4037,10 @@ const UI = types.model("UI", {
 
         ToneObjs.metronome.mute = !self.recordMode;
     }
-    function toggleSettings() {
-        self.toggleViewMode('manager');
+    function toggleSettings(bChangeView) {
+        if(bChangeView)
+            self.toggleViewMode('manager');
+        
         self.settings = !self.settings;
     }
     function setViewLength(val) {
