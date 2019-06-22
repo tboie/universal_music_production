@@ -3,7 +3,6 @@
 import React, { Component } from 'react';
 import { observer } from "mobx-react";
 import Tone from 'tone';
-import * as debounce from 'lodash/debounce';
 import { store } from './data/store.js';
 
 import { FooterView } from "./ui/footer/footer.js";
@@ -19,10 +18,8 @@ import { DropZone } from './ui/mode/dropzone.js';
 import { LoadSaveModal } from './ui/toolrow/song/loadsave.js';
 import { ListBrowser } from "./ui/toolrow/browse/browse.js";
 
-import { initMidi } from "./midi/midi.js";
 import { ToneObjs } from './models/models.js';
-import newfileTree from './data/newfiletree.json';
-import { Scale } from 'tonal';
+import { setTransport, firstPageLoad } from './ui/utils.js'
 
 import './App.css';
 import "nouislider/distribute/nouislider.min.css";
@@ -57,93 +54,19 @@ const AppView = observer(class AppView extends Component {
     }
   }
 
-  //called before elements are mounted
-  firstLoad = () => {
-    this.bFirstLoad = false;
-
-    if(!Tone.supported){
-      alert("Sorry, but this app is not supported by your browser.  Please update to a better option."); 
-    }
-
-    // not sure how reliable Tone.start() in mount is for all cases... so use this too
-    document.documentElement.addEventListener('mousedown', () => {
-      if(Tone.initialized){
-        if(Tone.context.state !== 'running')
-          Tone.start();
-      }
-    })
-
-    //disable right click menu - this fixes the touch hold menu on some touch screens
-    document.addEventListener('contextmenu', e => e.preventDefault());
-
-    //online offline event handlers
-    window.addEventListener('load', () => {
-      function updateOnlineStatus(event){
-        if (navigator.onLine) {
-          //console.log('online');
-        } else {
-          //console.log('offline');
-        }
-      }
-      window.addEventListener('online', updateOnlineStatus);
-      window.addEventListener('offline', updateOnlineStatus);
-    });
-
-    //tab/window in background
-    document.addEventListener('visibilitychange', function(){
-      //console.log('hidden: ' + document.hidden);
-    });
-
-    //resize
-    window.addEventListener('resize', debounce(this.resizeFunction, 75));
-    this.resizeFunction();
-
-    //set transport and device
-    this.setTransport();
-    store.ui.setDevice();
-
-    initMidi();
-
-    //add scales to browser JSON
-    newfileTree['/Song/Scale'].files.push.apply(newfileTree['/Song/Scale'].files, Scale.names());
-
-    /*  enable persistent storage
-    if (navigator.storage && navigator.storage.persist)
-      navigator.storage.persist().then(function(persistent) {
-        if (persistent)
-          console.log("Storage will not be cleared except by explicit user action");
-        else
-          console.log("Storage may be cleared by the UA under storage pressure.");
-      });
-    */
-  }
-
   componentDidUpdate(prevProps) {
     //called when a song was loaded from indexdb, fixes ui sizing issues
     if (this.bSongWasLoaded) {
       this.bSongWasLoaded = false;
-      this.setTransport();
-      this.resizeFunction();
+      setTransport();
     }
   }
 
-  resizeFunction = () => {
-    store.ui.setWindowWidthHeight(window.innerWidth || document.body.clientWidth,
-      window.innerHeight || document.body.clientHeight);
-  };
-
-  setTransport = () => {
-    Tone.Transport.position = "0:0:0";
-    Tone.Transport.bpm.value = this.props.store.settings.bpm;
-    Tone.Transport.swing = this.props.store.settings.swing;
-    Tone.Transport.swingSubdivision = this.props.store.settings.swingSubdivision;
-    Tone.Transport.loopStart = this.props.store.settings.loopStart;
-    Tone.Transport.loopEnd = this.props.store.settings.loopEnd;
-  }
-
   render() {
-    if (this.bFirstLoad)
-      this.firstLoad();
+    if (this.bFirstLoad){
+      this.bFirstLoad = false;
+      firstPageLoad();
+    }
 
     let viewWindow = null;
     if (this.props.store.ui.viewMode === "sequencer")

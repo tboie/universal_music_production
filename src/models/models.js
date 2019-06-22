@@ -4807,6 +4807,10 @@ export const RootStore = types.model("RootStore", {
                     //don't display load/save window
                     e.target.result.ui.toolbar.browser.action = undefined;
 
+                    //set current window sizes
+                    e.target.result.ui.windowWidth = store.ui.windowWidth;
+                    e.target.result.ui.windowHeight = store.ui.windowHeight;
+
                     applySnapshot(store, e.target.result);
                     
                     //TODO: look into using afterCreate in model
