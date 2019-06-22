@@ -485,7 +485,7 @@ export const saveSong = () => {
       store.DBSaveStore(true);
     } else {
       //show popup if not saved yet
-      store.ui.toolbar.browser.setAction('save_' + randomId());
+      store.ui.toolbar.browser.setAction('Save');
     }
   })
 }

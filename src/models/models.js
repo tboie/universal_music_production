@@ -4804,6 +4804,9 @@ export const RootStore = types.model("RootStore", {
                     //after attach is unreliable...
                     setToneObjs(e.target.result);
 
+                    //don't display load/save window
+                    e.target.result.ui.toolbar.browser.action = undefined;
+
                     applySnapshot(store, e.target.result);
                     
                     //TODO: look into using afterCreate in model

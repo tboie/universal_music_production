@@ -36,32 +36,34 @@ export const LoadSaveModal = observer(class LoadSaveModal extends Component {
     }
   
     componentDidUpdate(prevProps){
-      document.getElementById("inputSong").value = store.settings.title;
-  
-      store.DBGetAllSongs().then(list => {
-        let table = document.getElementById('tableSongs');
+      if(this.props.action){        
+        document.getElementById("inputSong").value = store.settings.title;
+    
+        store.DBGetAllSongs().then(list => {
+          let table = document.getElementById('tableSongs');
 
-        while(table.hasChildNodes()){
-          table.removeChild(table.firstChild);
-        }
+          while(table.hasChildNodes()){
+            table.removeChild(table.firstChild);
+          }
 
-        if(list.length > 0){
-          list.sort((a,b) => {return b.modified - a.modified}).forEach(song => {
-            let row = table.insertRow(0);
-            row.id = song.id;
-            row.onclick = this.rowClick;
+          if(list.length > 0){
+            list.sort((a,b) => {return b.modified - a.modified}).forEach(song => {
+              let row = table.insertRow(0);
+              row.id = song.id;
+              row.onclick = this.rowClick;
 
-            let cell1 = row.insertCell(0);
-            cell1.style.width = '80%';
-            cell1.innerHTML = song.title;
+              let cell1 = row.insertCell(0);
+              cell1.style.width = '80%';
+              cell1.innerHTML = song.title;
 
-            let cell2 = row.insertCell(1);
-            cell2.innerHTML = this.formatDate(new Date(song.modified));
-          })
-        }
-      });
-  
-      this.toggleWindow();
+              let cell2 = row.insertCell(1);
+              cell2.innerHTML = this.formatDate(new Date(song.modified));
+            })
+          }
+        });
+    
+        this.toggleWindow();
+      }
     }
 
     toggleWindow = () => {
@@ -82,6 +84,7 @@ export const LoadSaveModal = observer(class LoadSaveModal extends Component {
   
     btnClickLoad = (e) => {
       if(this.selectedSongId){
+        store.ui.toolbar.browser.setAction(undefined);
         document.getElementById('modalClose').click();
         sessionStorage.setItem("load_songId", this.selectedSongId);
         window.location.reload();
