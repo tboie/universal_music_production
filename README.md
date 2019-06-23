@@ -1,4 +1,4 @@
-# propa
+# propa.app
 A Universal Music Production Web Application.
 <br><br>
 <b>https://propa.app</b>
@@ -19,7 +19,7 @@ Features:
   <li>Pre-loaded Drum Samples</li>
   <li>...Much more</li>
 </ul>
-<br><br>
+<br>
 Quick Demo:
 https://youtu.be/HXwk6U0B-60
 <br><br>
