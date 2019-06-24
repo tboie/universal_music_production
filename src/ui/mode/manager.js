@@ -59,25 +59,28 @@ export const ManagerView = observer(class ManagerView extends Component {
         return(
             <div id='divManager'>
                 <MixRowViewManagerScene store={this.props.store} selectedScene={this.props.selectedScene}/>
-                <table id='tableManager'>
-                    <thead>
-                    <tr>
-                        { ['scene','Len','A', 'B', 'C', 'D'].map(r => <th key={'table_col_' + r}>{r}</th>) }
-                    </tr>
-                    </thead>
-                    <tbody>
-                    { store.getScenesAsc().map(s => 
-                        <tr key={'table_row_' + s.id} onClick={this.rowClick} style={{height:'32px', backgroundColor: this.props.selectedScene.id === s.id ? 'blue' : 'transparent'}}>
-                            <td>{s.id}</td>
-                            <td>{Tone.Time(store.getSceneLength(s.id)).toBarsBeatsSixteenths().split(':')[0]}</td>
-                            {['A','B','C','D'].map(g => 
-                                <td key={'table_row_' + s.id + '_btn_' + g}><button id={'table_row_' + s.id + '_btn_' + g} 
-                                    className='managerTableColButton' onClick={() => this.muteSceneGroup(s.id, g)}>M</button></td>
-                            )}
-                        </tr>)
-                    }
-                    </tbody>
-                </table>
+                <div id='divManagerTable' style={{height:(this.props.windowHeight - 160) + 'px', overflowY:'scroll'}}>
+                    <table id='tableManager'>
+                        <thead>
+                        <tr>
+                            { ['scene','Len','A', 'B', 'C', 'D'].map(r => <th key={'table_col_' + r}>{r}</th>) }
+                        </tr>
+                        </thead>
+                        <tbody>
+                        { store.getScenesAsc().map(s => 
+                            <tr key={'table_row_' + s.id} onClick={this.rowClick} style={{backgroundColor: this.props.selectedScene.id === s.id ? 'blue' : 'transparent'}}>
+                                <td>{s.id}</td>
+                                <td>{Tone.Time(store.getSceneLength(s.id)).toBarsBeatsSixteenths().split(':')[0]}</td>
+                                {['A','B','C','D'].map(g => 
+                                    <td key={'table_row_' + s.id + '_btn_' + g}><button id={'table_row_' + s.id + '_btn_' + g} 
+                                        className='managerTableColButton' onClick={() => this.muteSceneGroup(s.id, g)}>M</button></td>
+                                )}
+                            </tr>)
+                        }
+                        </tbody>
+                    </table>
+                    <br/><br/><br/>
+                </div>
             </div>
         )
     }

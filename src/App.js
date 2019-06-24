@@ -97,6 +97,7 @@ const AppView = observer(class AppView extends Component {
                       store={this.props.store}
                       selectedScene={this.props.store.ui.selectedScene}
                       selectedTrack={this.props.store.ui.selectedTrack}
+                      windowHeight={this.props.store.ui.windowHeight}
                     />
 
 
