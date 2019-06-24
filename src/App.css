@@ -1056,7 +1056,8 @@ input {
   bottom:80px;
   height:100%;
   width:100%;
-  background-color:rgba(0,0,0,0.7);
+  background-color:rgba(0,0,0,0.25);
+  z-index:1;
 }
 
 #tableManager {
@@ -1331,7 +1332,7 @@ Scrollbar
  
 /* Handle */
 ::-webkit-scrollbar-thumb {
-  background: #484848;
+  background: rgb(157, 165, 171);
 }
 
 /* Handle on hover */
