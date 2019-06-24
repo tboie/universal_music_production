@@ -88,10 +88,10 @@ export const MixRowViewManagerScene = observer(class MixRowViewManagerScene exte
             <i className='material-icons i-btn-mix-scene'>remove</i>
           </button>
           <button id="btnMixBar_Up" className="btn-mix-scene" onClick={this.selectMixButton}>
-            <i className='material-icons i-btn-mix-scene'>arrow_upward</i>
+            <i className='material-icons i-btn-mix-scene'>arrow_back</i>
           </button>
           <button id="btnMixBar_Down" className="btn-mix-scene" onClick={this.selectMixButton}>
-            <i className='material-icons i-btn-mix-scene'>arrow_downward</i>
+            <i className='material-icons i-btn-mix-scene'>arrow_forward</i>
           </button>
           <button id="btnMixBar_Del" className="btn-mix-scene" onClick={this.selectMixButton}>
             <i className='material-icons i-btn-mix-scene red'>delete</i>
