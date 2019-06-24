@@ -66,7 +66,7 @@ export const ToolRow = observer(class ToolRow extends Component {
       }
 
       //hide zoom icons for manager mode
-      if(prevProps.mode !== 'manager' && this.props.mode === 'manager'){
+      if(this.props.mode === 'manager'){
         document.getElementById('divZoom').style.display = 'none';
       }
       else{
