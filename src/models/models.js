@@ -3132,14 +3132,29 @@ const Scene = types.model("Scene", {
     id: types.identifier,
     start: types.string,
     end: types.string,
-    on: types.optional(types.boolean, true)
+    muteGroups: types.array(types.string)
 }).views(self => ({
+    isGroupMuted(group){
+        return self.muteGroups.find(g => g === group);
+    }
 })).actions(self => ({
     setStart(time) {
         self.start = time;
     },
     setEnd(time) {
         self.end = time;
+    },
+    setGroupMute(group, mute){
+        if(self.muteGroups.find(g => g === group)){
+            self.muteGroups = self.muteGroups.filter(g => g !== group)
+        }
+        else{
+            self.muteGroups.push(group);
+        }
+
+        store.getPatternsBySceneGroup(self.id, group).forEach(p => {
+            p.setMute(mute);
+        })
     }
 }));
 
@@ -3227,7 +3242,8 @@ const Pattern = types.model("Pattern", {
     resolution: types.optional(types.number, 16),
     track: types.reference(Track),
     scene: types.reference(Scene),
-    notes: types.maybe(types.array(Note))
+    notes: types.maybe(types.array(Note)),
+    mute: types.optional(types.boolean, false)
 }).views(self => ({
     getNote(time) {
         return self.notes.find(n => n.time === time);
@@ -3275,6 +3291,10 @@ const Pattern = types.model("Pattern", {
     }
     function setResolution(val) {
         self.resolution = val;
+    }
+    function setMute(val) {
+        self.mute = val;
+        ToneObjs.parts.find(p => p.id === self.id).obj.mute = val;
     }
     function deleteNotes(){
         if(store.ui.selectedNote)
@@ -3577,6 +3597,8 @@ const Pattern = types.model("Pattern", {
                 }
             }
         }).start(self.scene.start).stop(self.scene.end);
+
+        part.obj.mute = self.mute;
     }
     function afterAttach() {
         if(!ToneObjs.parts.find(row => row.id === self.id)){
@@ -3594,7 +3616,7 @@ const Pattern = types.model("Pattern", {
         ToneObjs.parts.splice(ToneObjs.parts.findIndex(p => p.id === self.id), 1);
 
     }
-    return { addNote, deleteNote, deleteNotesByBar, pasteNotesToBar, createRandomNotes, setResolution, pastePattern, deleteNotes, initPart, afterAttach, beforeDestroy }
+    return { addNote, deleteNote, deleteNotesByBar, pasteNotesToBar, createRandomNotes, setResolution, setMute, pastePattern, deleteNotes, initPart, afterAttach, beforeDestroy }
 });
 
 
@@ -4397,6 +4419,9 @@ export const RootStore = types.model("RootStore", {
             getPatternByTrackScene(trackId, sceneId) {
                 return self.patterns.find(p => (p.track.id === trackId && p.scene.id === sceneId));
             },
+            getPatternsBySceneGroup(sceneId, group) {
+                return self.patterns.filter(p => (p.track.group === group && p.scene.id === sceneId));
+            },
             getNotesByTrack(trackId) {
                 let notes = [];
                 self.getPatternsByTrack(trackId).forEach(function (pattern) {
@@ -4473,15 +4498,15 @@ export const RootStore = types.model("RootStore", {
             sceneList.forEach(function (scene) {
                 if (op === "sub") {
                     if (scene !== sceneList[0])
-                        scene.start = Tone.Time(Tone.Time(scene.start) - Tone.Time(length)).toBarsBeatsSixteenths();
+                        scene.setStart(Tone.Time(Tone.Time(scene.start) - Tone.Time(length)).toBarsBeatsSixteenths());
 
-                    scene.end = Tone.Time(Tone.Time(scene.end) - Tone.Time(length)).toBarsBeatsSixteenths();
+                    scene.setEnd(Tone.Time(Tone.Time(scene.end) - Tone.Time(length)).toBarsBeatsSixteenths());
                 }
                 if (op === "add") {
                     if (scene !== sceneList[0])
-                        scene.start = Tone.Time(Tone.Time(scene.start) + Tone.Time(length)).toBarsBeatsSixteenths();
+                        scene.setStart(Tone.Time(Tone.Time(scene.start) + Tone.Time(length)).toBarsBeatsSixteenths());
 
-                    scene.end = Tone.Time(Tone.Time(scene.end) + Tone.Time(length)).toBarsBeatsSixteenths();
+                    scene.setEnd(Tone.Time(Tone.Time(scene.end) + Tone.Time(length)).toBarsBeatsSixteenths());
                 }
 
                 store.getPatternsByScene(scene.id).forEach(function (pattern) {

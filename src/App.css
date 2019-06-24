@@ -689,6 +689,10 @@ wave {
   color: red !important;
 }
 
+.bgColorOn {
+  background: #2671ea;
+}
+
 /*   mm quick fix for all */
 label {
   color:white;
@@ -1076,6 +1080,13 @@ input {
 
 #tableConnections tr, td {
   height:28px;
+}
+
+.managerTableColButton {
+  height:90%;
+  border-radius:8px;
+  border-width:0px;
+  width:30px;
 }
 
 /***************************/
