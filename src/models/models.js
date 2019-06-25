@@ -3136,6 +3136,9 @@ const Scene = types.model("Scene", {
 }).views(self => ({
     isGroupMuted(group){
         return self.muteGroups.find(g => g === group);
+    },
+    getLength(){
+        return store.getSceneLength(self.id);
     }
 })).actions(self => ({
     setStart(time) {
@@ -3757,10 +3760,14 @@ const UIEditView = types.model("UIEditView", {
 }))
 
 const UIManagerView = types.model("UIEditView", {
+    mode: types.optional(types.union(types.literal('scene'), types.literal('track')), 'scene'),
     copiedTrack: types.maybe(types.safeReference(Track)),
 }).views(self => ({
     
 })).actions(self => ({
+    setMode(mode){
+        self.mode = mode;
+    },
     copyTrack(trackId){
         self.copiedTrack = store.getTrack(trackId);
     }

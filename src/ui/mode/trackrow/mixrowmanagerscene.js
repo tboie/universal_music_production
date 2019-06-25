@@ -7,33 +7,12 @@ import { randomId } from '../../../models/models.js';
 
 
 export const MixRowViewManagerScene = observer(class MixRowViewManagerScene extends Component{
-    componentDidMount(){
-     // this.togglePasteButton();
-      //this.toggleButtons(['Copy','Del','Rand']);
-    }
+    componentDidMount(){}
 
-    componentDidUpdate(prevProps){
-      //this.togglePasteButton();
-      //this.toggleButtons(['Copy','Del','Rand']);
-    }
+    componentDidUpdate(prevProps){}
 
     componentWillUnmount(){}
-
-    togglePasteButton = () => {
-      let eleBtn = document.getElementById('btnMixBar_Paste');
-      eleBtn.disabled = (this.props.numSelectedBars > 0 && this.props.numCopiedBars > 0) ? false : true;
-    }
-
-    toggleButtons = (btnIds) => {
-      btnIds.forEach(id => {
-        let eleBtn = document.getElementById('btnMixBar_' + id);
-        
-        if(id === 'Rand' && this.props.track.type === 'audio')
-          eleBtn.disabled = true;
-        else
-          eleBtn.disabled = this.props.numSelectedBars > 0 ? false : true;
-      })
-    }
+    
 
     selectMixButton = (e) => {
       e.preventDefault();

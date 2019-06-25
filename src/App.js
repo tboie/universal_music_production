@@ -95,9 +95,7 @@ const AppView = observer(class AppView extends Component {
     else if (this.props.store.ui.viewMode === "manager")
       viewWindow = <ManagerView
                       store={this.props.store}
-                      selectedScene={this.props.store.ui.selectedScene}
-                      selectedTrack={this.props.store.ui.selectedTrack}
-                      windowHeight={this.props.store.ui.windowHeight}
+                      managerMode={this.props.store.ui.views.manager.mode}
                     />
 
 

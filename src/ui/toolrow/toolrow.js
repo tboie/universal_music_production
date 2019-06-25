@@ -241,7 +241,7 @@ export const ToolRow = observer(class ToolRow extends Component {
         <div id="divToolRowContainer" style={{width: this.props.store.ui.windowWidth + 'px'}}>
           <ToggleModeIcons store={this.props.store} windowWidth={this.props.store.ui.windowWidth} viewMode={this.props.store.ui.viewMode} 
                               selectedGroup={this.props.store.ui.selectedGroup} mixMode={this.props.store.ui.mixMode} editMode={this.props.store.ui.editMode}
-                              editViewMode={this.props.store.ui.views.edit.mode}/>
+                              editViewMode={this.props.store.ui.views.edit.mode} managerMode={this.props.store.ui.views.manager.mode}/>
           <div id="divZoom">
             <button id="btnUIZoomOut" className="btnUIZoom" onClick={this.UIZoomOut}><i className="material-icons i-36" style={{marginLeft: '-4px'}}>remove_circle</i></button>
             <button id="btnUIZoomIn" className="btnUIZoom" onClick={this.UIZoomIn}><i className="material-icons i-36" style={{marginLeft: '-4px'}}>add_circle</i></button>
@@ -291,7 +291,10 @@ const ToggleModeIcons = props => {
         return "open_with";
       else
         return "volume_up";
-    } 
+    }
+    else if(props.viewMode === "manager"){
+      return props.managerMode === "scene" ? "T" : "S";
+    }
     else {
       return "equalizer";
     }
@@ -333,6 +336,12 @@ const ToggleModeIcons = props => {
     else if(props.viewMode === "sequencer" && props.selectedGroup !== 'M'){
       store.ui.toggleMixMode();
     }
+    else if(props.viewMode === 'manager'){
+      if(props.managerMode === 'scene')
+        store.ui.views.manager.setMode('track')
+      else
+        store.ui.views.manager.setMode('scene')
+    }
   }
 
   let bgVisibility= 'visible';
@@ -352,30 +361,32 @@ const ToggleModeIcons = props => {
     showEditIcon = 'hidden';
   }
   else if(props.viewMode === 'manager'){
-    showEditIcon = 'hidden';
+    iconStyleClass = ' editViewIconsBottom';
     bgVisibility = 'hidden';
+    showGroupIcon = 'hidden';
   }
 
   let groupIcons;
-  if(store.ui.viewMode !== 'edit')
-    groupIcons = <button id="btnToggleGroup" className="btnToolRowIconsLeft" onClick={e => toggleGroup(e, true)} style={{visibility:showGroupIcon, top:'-6px'}}>
-                    <i className="material-icons i-36">{props.selectedGroup}</i>
-                  </button>
-  
-  if(props.windowWidth > 550){
-    groupIcons = ['A','B','C','D','M'].map((group, idx) => {
-                  //no master option for button view
-                  if(group === 'M' && store.ui.viewMode === 'button')
-                    return null;
-                  
-                  let opacity = 0.3;
-                  if(props.selectedGroup === group)
-                    opacity = 1;
-                  
-                  return <button key={idx} id={"btnToggleGroup_" + group} className="btnToolRowIconsLeft" onClick={toggleGroup} style={{display:showGroupIcon, opacity:opacity, top:'-6px'}}>
-                            <i key={idx} className="material-icons i-36">{group}</i>
-                          </button>
-                });
+  if(props.viewMode !== 'manager' && props.viewMode !== 'edit'){
+      groupIcons = <button id="btnToggleGroup" className="btnToolRowIconsLeft" onClick={e => toggleGroup(e, true)} style={{visibility:showGroupIcon, top:'-6px'}}>
+                      <i className="material-icons i-36">{props.selectedGroup}</i>
+                    </button>
+    
+    if(props.windowWidth > 550){
+      groupIcons = ['A','B','C','D','M'].map((group, idx) => {
+                    //no master option for button view
+                    if(group === 'M' && store.ui.viewMode === 'button')
+                      return null;
+                    
+                    let opacity = 0.3;
+                    if(props.selectedGroup === group)
+                      opacity = 1;
+                    
+                    return <button key={idx} id={"btnToggleGroup_" + group} className="btnToolRowIconsLeft" onClick={toggleGroup} style={{display:showGroupIcon, opacity:opacity, top:'-6px'}}>
+                              <i key={idx} className="material-icons i-36">{group}</i>
+                            </button>
+                  });
+    }
   }
   
   return (

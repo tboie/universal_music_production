@@ -44,10 +44,7 @@ export const MixRowViewManagerTrack = observer(class MixRowViewManagerTrack exte
         case 'Dup':
           store.duplicateTrack(track.id);
           break;
-        case 'Copy':
-          break;
-        case 'Paste':
-          store.duplicateTrack(store.ui.views.manager.copiedTrack.id);
+        case 'Group':
           break;
         case 'Up':
           break;
@@ -68,11 +65,8 @@ export const MixRowViewManagerTrack = observer(class MixRowViewManagerTrack exte
           <button id="btnMixBar_Dup" className="btn-mix-scene" onClick={this.selectMixButton}>
             <i className='material-icons i-btn-mix-scene'>file_copy</i>
           </button>
-          <button id="btnMixBar_Copy" className="btn-mix-scene" onClick={this.selectMixButton}>
-            Copy
-          </button>
-          <button id="btnMixBar_Paste" className="btn-mix-scene" onClick={this.selectMixButton}>
-            Paste
+          <button id="btnMixBar_Group" className="btn-mix-scene" onClick={this.selectMixButton}>
+            { store.ui.selectedTrack.group }
           </button>
           <button id="btnMixBar_Up" className="btn-mix-scene" onClick={this.selectMixButton}>
             <i className='material-icons i-btn-mix-scene'>arrow_upward</i>

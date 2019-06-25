@@ -3,8 +3,76 @@ import { observer } from "mobx-react";
 import { store } from "../../data/store.js";
 import Tone from 'tone';
 import { MixRowViewManagerScene } from './trackrow/mixrowmanagerscene.js';
+import { MixRowViewManagerTrack} from './trackrow/mixrowmanagertrack.js';
+
+
 
 export const ManagerView = observer(class ManagerView extends Component {
+    componentDidMount(){}
+    componentDidUpdate(prevProps){}
+    componentWillUnmount(){}
+    render() {
+        let view;
+        if(this.props.managerMode === 'scene') 
+            view = <ManagerViewScene store={this.props.store} selectedScene={this.props.store.ui.selectedScene} 
+                        windowHeight={this.props.store.ui.windowHeight}/>
+        else if(this.props.mode === 'track')
+            view = <ManagerViewTrack store={this.props.store} selectedTrack={this.props.store.ui.selectedTrack} 
+                        windowHeight={this.props.store.ui.windowHeight}/>
+
+        return(
+            <div>
+                { view } 
+            </div>
+        )
+    }
+})
+
+export const ManagerViewTrack = observer(class ManagerViewTrack extends Component {
+    componentDidMount(){
+    }
+    componentDidUpdate(prevProps){}
+    componentWillUnmount(){}
+
+    rowClick = (e) => {
+        if(e.target.parentNode && e.target.parentNode.cells){
+            /*
+            //let txtScene = e.target.parentNode.cells[0].innerHTML;
+
+            if(txtScene){
+                //let scene = store.getScene(txtScene);
+
+                if(scene){
+                    //store.ui.selectScene(scene.id);
+                }
+            }
+            */
+        }
+    }
+
+    render() {
+        return(
+            <div id='divManager'>
+                <MixRowViewManagerTrack store={this.props.store} selectedTrack={this.props.selectedTrack}/>
+                <div id='divManagerTable' style={{height:(this.props.windowHeight - 160) + 'px', overflowY:'scroll'}}>
+                    <table id='tableManager'>
+                        <thead>
+                        <tr>
+
+                        </tr>
+                        </thead>
+                        <tbody>
+                        
+                        </tbody>
+                    </table>
+                    <br/><br/><br/>
+                </div>
+            </div>
+        )
+    }
+});
+
+export const ManagerViewScene = observer(class ManagerViewScene extends Component {
     componentDidMount(){
         store.getScenesAsc().forEach(scene => {
             ['A','B','C','D'].forEach(group => {
