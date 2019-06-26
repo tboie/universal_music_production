@@ -14,12 +14,29 @@ export const FooterView = observer(class FooterView extends Component{
       this.tempoMode = "bpm";
       document.getElementById('lblTempo').innerHTML = this.props.bpm;
       document.getElementById('tempoSlider').value = this.props.bpm;
+
+      document.getElementById('iViewMode').innerHTML = this.props.viewMode === 'button' ? 'reorder' : 'view_module';
     }
   
     componentDidUpdate(prevProps, prevState, snapshot){
       this.tempoMode = "bpm";
       document.getElementById('lblTempo').innerHTML = this.props.bpm;
       document.getElementById('tempoSlider').value = this.props.bpm;
+
+
+      let eleIcon = document.getElementById('iViewMode');
+      if(this.props.viewMode === 'manager' && prevProps.viewMode !== 'manager' 
+        || this.props.viewMode === 'edit' && prevProps.viewMode !== 'edit'){
+
+          if(prevProps.viewMode === 'button')
+            eleIcon.innerHTML = 'view_module';
+          else if(prevProps.viewMode === 'sequencer')
+            eleIcon.innerHTML = 'reorder';
+      }
+      else if(this.props.viewMode === 'button')
+        eleIcon.innerHTML = 'reorder';
+      else if(this.props.viewMode === 'sequencer')
+        eleIcon.innerHTML = 'view_module';
     }
     
     toggleRecordMode = () => {
@@ -147,12 +164,6 @@ export const FooterView = observer(class FooterView extends Component{
         vDisplay = {display:'block'};
       }
   
-      let iconView;
-      if(this.props.viewMode !== "edit")
-        (this.props.viewMode === "button") ? iconView = "reorder" : iconView = "view_module";
-      else
-        (this.props.viewMode === "sequencer") ? iconView = "view_module" : iconView = "reorder";
-  
       let iconRed = '';
       if(this.props.store.ui.recordMode)
         iconRed = ' colorRed';
@@ -161,7 +172,7 @@ export const FooterView = observer(class FooterView extends Component{
         <div id="divFooter" className="divFooter" style={{height:height + 'px', width: this.props.store.ui.windowWidth + 'px'}}>
           <div className="divTransportControls">
             { /* <button onClick={this.toggleMixMode} style={{position:'absolute', left:0 , height:'100%', backgroundColor:'transparent', border:0}}><i className="material-icons">assessment</i></button> */ }
-            <button onClick={this.toggleViewMode} style={{position:'absolute', left:'0px' , height:'100%', backgroundColor:'transparent', border:0}}><i className="material-icons i-36">{iconView}</i></button>
+            <button onClick={this.toggleViewMode} style={{position:'absolute', left:'0px' , height:'100%', backgroundColor:'transparent', border:0}}><i id='iViewMode' className="material-icons i-36"></i></button>
             <button id="btnTransportToggleRecord" onClick={this.toggleRecordMode} style={{height:'100%', width:'50px', backgroundColor:'transparent', border:0}}><i id="iconRecord" className={"material-icons i-36" + iconRed}>fiber_manual_record</i></button>
             <button id="btnTransportTogglePlay" onClick={this.togglePlay} style={{height:'100%', width:'50px', backgroundColor:'transparent', border:0}}><i id="iconPlay" className="material-icons i-36">play_arrow</i></button>
             <button onClick={this.toggleSettings} style={{position:'absolute', right:0 , height:'100%', backgroundColor:'transparent', border:0}}><i className="material-icons i-36">settings_applications</i></button>

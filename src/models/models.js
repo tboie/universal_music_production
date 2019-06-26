@@ -353,6 +353,9 @@ const Track = types.model("Track", {
         return panvol;
     }
 })).actions(self => {
+    function delNotes(){
+        store.getPatternsByTrack(self.id).forEach(p => p.deleteNotes());
+    }
     function toggleMute(val) {
         if(val === undefined)
             self.mute = !self.mute;
@@ -434,7 +437,7 @@ const Track = types.model("Track", {
     function afterCreate(){}
     function afterAttach(){}
 
-    return { afterCreate, afterAttach, setResolution, setGroupIndex, moveTrackUp, moveTrackDown, setGroup, toggleMute, toggleSolo, toggleGroup }
+    return { afterCreate, afterAttach, delNotes, setResolution, setGroupIndex, moveTrackUp, moveTrackDown, setGroup, toggleMute, toggleSolo, toggleGroup }
 });
 
 const UIObj = types.model("UIObj", {
@@ -4217,7 +4220,9 @@ const UI = types.model("UI", {
     }
     function toggleViewMode(mode) {
         if (!mode) {
-            if (self.viewMode === "sequencer"){
+            let nextMode = document.getElementById('iViewMode').innerHTML === 'reorder' ? 'sequencer' : 'button';
+            
+            if (nextMode === 'button'){
                 if(self.selectedNote && self.selectedTrack){
                     if(self.selectedNote.getPattern().track !== self.selectedTrack){
                         self.selectNote(undefined);
@@ -4794,9 +4799,6 @@ export const RootStore = types.model("RootStore", {
                 self.getPatternByTrackScene(newTrackId, p.scene.id).pastePattern(p);
             })
         }
-        function delTrackNotes(trackId){
-            self.getPatternsByTrack(trackId).forEach(p => p.deleteNotes());
-        }
         function delTrack(id) {
             let track = self.getTrack(id);
 
@@ -5034,7 +5036,7 @@ export const RootStore = types.model("RootStore", {
             //DBSaveStore(true);
             DBSaveStore(false);
         }
-        return { afterCreate, setSongId, DBGetAllSongs, DBSaveStore, DBLoadStore, DBSaveAudioFile, DBLoadAudioFile, DBDelete, addPattern, delPattern, addMasterTracks, addTrack, duplicateTrack, delTrackNotes, delTrack, addScene, delScene, shiftSceneTimes, swapScenes, duplicateScene, addConnection, delConnectionsByObj, delConnection, addSample, delSample };
+        return { afterCreate, setSongId, DBGetAllSongs, DBSaveStore, DBLoadStore, DBSaveAudioFile, DBLoadAudioFile, DBDelete, addPattern, delPattern, addMasterTracks, addTrack, duplicateTrack, delTrack, addScene, delScene, shiftSceneTimes, swapScenes, duplicateScene, addConnection, delConnectionsByObj, delConnection, addSample, delSample };
     });
 
 /*
