@@ -106,7 +106,7 @@ export const ManagerViewTrack = observer(class ManagerViewTrack extends Componen
                                         <td>{t.type.substr(0,4)}</td>
                                         <td>{t.group}</td>
                                         <td>{store.getObjsByTrackObj(t).length}</td>
-                                        <td>{store.getNotesByTrack(t).length}</td>
+                                        <td>{store.getNotesByTrack(t.id).length}</td>
                                         <td><button id={'table_row_' + t.id + '_btn_mute'} 
                                             className='managerTableColButton' onClick={() => this.muteTrack(t.id)}>M</button>
                                         </td>

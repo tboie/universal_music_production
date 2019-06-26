@@ -36,7 +36,7 @@ export const MixRowViewManagerTrack = observer(class MixRowViewManagerTrack exte
 
             break;
           case 'Clear':
-
+            store.getPatternsByTrack(track.id).forEach(p => p.deleteNotes());
             break;
           case 'Del':
             store.delTrack(track.id);
