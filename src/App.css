@@ -285,6 +285,8 @@ wave {
   width: 100%;
   background-color: black;
   z-index:3;
+  border-top: 1px solid gray;
+  box-sizing: border-box;
 }
 
 .canvasTrack {
