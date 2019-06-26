@@ -6,9 +6,9 @@ import { MixRowViewManagerScene } from './trackrow/mixrowmanagerscene.js';
 import { MixRowViewManagerTrack} from './trackrow/mixrowmanagertrack.js';
 
 
-
 export const ManagerView = observer(class ManagerView extends Component {
-    componentDidMount(){}
+    componentDidMount(){
+    }
     componentDidUpdate(prevProps){}
     componentWillUnmount(){}
     render() {
@@ -16,12 +16,18 @@ export const ManagerView = observer(class ManagerView extends Component {
         if(this.props.managerMode === 'scene') 
             view = <ManagerViewScene store={this.props.store} selectedScene={this.props.store.ui.selectedScene} 
                         windowHeight={this.props.store.ui.windowHeight}/>
-        else if(this.props.mode === 'track')
-            view = <ManagerViewTrack store={this.props.store} selectedTrack={this.props.store.ui.selectedTrack} 
-                        windowHeight={this.props.store.ui.windowHeight}/>
+        else if(this.props.managerMode === 'track'){
+            if(store.getNumTracks > 0){
+                view = <ManagerViewTrack store={this.props.store} selectedTrack={this.props.store.ui.selectedTrack} 
+                            windowHeight={this.props.store.ui.windowHeight}/>
+            }
+            else{
+                view = <label className='labelCenter'>No Tracks</label>
+            }
+        }
 
         return(
-            <div>
+            <div style={{width:'100%', height:(store.ui.windowHeight - 80) + 'px', display:'table', backgroundColor:'rgba(0,0,0,0.9)'}}>
                 { view } 
             </div>
         )
@@ -30,27 +36,58 @@ export const ManagerView = observer(class ManagerView extends Component {
 
 export const ManagerViewTrack = observer(class ManagerViewTrack extends Component {
     componentDidMount(){
+        ['A','B','C','D'].forEach(g => {
+            store.getTracksByGroup(g).forEach(t => {
+                this.setTrackMuteButton(t.id, t.mute);
+            });
+        });
     }
     componentDidUpdate(prevProps){}
     componentWillUnmount(){}
 
     rowClick = (e) => {
         if(e.target.parentNode && e.target.parentNode.cells){
-            /*
-            //let txtScene = e.target.parentNode.cells[0].innerHTML;
+            let txtTrack = e.target.parentNode.cells[0].innerHTML;
 
-            if(txtScene){
-                //let scene = store.getScene(txtScene);
+            if(txtTrack){
+                let track = store.getTrack(txtTrack);
 
-                if(scene){
-                    //store.ui.selectScene(scene.id);
+                if(track){
+                    store.ui.selectTrack(track.id);
                 }
             }
-            */
+        }
+    }
+
+    muteTrack = (trackId) => {
+        let track = store.getTrack(trackId);
+       
+        if(!track.mute){
+            track.toggleMute(true);
+            this.setTrackMuteButton(track.id, true)
+        }
+        else{
+            track.toggleMute(false);
+            this.setTrackMuteButton(track.id, false)
+        }
+    }
+
+    setTrackMuteButton = (trackId, mute) => {
+        let eleBtn = document.getElementById('table_row_' + trackId + '_btn_mute');
+        
+        if(mute){
+            if(!eleBtn.classList.contains('bgColorOn'))
+                eleBtn.classList.add('bgColorOn');
+        }
+        else{
+            if(eleBtn.classList.contains('bgColorOn'))
+                eleBtn.classList.remove('bgColorOn');
         }
     }
 
     render() {
+        let selTrackId = this.props.selectedTrack ? this.props.selectedTrack.id : undefined;
+
         return(
             <div id='divManager'>
                 <MixRowViewManagerTrack store={this.props.store} selectedTrack={this.props.selectedTrack}/>
@@ -58,11 +95,24 @@ export const ManagerViewTrack = observer(class ManagerViewTrack extends Componen
                     <table id='tableManager'>
                         <thead>
                         <tr>
-
+                            { ['track', 'type', 'grp', 'objs', 'notes', 'mute'].map(r => <th key={'table_track_col_' + r}>{r}</th>) }
                         </tr>
                         </thead>
                         <tbody>
-                        
+                            {['A','B','C','D'].map(g => 
+                                store.getTracksByGroup(g).map(t => 
+                                    <tr key={'table_row_' + t.id} onClick={this.rowClick} style={{backgroundColor: selTrackId === t.id ? 'blue' : 'transparent'}}>
+                                        <td>{t.id}</td>
+                                        <td>{t.type.substr(0,4)}</td>
+                                        <td>{t.group}</td>
+                                        <td>{store.getObjsByTrackObj(t).length}</td>
+                                        <td>{store.getNotesByTrack(t).length}</td>
+                                        <td><button id={'table_row_' + t.id + '_btn_mute'} 
+                                            className='managerTableColButton' onClick={() => this.muteTrack(t.id)}>M</button>
+                                        </td>
+                                    </tr>
+                                )
+                            )}
                         </tbody>
                     </table>
                     <br/><br/><br/>
@@ -131,7 +181,7 @@ export const ManagerViewScene = observer(class ManagerViewScene extends Componen
                     <table id='tableManager'>
                         <thead>
                         <tr>
-                            { ['scene','Len','A', 'B', 'C', 'D'].map(r => <th key={'table_col_' + r}>{r}</th>) }
+                            { ['scene','Len','A', 'B', 'C', 'D'].map(r => <th key={'table_scene_col_' + r}>{r}</th>) }
                         </tr>
                         </thead>
                         <tbody>

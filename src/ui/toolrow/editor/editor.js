@@ -28,7 +28,7 @@ export const ToolEditor = props => {
   }
   else{
     type = <div style={{width:'100%', height:'100%', display:'table'}}>
-              <div style={{display:'table-cell', verticalAlign:'middle', textAlign:'center', color:'white'}}>No Object Selected</div>
+              <div className='labelCenter'>No Object Selected</div>
             </div>
   }
 

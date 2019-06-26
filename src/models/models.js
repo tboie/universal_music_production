@@ -352,8 +352,11 @@ const Track = types.model("Track", {
         return panvol;
     }
 })).actions(self => {
-    function toggleMute() {
-        self.mute = !self.mute;
+    function toggleMute(val) {
+        if(val === undefined)
+            self.mute = !self.mute;
+        else
+            self.mute = val;
 
         let panvol = self.getPanVol();
         if(panvol)
@@ -392,10 +395,13 @@ const Track = types.model("Track", {
             }
         })
     }
+    function setGroup(group){
+        self.group = group;
+    }
     function afterCreate(){}
     function afterAttach(){}
 
-    return { afterCreate, afterAttach, setResolution, toggleMute, toggleSolo }
+    return { afterCreate, afterAttach, setResolution, setGroup, toggleMute, toggleSolo }
 });
 
 const UIObj = types.model("UIObj", {
@@ -4390,6 +4396,13 @@ export const RootStore = types.model("RootStore", {
             },
             getAllSamples(){
                 return self.samples;
+            },
+            get getNumTracks(){
+                let total = 0;
+                ['A','B','C','D'].forEach(g => {
+                    total += store.getTracksByGroup(g).filter(t => t.type !== 'master').length;
+                });
+                return total;
             },
             get numSamples(){
                 return self.getAllSamples().length;

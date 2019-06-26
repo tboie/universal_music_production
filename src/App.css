@@ -76,6 +76,14 @@ html {
   font-size:14px;
 }
 
+.btn-mix-track {
+  height:100%;
+  width:16.66%;
+  z-index:10;
+  font-size:14px;
+  vertical-align:middle;
+}
+
 .material-icons.i-btn-mix-scene {
   pointer-events:none;
   color: black !important;
@@ -695,6 +703,13 @@ wave {
 
 /*   mm quick fix for all */
 label {
+  color:white;
+}
+
+.labelCenter {
+  display: table-cell;
+  vertical-align: middle;
+  text-align: center;
   color:white;
 }
 
