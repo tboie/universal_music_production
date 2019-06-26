@@ -103,7 +103,7 @@ export const ManagerViewTrack = observer(class ManagerViewTrack extends Componen
                                 store.getTracksByGroup(g).map(t => 
                                     <tr key={'table_row_' + t.id} onClick={this.rowClick} style={{backgroundColor: selTrackId === t.id ? 'blue' : 'transparent'}}>
                                         <td>{t.id}</td>
-                                        <td>{t.type.substr(0,4)}</td>
+                                        <td>{t.type.substr(0,5)}</td>
                                         <td>{t.group}</td>
                                         <td>{store.getObjsByTrackObj(t).length}</td>
                                         <td>{store.getNotesByTrack(t.id).length}</td>

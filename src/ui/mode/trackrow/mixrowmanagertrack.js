@@ -25,18 +25,16 @@ export const MixRowViewManagerTrack = observer(class MixRowViewManagerTrack exte
             store.duplicateTrack(track.id);
             break;
           case 'Group':
-            const groups = ['A','B','C','D'];
-            let idx = groups.indexOf(track.group);
-            idx === groups.length - 1 ? track.setGroup(groups[0]) : track.setGroup(groups[idx + 1]);
+            track.toggleGroup();
             break;
           case 'Up':
-
+            track.moveTrackUp();
             break;
           case 'Down':
-
+            track.moveTrackDown();
             break;
           case 'Clear':
-            store.getPatternsByTrack(track.id).forEach(p => p.deleteNotes());
+            store.delTrackNotes(track.id);
             break;
           case 'Del':
             store.delTrack(track.id);

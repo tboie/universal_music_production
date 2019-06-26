@@ -323,6 +323,7 @@ const Track = types.model("Track", {
     region: types.maybe(types.reference(Region)),
     group: types.maybe(types.union(types.literal("A"), types.literal("B"), types.literal("C"), types.literal("D"), types.literal("M"))),
     resolution: types.optional(types.number, 16),
+    groupIndex: types.maybe(types.number)
 }).views(self => ({
     returnRegion(){
         let r = self.region;
@@ -398,10 +399,42 @@ const Track = types.model("Track", {
     function setGroup(group){
         self.group = group;
     }
+    function setGroupIndex(num){
+        self.groupIndex = num;
+    }
+    function toggleGroup(){
+        const groups = ['A','B','C','D'];
+        const idx = groups.indexOf(self.group);
+
+        //shift current group indexes
+        store.getTracksByGroup(self.group).filter(t => t.groupIndex > self.groupIndex).forEach(t => t.setGroupIndex(t.groupIndex - 1));
+        //switch group
+        idx === groups.length - 1 ? self.setGroup(groups[0]) : self.setGroup(groups[idx + 1]);
+        //set group index to last
+        self.groupIndex = store.getTracksByGroup(self.group).length - 1;
+    }
+    function moveTrackUp(){
+        if(self.groupIndex > 0){
+            let prevTrack = store.getTracksByGroup(self.group).find(t => t.groupIndex === (self.groupIndex - 1));
+            if(prevTrack){
+                prevTrack.setGroupIndex(self.groupIndex);
+                self.groupIndex -= 1;
+            }
+        }
+    }
+    function moveTrackDown(){
+        if(self.groupIndex < (store.getTracksByGroup(self.group).length - 1)){
+            let nextTrack = store.getTracksByGroup(self.group).find(t => t.groupIndex === (self.groupIndex + 1));
+            if(nextTrack){
+                nextTrack.setGroupIndex(self.groupIndex);
+                self.groupIndex += 1;
+            }
+        }
+    }
     function afterCreate(){}
     function afterAttach(){}
 
-    return { afterCreate, afterAttach, setResolution, setGroup, toggleMute, toggleSolo }
+    return { afterCreate, afterAttach, setResolution, setGroupIndex, moveTrackUp, moveTrackDown, setGroup, toggleMute, toggleSolo, toggleGroup }
 });
 
 const UIObj = types.model("UIObj", {
@@ -4345,7 +4378,7 @@ export const RootStore = types.model("RootStore", {
                 if(group === 'M')
                     return self.tracks.filter(t => t.type === 'master');
                 else
-                    return self.tracks.filter(t => t.group === group && t.type !== 'master');
+                    return self.tracks.filter(t => t.group === group && t.type !== 'master').sort((a, b) => { return a.groupIndex - b.groupIndex });;
             },
             getScene(sceneId) {
                 return self.scenes.find(s => s.id === sceneId);
@@ -4642,7 +4675,9 @@ export const RootStore = types.model("RootStore", {
         }
         function addTrack(id, type, mute, solo, sample, region) {
             if(self.ui.selectedGroup !== 'M'){
-                self.tracks.push(Track.create({ id: id, type: type, mute: mute, solo: solo, sample: sample, region: region, group: self.ui.selectedGroup }));
+
+                let groupIndex = store.getTracksByGroup(self.ui.selectedGroup).length;
+                self.tracks.push(Track.create({ id: id, type: type, mute: mute, solo: solo, sample: sample, region: region, group: self.ui.selectedGroup, groupIndex: groupIndex}));
 
                 let panvolId = 'panvol_' + randomId();
                 self.components.panvols.push(PanVol.create({ id: panvolId, track: id }));
@@ -4759,6 +4794,9 @@ export const RootStore = types.model("RootStore", {
                 self.getPatternByTrackScene(newTrackId, p.scene.id).pastePattern(p);
             })
         }
+        function delTrackNotes(trackId){
+            self.getPatternsByTrack(trackId).forEach(p => p.deleteNotes());
+        }
         function delTrack(id) {
             let track = self.getTrack(id);
 
@@ -4806,6 +4844,8 @@ export const RootStore = types.model("RootStore", {
                 if(track.region)
                     self.getSample(track.sample.id).delRegion(track.region.id);
             }
+
+            self.getTracksByGroup(track.group).filter(t => t.groupIndex > track.groupIndex).forEach(t => t.setGroupIndex(t.groupIndex - 1));
 
             destroy(self.getTrack(id));
         }
@@ -4994,7 +5034,7 @@ export const RootStore = types.model("RootStore", {
             //DBSaveStore(true);
             DBSaveStore(false);
         }
-        return { afterCreate, setSongId, DBGetAllSongs, DBSaveStore, DBLoadStore, DBSaveAudioFile, DBLoadAudioFile, DBDelete, addPattern, delPattern, addMasterTracks, addTrack, duplicateTrack, delTrack, addScene, delScene, shiftSceneTimes, swapScenes, duplicateScene, addConnection, delConnectionsByObj, delConnection, addSample, delSample };
+        return { afterCreate, setSongId, DBGetAllSongs, DBSaveStore, DBLoadStore, DBSaveAudioFile, DBLoadAudioFile, DBDelete, addPattern, delPattern, addMasterTracks, addTrack, duplicateTrack, delTrackNotes, delTrack, addScene, delScene, shiftSceneTimes, swapScenes, duplicateScene, addConnection, delConnectionsByObj, delConnection, addSample, delSample };
     });
 
 /*
