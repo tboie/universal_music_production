@@ -14,7 +14,6 @@ export const FooterView = observer(class FooterView extends Component{
       this.tempoMode = "bpm";
       document.getElementById('lblTempo').innerHTML = this.props.bpm;
       document.getElementById('tempoSlider').value = this.props.bpm;
-
       document.getElementById('iViewMode').innerHTML = this.props.viewMode === 'button' ? 'reorder' : 'view_module';
     }
   
@@ -23,10 +22,9 @@ export const FooterView = observer(class FooterView extends Component{
       document.getElementById('lblTempo').innerHTML = this.props.bpm;
       document.getElementById('tempoSlider').value = this.props.bpm;
 
-
       let eleIcon = document.getElementById('iViewMode');
-      if(this.props.viewMode === 'manager' && prevProps.viewMode !== 'manager' 
-        || this.props.viewMode === 'edit' && prevProps.viewMode !== 'edit'){
+      if((this.props.viewMode === 'manager' && prevProps.viewMode !== 'manager')
+        || (this.props.viewMode === 'edit' && prevProps.viewMode !== 'edit')){
 
           if(prevProps.viewMode === 'button')
             eleIcon.innerHTML = 'view_module';

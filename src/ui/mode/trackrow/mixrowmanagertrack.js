@@ -1,9 +1,6 @@
 import React, { Component } from 'react';
 import { observer } from "mobx-react";
-import Tone from 'tone';
 import { store } from '../../../data/store.js';
-import { randomId } from '../../../models/models.js';
-
 
 
 export const MixRowViewManagerTrack = observer(class MixRowViewManagerTrack extends Component{
