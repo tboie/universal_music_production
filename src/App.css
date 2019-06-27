@@ -24,6 +24,7 @@ html {
   z-index: 2;
   background-color: #181f87;
   opacity: 0.5;
+  top:0px;
 }
 
 .drop-active {
