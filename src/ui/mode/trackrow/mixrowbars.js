@@ -55,7 +55,7 @@ export const MixRowViewBars = observer(class MixRowViewBars extends Component{
         <div className={"track-rowmix"} id={'trackrowmixbars_' + this.props.track.id + '_' + this.props.bar} style={{width: + this.props.store.ui.windowWidth}}>
           <button id="btnMixBar_Copy" className="btn-mix-bars" onClick={this.selectMixButton}>Copy</button>
           <button id="btnMixBar_Paste" className="btn-mix-bars" onClick={this.selectMixButton}>Paste</button>
-          <button id="btnMixBar_Del" className="btn-mix-bars" onClick={this.selectMixButton}>Del</button>
+          <button id="btnMixBar_Del" className="btn-mix-bars" onClick={this.selectMixButton}>Clr</button>
           <button id="btnMixBar_Rand" className="btn-mix-bars" onClick={this.selectMixButton}>Rand</button>
         </div>
       )
