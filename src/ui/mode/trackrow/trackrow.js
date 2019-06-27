@@ -334,23 +334,30 @@ export const TrackRowView = observer(class TrackRowView extends Component {
           let tSplit = Tone.Time(clickSecs).toBarsBeatsSixteenths().split(":");
           let sixteenths = tSplit[2];
           
-          if(pattern.resolution === 8){
+          if(pattern.resolution === '8n'){
             if(parseFloat(sixteenths) < 2)
               sixteenths = 0;
             else 
               sixteenths = 2;
           }
-          else if(pattern.resolution === 16){
+          else if(pattern.resolution === '12t'){
+            let time = Tone.Time(Tone.Time(clickSecs).quantize('8t')).toBarsBeatsSixteenths();
+            
+            sixteenths = time.split(':')[2];
+            tSplit[1] = time.split(':')[1];
+            tSplit[0] = time.split(':')[0];
+          }
+          else if(pattern.resolution === '16n'){
             sixteenths = Math.floor(sixteenths);
           }
-          else if(pattern.resolution === 32){
+          else if(pattern.resolution === '32n'){
             // extract decimal from x.xxx
             if(parseFloat(sixteenths).toFixed(3).split(".")[1] >= 500)
               sixteenths = sixteenths.split(".")[0] + "." + 500;
             else
               sixteenths = Math.floor(sixteenths);
           }
-          else if(pattern.resolution === 64){
+          else if(pattern.resolution === '64n'){
             let decimal = parseFloat(sixteenths).toFixed(3).split(".")[1];
             if(decimal >= 0 && decimal < 250)
               sixteenths = Math.floor(sixteenths);
@@ -372,7 +379,7 @@ export const TrackRowView = observer(class TrackRowView extends Component {
               store.ui.selectNote(note);
             }
             else if(pattern.track.type === "instrument"){
-              pattern.addNote(nTime, false, [''], pattern.resolution + 'n');
+              pattern.addNote(nTime, false, [''], pattern.resolution);
               note = pattern.getNote(nTime);
               store.ui.selectNote(note);
             }
@@ -446,7 +453,8 @@ export const TrackRowView = observer(class TrackRowView extends Component {
     let height = this.canvasHeight;
     let windowWidth = this.props.windowWidth;
     let viewSquares = Tone.Time(viewLength).toBarsBeatsSixteenths();
-    viewSquares = parseInt(viewSquares.split(":")[0] * pattern.resolution, 10) + parseInt(viewSquares.split(":")[1] * (pattern.resolution/4), 10);
+    let res = pattern.resolution.slice(0, -1);
+    viewSquares = parseInt(viewSquares.split(":")[0] * res, 10) + parseInt(viewSquares.split(":")[1] * (res/4), 10);
     let squareWidth = windowWidth / viewSquares;
 
     let sorted = pattern.getSortedNotesAsc().filter(n => !n.mute);
@@ -518,9 +526,10 @@ export const TrackRowView = observer(class TrackRowView extends Component {
     let buffer = this.player.buffer;
     let duration = buffer.duration / this.props.playbackRate;
     let imgWidth = (duration/Tone.Time(viewLength)) * this.props.windowWidth;
+    let res = pattern.resolution.slice(0, -1);
 
     let viewSquares = Tone.Time(viewLength).toBarsBeatsSixteenths();
-    viewSquares = parseInt(viewSquares.split(":")[0] * pattern.resolution, 10) + parseInt(viewSquares.split(":")[1] * (pattern.resolution/4), 10);
+    viewSquares = parseInt(viewSquares.split(":")[0] * res, 10) + parseInt(viewSquares.split(":")[1] * (res/4), 10);
     let squareWidth = this.props.windowWidth / viewSquares;
 
     if(!this.img)
@@ -588,7 +597,7 @@ export const TrackRowView = observer(class TrackRowView extends Component {
 
     sorted.forEach(note => {
       //console.log('track: ' + this.id + ' dealing with note: ' + Tone.Time(note.time).toBarsBeatsSixteenths())
-      let noteOffset = Tone.Time(pattern.resolution + 'n') * note.offset;
+      let noteOffset = Tone.Time(pattern.resolution) * note.offset;
       let x, xOffset;
       
       if(this.props.bar){
@@ -621,7 +630,7 @@ export const TrackRowView = observer(class TrackRowView extends Component {
       sorted.some(n2 => {
         if(Tone.Time(n2.time) > Tone.Time(note.time) && !n2.mute){
           //seconds between notes
-          let n2Offset = Tone.Time(pattern.resolution + 'n') * n2.offset;
+          let n2Offset = Tone.Time(pattern.resolution) * n2.offset;
           noteTimeDelta = (Tone.Time(n2.time) - Tone.Time(note.time)) - noteOffset + n2Offset;
           if(cutDuration >= noteTimeDelta){
             //sample seconds - note delta seconds to pixels
@@ -649,7 +658,7 @@ export const TrackRowView = observer(class TrackRowView extends Component {
   }
 
   drawGridLines = (ctx, pattern, scene, viewLength) => {
-    let res = pattern.resolution;
+    let res = pattern.resolution.slice(0, -1);
     let sceneStart = 0;
     let sceneEnd;
 

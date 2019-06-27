@@ -322,7 +322,7 @@ const Track = types.model("Track", {
     sample: types.maybe(types.reference(Sample)),
     region: types.maybe(types.reference(Region)),
     group: types.maybe(types.union(types.literal("A"), types.literal("B"), types.literal("C"), types.literal("D"), types.literal("M"))),
-    resolution: types.optional(types.number, 16),
+    resolution: types.optional(types.string, "16n"),
     groupIndex: types.maybe(types.number)
 }).views(self => ({
     returnRegion(){
@@ -3284,7 +3284,7 @@ const Note = types.model("Note", {
 
 const Pattern = types.model("Pattern", {
     id: types.identifier,
-    resolution: types.optional(types.number, 16),
+    resolution: types.optional(types.string, '16n'),
     track: types.reference(Track),
     scene: types.reference(Scene),
     notes: types.maybe(types.array(Note)),
@@ -3393,14 +3393,14 @@ const Pattern = types.model("Pattern", {
         
         let startBar = parseInt(timeStart.split(':')[0], 10);
         let totalBars = parseInt(timeEnd.split(':')[0], 10) - startBar;
-        let totalNotes = totalBars * self.resolution;
+        let totalNotes = totalBars * self.resolution.slice(0, -1);
 
         let minOctave = 0, maxOctave = 7;
         let arrayNotes = Scale.notes(store.settings.key, store.settings.scale)
 
         for(let i=0; i<totalBars; i++){
             for(let k=0; k<totalNotes; k++){
-                let noteTime = Tone.Time(Tone.Time((i + startBar) + ':0:0') + (Tone.Time((self.resolution + 'n')) * k)).toBarsBeatsSixteenths();
+                let noteTime = Tone.Time(Tone.Time((i + startBar) + ':0:0') + (Tone.Time((self.resolution)) * k)).toBarsBeatsSixteenths();
 
                 let randOctave = Math.floor(Math.random() * (maxOctave - minOctave + 1) ) + minOctave;
                 let randNote = arrayNotes[Math.floor(Math.random() * (arrayNotes.length - 0))];
@@ -3409,7 +3409,7 @@ const Pattern = types.model("Pattern", {
                 if(store.ui.selectedChord !== undefined)
                     noteVal = Chord.notes(noteVal[0], store.ui.selectedChord);
 
-                self.addNote(noteTime, false, noteVal, self.resolution + 'n');
+                self.addNote(noteTime, false, noteVal, self.resolution);
             }
         }
     }
@@ -3445,7 +3445,7 @@ const Pattern = types.model("Pattern", {
                         return;
             
 
-            let offset = Tone.Time(self.resolution + 'n') * value.offset;
+            let offset = Tone.Time(self.resolution) * value.offset;
 
             //convert to freq for notes like F##3 that Tone doesn't support
             if(value.note){
@@ -4697,7 +4697,7 @@ export const RootStore = types.model("RootStore", {
                 }
 
                 self.scenes.forEach(function (scene) {
-                    self.addPattern('pattern_' + randomId(), 16, id, scene.id, []);
+                    self.addPattern('pattern_' + randomId(), '16n', id, scene.id, []);
                 })
 
                 store.ui.selectTrack(id);

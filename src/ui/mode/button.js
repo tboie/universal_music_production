@@ -154,7 +154,7 @@ export const GridButtonView = observer(class ButtonView extends Component {
               let pattern = store.getPatternByTrackScene(this.props.keyValue, currScene.id);
               if(pattern){
                 //is this affected by transport start offset?
-                let t = Tone.Time(Tone.Transport.position).quantize(pattern.resolution + "n");
+                let t = Tone.Time(Tone.Transport.position).quantize(pattern.resolution);
                 t = Tone.Time(t).toBarsBeatsSixteenths();
                 
                 if(!pattern.getNote(t))
@@ -306,7 +306,7 @@ export const GridButtonView = observer(class ButtonView extends Component {
               let pattern = store.getPatternByTrackScene(this.track.id, currScene.id);
               if(pattern){
                 //is this affected by transport start offset?
-                let t = Tone.Time(Tone.Transport.position).quantize(pattern.resolution + "n");
+                let t = Tone.Time(Tone.Transport.position).quantize(pattern.resolution);
                 t = Tone.Time(t).toBarsBeatsSixteenths();
                 
                 if(!pattern.getNote(t))

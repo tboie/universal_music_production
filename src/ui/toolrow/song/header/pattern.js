@@ -20,12 +20,12 @@ export const ToolSongHeaderPattern = observer(class ToolSongHeaderPattern extend
   
     changeQuantization = () => {
       let res = this.props.selectedPattern.resolution;
-      if(res === 16)
-        this.props.selectedPattern.setResolution(32);
-      else if(res === 32)
-        this.props.selectedPattern.setResolution(64);
+      if(res === '16n')
+        this.props.selectedPattern.setResolution('32n');
+      else if(res === '32n')
+        this.props.selectedPattern.setResolution('64n');
       else
-        this.props.selectedPattern.setResolution(16);
+        this.props.selectedPattern.setResolution('16n');
   
       //hacky way to trigger trackrowview update
       //store.ui.selectPattern(undefined);
@@ -47,7 +47,7 @@ export const ToolSongHeaderPattern = observer(class ToolSongHeaderPattern extend
   
       if(this.props.selectedPattern){
         copyDisabled=false;
-        txtQuant = this.props.selectedPattern.resolution + 'n';
+        txtQuant = this.props.selectedPattern.resolution;
       }
       if(this.props.copiedPatternId){
         pasteDisabled=false;

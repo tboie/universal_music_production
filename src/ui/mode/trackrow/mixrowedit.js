@@ -76,7 +76,7 @@ export const MixRowViewEdit = observer(class MixRowViewEdit extends Component{
         else{
           let noteDelta = Tone.Time(this.props.note.getPattern().getLength()) - Tone.Time(this.props.note.time);
           let notation = Tone.Time(noteDelta * parseFloat(e.target.value)).toBarsBeatsSixteenths();
-          let offsetTime = this.props.note.offset * Tone.Time(this.props.note.getPattern().resolution + 'n');
+          let offsetTime = this.props.note.offset * Tone.Time(this.props.note.getPattern().resolution);
   
           if(Tone.Time(notation) - Tone.Time(offsetTime) > 0){
             this.props.note.setDuration(notation);
@@ -84,7 +84,7 @@ export const MixRowViewEdit = observer(class MixRowViewEdit extends Component{
         }
       }
       else if(this.mixSelection === "Dly"){
-        let offsetTime = this.props.note.offset * Tone.Time(this.props.note.getPattern().resolution + 'n');
+        let offsetTime = this.props.note.offset * Tone.Time(this.props.note.getPattern().resolution);
   
         if(Tone.Time(this.props.note.duration) > Tone.Time(offsetTime)){
           this.props.note.setOffset(parseFloat(e.target.value));
