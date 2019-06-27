@@ -364,19 +364,21 @@ const MixRowButtonToggleRes = observer(class MixRowButtonToggleRes extends Compo
     e.stopPropagation();
 
     let ele = e.target;
-    /*
     if(ele.innerHTML === '8n')
-      ele.innerHTML = '12t';
-    else if(ele.innerHTML === '12t')
-      ele.innerHTML = '16n';
-    */
-    if(ele.innerHTML === '8n')
+      ele.innerHTML = '8t';
+    else if(ele.innerHTML === '8t')
       ele.innerHTML = '16n';
     else if(ele.innerHTML === '16n')
+      ele.innerHTML = '16t';
+    else if(ele.innerHTML === '16t')
       ele.innerHTML = '32n';
     else if(ele.innerHTML === '32n')
+      ele.innerHTML = '32t';
+    else if(ele.innerHTML === '32t')
       ele.innerHTML = '64n';
     else if(ele.innerHTML === '64n')
+      ele.innerHTML = '64t';
+    else if(ele.innerHTML === '64t')
       ele.innerHTML = '8n';
 
     store.getPatternByTrackScene(this.props.track.id, store.ui.selectedScene.id).setResolution(ele.innerHTML);

@@ -330,22 +330,34 @@ export const TrackRowView = observer(class TrackRowView extends Component {
         }
 
         if(clickSecs >= sceneStart && clickSecs < sceneEnd){
+          let typeQuant = pattern.resolution.slice(-1);
+
           //Each part aka pattern starts at time 0 no matter where in transport timeline
           let tSplit = Tone.Time(clickSecs).toBarsBeatsSixteenths().split(":");
           let sixteenths = tSplit[2];
           
-          if(pattern.resolution === '8n'){
+
+          if(typeQuant === 't'){
+            let timeQuant = Tone.Time(Tone.Time(clickSecs).quantize(pattern.resolution)).toBarsBeatsSixteenths();
+
+            //quantize will use next note past a certain point
+            if(Tone.Time(timeQuant) > Tone.Time(clickSecs)){
+              //no negative 1st note
+              if(Tone.Time(timeQuant) < Tone.Time(pattern.resolution))
+                timeQuant = '0:0:0';
+              else
+                timeQuant = Tone.Time(Tone.Time(timeQuant) - Tone.Time(pattern.resolution)).toBarsBeatsSixteenths();
+            }
+            
+            sixteenths = timeQuant.split(':')[2];
+            tSplit[1] = timeQuant.split(':')[1];
+            tSplit[0] = timeQuant.split(':')[0];
+          }
+          else if(pattern.resolution === '8n'){
             if(parseFloat(sixteenths) < 2)
               sixteenths = 0;
             else 
               sixteenths = 2;
-          }
-          else if(pattern.resolution === '12t'){
-            let time = Tone.Time(Tone.Time(clickSecs).quantize('8t')).toBarsBeatsSixteenths();
-            
-            sixteenths = time.split(':')[2];
-            tSplit[1] = time.split(':')[1];
-            tSplit[0] = time.split(':')[0];
           }
           else if(pattern.resolution === '16n'){
             sixteenths = Math.floor(sixteenths);
@@ -453,7 +465,11 @@ export const TrackRowView = observer(class TrackRowView extends Component {
     let height = this.canvasHeight;
     let windowWidth = this.props.windowWidth;
     let viewSquares = Tone.Time(viewLength).toBarsBeatsSixteenths();
-    let res = pattern.resolution.slice(0, -1);
+    let res = parseInt(pattern.resolution.slice(0, -1), 10);
+    let resType = pattern.resolution.slice(-1);
+    if(resType === 't')
+      res += (res/2);
+    
     viewSquares = parseInt(viewSquares.split(":")[0] * res, 10) + parseInt(viewSquares.split(":")[1] * (res/4), 10);
     let squareWidth = windowWidth / viewSquares;
 
@@ -526,7 +542,10 @@ export const TrackRowView = observer(class TrackRowView extends Component {
     let buffer = this.player.buffer;
     let duration = buffer.duration / this.props.playbackRate;
     let imgWidth = (duration/Tone.Time(viewLength)) * this.props.windowWidth;
-    let res = pattern.resolution.slice(0, -1);
+    let res = parseInt(pattern.resolution.slice(0, -1), 10);
+    let resType = pattern.resolution.slice(-1);
+    if(resType === 't')
+      res += (res/2);
 
     let viewSquares = Tone.Time(viewLength).toBarsBeatsSixteenths();
     viewSquares = parseInt(viewSquares.split(":")[0] * res, 10) + parseInt(viewSquares.split(":")[1] * (res/4), 10);
@@ -658,7 +677,11 @@ export const TrackRowView = observer(class TrackRowView extends Component {
   }
 
   drawGridLines = (ctx, pattern, scene, viewLength) => {
-    let res = pattern.resolution.slice(0, -1);
+    let res = parseInt(pattern.resolution.slice(0, -1), 10);
+    let resType = pattern.resolution.slice(-1);
+    if(resType === 't')
+      res += (res/2);
+
     let sceneStart = 0;
     let sceneEnd;
 
@@ -684,24 +707,24 @@ export const TrackRowView = observer(class TrackRowView extends Component {
     }
 
     let total = parseInt(squares.split(":")[0], 10) + parseInt(squares.split(":")[1], 10);
+    let resNum = resType === 'n' ? 4 : 3;
 
     ctx.strokeStyle = "#133e83";
-    
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     for(let k=0; k<=total; k++){
       //skip every 4 lines
-      if(k % 4 !== 0){
+      if(k % resNum !== 0){
         ctx.moveTo((k * w) + sceneStart, 0);
         ctx.lineTo((k * w) + sceneStart, this.canvasHeight); 
       }
     }
     ctx.stroke();
     
-    //every 4 lines is a bit thicker
+    //every 4(n) or 3(t) lines is a bit thicker
     ctx.lineWidth = 3.5;
     ctx.beginPath();
-    for(let k=0; k<=total; k+=4){
+    for(let k=0; k<=total; k+=resNum){
       ctx.moveTo((k * w) + sceneStart, 0);
       ctx.lineTo((k * w) + sceneStart, this.canvasHeight); 
     }
