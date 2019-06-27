@@ -47,7 +47,7 @@ export const ManagerViewTrack = observer(class ManagerViewTrack extends Componen
 
     rowClick = (e) => {
         if(e.target.parentNode && e.target.parentNode.cells){
-            let txtTrack = e.target.parentNode.cells[0].innerHTML;
+            let txtTrack = e.target.parentNode.cells[1].innerHTML;
 
             if(txtTrack){
                 let track = store.getTrack(txtTrack);
