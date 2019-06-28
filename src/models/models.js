@@ -3918,7 +3918,7 @@ const UI = types.model("UI", {
         }
         else if(prop === "notes"){
             if(trackId)
-                return store.getPatternByTrackScene(trackId, self.selectedScene.id).getSortedNotesAsc();
+                return store.getPatternByTrackScene(trackId, self.selectedScene.id).getSortedNotesAsc().length;
             else if(self.selectedPattern)
                 return self.selectedPattern.getSortedNotesAsc();
             else
@@ -4201,6 +4201,8 @@ const UI = types.model("UI", {
         let prevNote = self.selectedNote;
 
         self.selectedNote = note;
+        if(note)
+            self.selectedTrack = note.getPattern().track;
 
         if(prevNote){
             if(self.selectedNote !== prevNote){

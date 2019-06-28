@@ -79,10 +79,6 @@ export const TrackRowView = observer(class TrackRowView extends Component {
       //only update sequencer tracks that are modified
       if(store.ui.viewMode === 'sequencer'){
         if(!store.ui.mixMode){
-          if(prevProps.selectedTrack !== this.props.selectedTrack){
-            return;
-          }
-
           if(prevProps.playbackRate !== this.props.playbackRate){
             clearTimeout(this.waveRedrawTimeout);
             this.waveRedrawTimeout = setTimeout(() => {
@@ -129,12 +125,10 @@ export const TrackRowView = observer(class TrackRowView extends Component {
             if(this.props.selectedNote){
               if(this.props.selectedNote.getPattern().track.id === this.props.track.id){
                 this.bSelectedNote = true;
-                //console.log('selected note this track '  + this.props.track.id)
                 this.init();
                 return;
               }
               else if(this.bSelectedNote){
-                //console.log('selected note was in this track, but not anymore: ' + this.props.track.id)
                 this.bSelectedNote = false;
                 this.init();
                 return;
@@ -142,7 +136,6 @@ export const TrackRowView = observer(class TrackRowView extends Component {
             }
             //note was de-selected
             else{
-              //console.log('no selected note right now and note was in this track prev: ' + this.props.track.id);
               this.bSelectedNote = false;
               this.init();
               return;
@@ -179,7 +172,7 @@ export const TrackRowView = observer(class TrackRowView extends Component {
             this.init();
             return;
           }
-          else if(prevProps.selectedPatternNotes !== this.props.selectedPatternNotes){
+          else if(prevProps.selectedPatternNotesLen !== this.props.selectedPatternNotesLen){
             this.init();
             return;
           }
@@ -225,7 +218,6 @@ export const TrackRowView = observer(class TrackRowView extends Component {
   }
 
   init = (update) => {
-    //console.log('init ' + this.props.track.id)
     this.c = document.getElementById("canvas" + this.id);
 
     if(this.c && this.props.track.type !== "master"){
