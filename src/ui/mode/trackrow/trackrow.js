@@ -173,18 +173,15 @@ export const TrackRowView = observer(class TrackRowView extends Component {
               }
             }
           }
-          //update quantization(resolution) change for this track's selected pattern
-          else if(prevProps.selectedPattern && this.props.selectedPattern){
-            if(this.props.selectedPattern.track.id === this.props.track.id){
-              if(prevProps.selectedPatternRes !== this.props.selectedPatternRes){
-                this.init();
-                return;
-              }
-              else if(prevProps.selectedPatternNotes !== this.props.selectedPatternNotes){
-                this.init();
-                return;
-              }
-            }
+
+          //sequencer view uses track instead of selectedPattern
+          if(prevProps.selectedPatternRes !== this.props.selectedPatternRes){
+            this.init();
+            return;
+          }
+          else if(prevProps.selectedPatternNotes !== this.props.selectedPatternNotes){
+            this.init();
+            return;
           }
 
           /*      

@@ -123,8 +123,8 @@ export const SequencerView = observer(class SequencerView extends Component {
                   selectedNote={this.props.store.ui.selectedNote} 
                   selectedNoteValue={this.props.store.ui.getSelectedNoteValue()} 
                   selectedPattern={this.props.store.ui.selectedPattern} 
-                  selectedPatternRes={this.props.store.ui.getSelectedPatternProp('resolution')} 
-                  selectedPatternNotes={this.props.store.ui.getSelectedPatternProp('notes')}
+                  selectedPatternRes={this.props.store.ui.getSelectedPatternProp('resolution', track.id)} 
+                  selectedPatternNotes={this.props.store.ui.getSelectedPatternProp('notes', track.id)}
                   selectedKey={this.props.store.ui.selectedKey}
                   windowWidth={this.props.store.ui.windowWidth}
                   />) 

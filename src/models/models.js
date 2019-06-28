@@ -3907,15 +3907,19 @@ const UI = types.model("UI", {
     device: types.maybe(types.union(types.literal("mobile"), types.literal("desktop"))),
     showSideBar: types.optional(types.boolean, false),
 }).views(self => ({
-    getSelectedPatternProp(prop){
+    getSelectedPatternProp(prop, trackId){
         if(prop === "resolution"){
-            if(self.selectedPattern)
+            if(trackId)
+                return store.getTrack(trackId).resolution;
+            else if(self.selectedPattern)
                 return self.selectedPattern.resolution;
             else
                 return undefined;
         }
         else if(prop === "notes"){
-            if(self.selectedPattern)
+            if(trackId)
+                return store.getPatternByTrackScene(trackId, self.selectedScene.id).getSortedNotesAsc();
+            else if(self.selectedPattern)
                 return self.selectedPattern.getSortedNotesAsc();
             else
                 return undefined;
