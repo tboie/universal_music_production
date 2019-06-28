@@ -270,7 +270,7 @@ const MixRowSlider = observer(class MixRowSlider extends Component{
     }
 
     return (
-      <div style={{marginLeft:'10px', marginRight:'10px'}}>
+      <div style={{marginLeft:'10px', marginRight:'10px', height:'50%'}}>
         { sliderEle }
       </div>
     );
@@ -341,7 +341,7 @@ export const MixMeters = observer(class MixMeters extends Component{
 
   render(){
     return(
-      <div>
+      <div style={{height:'50%'}}>
         <canvas id={'canvas-L-' + this.props.track.id} className='canvasMeterL'></canvas>
         <canvas id={'canvas-R-' + this.props.track.id} className='canvasMeterR'></canvas>
       </div>

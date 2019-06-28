@@ -147,9 +147,24 @@ html {
 
 .trackMixSlider { 
   width:100%;
-  top:-26px;
+  top:-6px;
   position:relative;
+  height:1px;
 }
+
+/***********************
+Firefox slider BG (default is black)
+************************/
+
+input[type=range]::-moz-range-track {
+  background-color: white;
+}
+
+input[type=range]::-moz-range-thumb {
+  width:16px;
+  height:16px;
+}
+
 
 .progressLine {
   height:100%;
@@ -1357,4 +1372,3 @@ Scrollbar
 ::-webkit-scrollbar-thumb:hover {
   background: lightgray;
 }
- 
