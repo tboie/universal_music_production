@@ -432,7 +432,7 @@ const MixRowButtonToggleRes = observer(class MixRowButtonToggleRes extends Compo
         default:
       }
 
-      store.getPatternByTrackScene(this.props.track.id, store.ui.selectedScene.id).setResolution(ele.innerHTML);
+      this.props.track.setResolution(ele.innerHTML);
     }
   }
 
