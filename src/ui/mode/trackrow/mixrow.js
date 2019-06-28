@@ -45,7 +45,7 @@ export const MixRowView = observer(class MixRowView extends Component{
     if(this.props.store.ui.viewMode === 'edit')
       firstButton = <MixRowButtonToggleEditViewMode track={this.props.track} editViewMode={this.props.store.ui.views.edit.mode} />
 
-    let secondButton = <MixRowButtonToggleRes track={this.props.track}/>
+    let secondButton = <MixRowButtonToggleRes track={this.props.track} mixSelection={this.mixSelection} toggleMixSelection={(p) => this.toggleMixSelection(p)}/>
     if(this.props.track.type === 'master')
       secondButton = <MixRowButtonToggleGroup track={this.props.track}/>
 
@@ -76,9 +76,13 @@ const MixRowButtonSliderProp = observer(class MixRowButtonSliderProp extends Com
   mixSelection;
   timeout;
 
-  componentDidMount(){}
+  componentDidMount(){
+    this.toggleStyleSelect();
+  }
 
   componentDidUpdate(prevProps){
+    this.toggleStyleSelect();
+
     //auto set if value changed not from slider (ex. midi controller)
     if(prevProps.playbackRate !== this.props.playbackRate){
       if(this.mixSelection !== 'Spd' && this.props.track.type === 'audio'){
@@ -101,28 +105,43 @@ const MixRowButtonSliderProp = observer(class MixRowButtonSliderProp extends Com
     }
   }
 
+  toggleStyleSelect = () => {
+    let eleBtn = document.getElementById(this.id);
+
+    if(this.props.mixSelection !== 'Res'){
+      if(!eleBtn.classList.contains('btnSelected'))
+        eleBtn.classList.add('btnSelected');
+    }
+    else{
+      if(eleBtn.classList.contains('btnSelected'))
+        eleBtn.classList.remove('btnSelected');
+    }
+  }
+
   componentWillUnmount(){}
 
   toggleMixButton = (e) => {
     e.preventDefault();
     e.stopPropagation();
-  
-    if(e.target.innerHTML === 'Vol'){
-      e.target.innerHTML = 'Pan';
-      this.mixSelection = 'Pan';
-    }
-    else if(e.target.innerHTML === 'Pan'){
-      let text = 'Vol';
+    
+    if(this.props.mixSelection !== 'Res'){
+      if(e.target.innerHTML === 'Vol'){
+        e.target.innerHTML = 'Pan';
+        this.mixSelection = 'Pan';
+      }
+      else if(e.target.innerHTML === 'Pan'){
+        let text = 'Vol';
 
-      if(this.props.track.type === 'audio')
-        text = 'Spd';
+        if(this.props.track.type === 'audio')
+          text = 'Spd';
 
-      e.target.innerHTML = text;
-      this.mixSelection = text;
-    }
-    else if(e.target.innerHTML === 'Spd'){
-      e.target.innerHTML = 'Vol';
-      this.mixSelection = 'Vol';
+        e.target.innerHTML = text;
+        this.mixSelection = text;
+      }
+      else if(e.target.innerHTML === 'Spd'){
+        e.target.innerHTML = 'Vol';
+        this.mixSelection = 'Vol';
+      }
     }
 
     this.props.toggleMixSelection(this.mixSelection);
@@ -131,7 +150,7 @@ const MixRowButtonSliderProp = observer(class MixRowButtonSliderProp extends Com
   render(){
     this.id = 'btnMixLevel_' + this.props.track.id;
     this.mixSelection = this.props.mixSelection;
-    if(!this.mixSelection){
+    if(!this.mixSelection || this.mixSelection === 'Res'){
       this.mixSelection = 'Vol';
     }
 
@@ -167,6 +186,8 @@ const MixRowButtonSolo = observer(class MixRowButtonSolo extends Component{
 })
 
 const MixRowSlider = observer(class MixRowSlider extends Component{
+  arrayRes = ['8n','8t','16n','16t','32n','32t','64n','64t'];
+
   componentDidUpdate(prevProps){
     if(prevProps.playbackRate !== this.props.playbackRate){
       if(!this.bPressed){
@@ -177,6 +198,7 @@ const MixRowSlider = observer(class MixRowSlider extends Component{
       }
     }
   }
+
   changeSlider = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -188,25 +210,33 @@ const MixRowSlider = observer(class MixRowSlider extends Component{
       this.props.panvol.setPropVal('pan', parseFloat(e.target.value), true);
     else if(this.props.mixSelection === 'Spd')
       this.props.player.setPropVal('playbackRate', parseFloat(e.target.value));
-
-    if(this.bPressed)
-      this.setButtonText(e.target.value);
-    else
-      this.setButtonText(this.props.mixSelection);
+    else if(this.props.mixSelection === 'Res')
+      this.props.track.setResolution(this.arrayRes[e.target.value]);
+  
+    if(this.props.mixSelection !== 'Res'){
+      if(this.bPressed)
+        this.setButtonText(e.target.value);
+      else
+        this.setButtonText(this.props.mixSelection);
+    }
   }
 
   onPressDown = (e) => {
     e.stopPropagation();
 
-    this.bPressed = true;
-    this.setButtonText(e.target.value);
+    if(this.props.mixSelection !== 'Res'){
+      this.bPressed = true;
+      this.setButtonText(e.target.value);
+    }
   }
 
   onPressUp = (e) => {
     e.stopPropagation();
 
-    this.bPressed = false;
-    this.setButtonText(this.props.mixSelection);
+    if(this.props.mixSelection !== 'Res'){
+      this.bPressed = false;
+      this.setButtonText(this.props.mixSelection);
+    }
   }
 
   setButtonText = (txt) => {
@@ -231,6 +261,11 @@ const MixRowSlider = observer(class MixRowSlider extends Component{
     else if(this.props.mixSelection === 'Spd'){
       sliderVal = this.props.player.playbackRate;
       sliderEle = <input  id={'mixSlider_' + this.props.track.id} type='range' min='0.01' max='2' value={sliderVal} className='trackMixSlider' step='0.01'
+                    onChange={this.changeSlider} onInput={this.changeSlider} onMouseDown={this.onPressDown} onMouseUp={this.onPressUp} onTouchStart={this.onPressDown} onTouchEnd={this.onPressUp}/>
+    }
+    else if(this.props.mixSelection === 'Res'){
+      sliderVal = this.arrayRes.indexOf(this.props.track.resolution);
+      sliderEle = <input  id={'mixSlider_' + this.props.track.id} type='range' min='0' max='7' value={sliderVal} className='trackMixSlider' step='1'
                     onChange={this.changeSlider} onInput={this.changeSlider} onMouseDown={this.onPressDown} onMouseUp={this.onPressUp} onTouchStart={this.onPressDown} onTouchEnd={this.onPressUp}/>
     }
 
@@ -363,33 +398,51 @@ const MixRowButtonToggleRes = observer(class MixRowButtonToggleRes extends Compo
     e.preventDefault();
     e.stopPropagation();
 
-    let ele = e.target;
-    if(ele.innerHTML === '8n')
-      ele.innerHTML = '8t';
-    else if(ele.innerHTML === '8t')
-      ele.innerHTML = '16n';
-    else if(ele.innerHTML === '16n')
-      ele.innerHTML = '16t';
-    else if(ele.innerHTML === '16t')
-      ele.innerHTML = '32n';
-    else if(ele.innerHTML === '32n')
-      ele.innerHTML = '32t';
-    else if(ele.innerHTML === '32t')
-      ele.innerHTML = '64n';
-    else if(ele.innerHTML === '64n')
-      ele.innerHTML = '64t';
-    else if(ele.innerHTML === '64t')
-      ele.innerHTML = '8n';
+    if(this.props.mixSelection !== 'Res'){
+      this.props.toggleMixSelection('Res');
+    }
+    else{
+      let ele = e.target;
 
-    store.getPatternByTrackScene(this.props.track.id, store.ui.selectedScene.id).setResolution(ele.innerHTML);
+      switch(ele.innerHTML){
+        case '8n':
+          ele.innerHTML = '8t';
+          break;
+        case '8t':
+          ele.innerHTML = '16n';
+          break;
+        case '16n':
+          ele.innerHTML = '16t';
+          break;
+        case '16t':
+          ele.innerHTML = '32n';
+          break;
+        case '32n':
+          ele.innerHTML = '32t';
+          break;
+        case '32t':
+          ele.innerHTML = '64n';
+          break;
+        case '64n':
+          ele.innerHTML = '64t';
+          break;
+        case '64t':
+          ele.innerHTML = '8n';
+          break;
+        default:
+      }
+
+      store.getPatternByTrackScene(this.props.track.id, store.ui.selectedScene.id).setResolution(ele.innerHTML);
+    }
   }
 
   render(){
     this.id = 'btnMixToggleRes_' + this.props.track.id;
     let res = store.getPatternByTrackScene(this.props.track.id, store.ui.selectedScene.id).resolution;
+    let selected = this.props.mixSelection === 'Res' ? ' btnSelected' : '';
 
     return (
-      <button id={this.id} className='btn-mix' onClick={this.toggleResolution}>{res}</button>
+      <button id={this.id} className={'btn-mix' + selected} onClick={this.toggleResolution}>{res}</button>
     );
   }
 });
