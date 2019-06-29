@@ -3764,20 +3764,14 @@ const UIEditView = types.model("UIEditView", {
             self.selectedBars.push(bar);
     },
     selectAllBars(){
-        let arrayBars = [];
-        let totalBars = Tone.Time(store.ui.selectedPattern.getLength()).toBarsBeatsSixteenths().split(':')[0];
-        for(let i=1; i<=totalBars; i++){
-            arrayBars.push(i);
-        }
-        self.selectedBars = arrayBars;
+        let totalBars = parseInt(Tone.Time(store.ui.selectedPattern.getLength()).toBarsBeatsSixteenths().split(':')[0], 10);
+        self.selectedBars = [...Array(totalBars).keys()].map(x => x+1);
     },
     copySelectedBars(){
-        self.copiedPattern = store.getPatternByTrackScene(store.ui.selectedTrack.id, store.ui.selectedScene.id);
+        self.copiedPattern = store.ui.selectedPattern;
         self.copiedBars = [...self.selectedBars];
     },
     pasteCopiedBars(){
-        let pattern = store.getPatternByTrackScene(store.ui.selectedTrack.id, store.ui.selectedScene.id);
-
         let firstSelectedBarNum = self.selectedBars.sort((a, b) =>  a - b)[0];
         let firstCopiedBarNum = self.copiedBars.sort((a, b) =>  a - b)[0];
         let diff = firstSelectedBarNum - firstCopiedBarNum;
@@ -3786,13 +3780,12 @@ const UIEditView = types.model("UIEditView", {
             let destBar = bar + diff;
             let notes = self.copiedPattern.getNotesByBar(bar);
             
-            pattern.deleteNotesByBar(destBar);
-            pattern.pasteNotesToBar(notes, destBar)
+            store.ui.selectedPattern.deleteNotesByBar(destBar);
+            store.ui.selectedPattern.pasteNotesToBar(notes, destBar)
         })
     },
     deleteSelectedBarNotes(){
-        let pattern = store.getPatternByTrackScene(store.ui.selectedTrack.id, store.ui.selectedScene.id);
-        self.selectedBars.forEach(bar => pattern.deleteNotesByBar(bar));
+        self.selectedBars.forEach(bar => store.ui.selectedPattern.deleteNotesByBar(bar));
     },
     clearSelectedBars(){
         self.selectedBars = [];
@@ -3801,11 +3794,9 @@ const UIEditView = types.model("UIEditView", {
         self.copiedBars = [];
     },
     randomizeSelectedBarNotes(){
-        let pattern = store.getPatternByTrackScene(store.ui.selectedTrack.id, store.ui.selectedScene.id);
-
         self.selectedBars.forEach(bar => {
-            pattern.deleteNotesByBar(bar);
-            pattern.createRandomNotes(bar);
+            store.ui.selectedPattern.deleteNotesByBar(bar);
+            store.ui.selectedPattern.createRandomNotes(bar);
         })
     }
 }))
