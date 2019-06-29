@@ -34,6 +34,9 @@ export const MixRowViewBars = observer(class MixRowViewBars extends Component{
       e.preventDefault();
 
       switch(e.target.id.split('_')[1]){
+        case 'All':
+          this.props.store.ui.views.edit.selectAllBars();
+          break;
         case 'Copy':
           this.props.store.ui.views.edit.copySelectedBars();
           break;
@@ -53,6 +56,7 @@ export const MixRowViewBars = observer(class MixRowViewBars extends Component{
     render(){
       return (
         <div className={"track-rowmix"} id={'trackrowmixbars_' + this.props.track.id + '_' + this.props.bar} style={{width: + this.props.store.ui.windowWidth}}>
+          <button id="btnMixBar_All" className="btn-mix-bars" onClick={this.selectMixButton}>All</button>
           <button id="btnMixBar_Copy" className="btn-mix-bars" onClick={this.selectMixButton}>Copy</button>
           <button id="btnMixBar_Paste" className="btn-mix-bars" onClick={this.selectMixButton}>Paste</button>
           <button id="btnMixBar_Del" className="btn-mix-bars" onClick={this.selectMixButton}>Clr</button>

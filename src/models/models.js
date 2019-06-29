@@ -3763,6 +3763,14 @@ const UIEditView = types.model("UIEditView", {
         else
             self.selectedBars.push(bar);
     },
+    selectAllBars(){
+        let arrayBars = [];
+        let totalBars = Tone.Time(store.ui.selectedPattern.getLength()).toBarsBeatsSixteenths().split(':')[0];
+        for(let i=1; i<=totalBars; i++){
+            arrayBars.push(i);
+        }
+        self.selectedBars = arrayBars;
+    },
     copySelectedBars(){
         self.copiedPattern = store.getPatternByTrackScene(store.ui.selectedTrack.id, store.ui.selectedScene.id);
         self.copiedBars = [...self.selectedBars];
