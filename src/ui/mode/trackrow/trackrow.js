@@ -317,58 +317,18 @@ export const TrackRowView = observer(class TrackRowView extends Component {
         }
 
         if(clickSecs >= sceneStart && clickSecs < sceneEnd){
-          let typeQuant = pattern.resolution.slice(-1);
+          let timeQuant = Tone.Time(Tone.Time(clickSecs).quantize(pattern.resolution)).toBarsBeatsSixteenths();
 
-          //Each part aka pattern starts at time 0 no matter where in transport timeline
-          let tSplit = Tone.Time(clickSecs).toBarsBeatsSixteenths().split(":");
-          let sixteenths = tSplit[2];
-          
-
-          if(typeQuant === 't'){
-            let timeQuant = Tone.Time(Tone.Time(clickSecs).quantize(pattern.resolution)).toBarsBeatsSixteenths();
-
-            //quantize will use next note past a certain point
-            if(Tone.Time(timeQuant) > Tone.Time(clickSecs)){
-              //no negative 1st note
-              if(Tone.Time(timeQuant) < Tone.Time(pattern.resolution))
-                timeQuant = '0:0:0';
-              else
-                timeQuant = Tone.Time(Tone.Time(timeQuant) - Tone.Time(pattern.resolution)).toBarsBeatsSixteenths();
-            }
-            
-            sixteenths = timeQuant.split(':')[2];
-            tSplit[1] = timeQuant.split(':')[1];
-            tSplit[0] = timeQuant.split(':')[0];
-          }
-          else if(pattern.resolution === '8n'){
-            if(parseFloat(sixteenths) < 2)
-              sixteenths = 0;
-            else 
-              sixteenths = 2;
-          }
-          else if(pattern.resolution === '16n'){
-            sixteenths = Math.floor(sixteenths);
-          }
-          else if(pattern.resolution === '32n'){
-            // extract decimal from x.xxx
-            if(parseFloat(sixteenths).toFixed(3).split(".")[1] >= 500)
-              sixteenths = sixteenths.split(".")[0] + "." + 500;
+          //quantize will use next note past a certain point
+          if(Tone.Time(timeQuant) > Tone.Time(clickSecs)){
+            //no negative 1st note
+            if(Tone.Time(timeQuant) < Tone.Time(pattern.resolution))
+              timeQuant = '0:0:0';
             else
-              sixteenths = Math.floor(sixteenths);
+              timeQuant = Tone.Time(Tone.Time(timeQuant) - Tone.Time(pattern.resolution)).toBarsBeatsSixteenths();
           }
-          else if(pattern.resolution === '64n'){
-            let decimal = parseFloat(sixteenths).toFixed(3).split(".")[1];
-            if(decimal >= 0 && decimal < 250)
-              sixteenths = Math.floor(sixteenths);
-            else if(decimal >= 250 && decimal < 500)
-              sixteenths = sixteenths.split(".")[0] + "." + 250;
-            else if(decimal >= 500 && decimal < 750)
-              sixteenths = sixteenths.split(".")[0] + "." + 500;
-            else if(decimal >= 750)
-              sixteenths = sixteenths.split(".")[0] + "." + 750;
-          }
-
-          let nTime = tSplit[0] + ":" + tSplit[1] + ":" + sixteenths;          
+          
+          let nTime = timeQuant;       
           let note = pattern.getNote(nTime);
 
           if(!note){  
