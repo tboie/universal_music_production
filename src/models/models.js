@@ -3733,6 +3733,7 @@ const UIEditView = types.model("UIEditView", {
     mode: types.optional(types.union(types.literal("graph"), types.literal("bar")), "bar"),
     selectedBars: types.array(types.number),
     copiedBars: types.array(types.number),
+    copiedPattern: types.maybe(types.reference(Pattern))
 }).views(self => ({
     isBarSelected(bar){
         return self.selectedBars.find(b => b === bar);
@@ -3763,8 +3764,8 @@ const UIEditView = types.model("UIEditView", {
             self.selectedBars.push(bar);
     },
     copySelectedBars(){
+        self.copiedPattern = store.getPatternByTrackScene(store.ui.selectedTrack.id, store.ui.selectedScene.id);
         self.copiedBars = [...self.selectedBars];
-        self.clearSelectedBars();
     },
     pasteCopiedBars(){
         let pattern = store.getPatternByTrackScene(store.ui.selectedTrack.id, store.ui.selectedScene.id);
@@ -3775,7 +3776,7 @@ const UIEditView = types.model("UIEditView", {
 
         self.copiedBars.forEach(bar => {
             let destBar = bar + diff;
-            let notes = pattern.getNotesByBar(bar);
+            let notes = self.copiedPattern.getNotesByBar(bar);
             
             pattern.deleteNotesByBar(destBar);
             pattern.pasteNotesToBar(notes, destBar)
@@ -4106,7 +4107,6 @@ const UI = types.model("UI", {
 
         if(store.ui.viewMode === 'edit' && store.ui.views.edit.mode === 'bar' && !self.editMode){
             store.ui.views.edit.clearSelectedBars();
-            store.ui.views.edit.clearCopiedBars();
         }
     }
     function toggleRecordMode() {
@@ -4145,8 +4145,6 @@ const UI = types.model("UI", {
             self.setViewScene(self.selectedScene)
     }
     function selectTrack(id) {
-        store.ui.views.edit.clearSelectedBars();
-
         if(!id){
             if(store.ui.viewMode === "edit")
                 store.ui.toggleViewMode('sequencer');

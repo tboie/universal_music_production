@@ -293,9 +293,7 @@ export const TrackRowView = observer(class TrackRowView extends Component {
     if(distance <= 60 && clickX){
       //bar view toggle select during edit mode
       if(store.ui.viewMode === 'edit' && store.ui.views.edit.mode === 'bar' && store.ui.editMode){
-          if(!store.ui.views.edit.isBarCopied(this.props.bar))
-            store.ui.views.edit.toggleBarSelect(this.props.bar);
-          
+          store.ui.views.edit.toggleBarSelect(this.props.bar);
           return;
       }
   
@@ -440,13 +438,21 @@ export const TrackRowView = observer(class TrackRowView extends Component {
   }
 
   highlightTrack = (ctx, w, h) => {
-    if(store.ui.views.edit.isBarCopied(this.props.bar))
-      ctx.fillStyle = '#19937a';
-    else
-      ctx.fillStyle = 'white';
+    let currPattern = store.getPatternByTrackScene(this.props.track.id, this.props.selectedScene.id);
 
-    ctx.globalAlpha = 0.4;
-    ctx.fillRect(0, 0, w, h);
+    if(store.ui.views.edit.copiedPattern){
+      if(store.ui.views.edit.isBarCopied(this.props.bar) && store.ui.views.edit.copiedPattern.id === currPattern.id){
+        ctx.fillStyle = '#19937a';
+        ctx.globalAlpha = 0.4;
+        ctx.fillRect(0, 0, w, h);
+      }
+    }
+    if(store.ui.views.edit.isBarSelected(this.props.bar)){
+      ctx.fillStyle = 'white';
+      ctx.globalAlpha = 0.4;
+      ctx.fillRect(0, 0, w, h);
+    }
+
   }
 
   drawInstNotes = (pattern, viewLength) => {
