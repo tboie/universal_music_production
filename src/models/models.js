@@ -4276,6 +4276,9 @@ const UI = types.model("UI", {
         else if (mode === "sequencer") {
             self.viewMode = "sequencer";
         }
+        else if (mode === "button") {
+            self.viewMode = "button";
+        }
         else if (mode === "manager") {
             self.viewMode = "manager";
         }
