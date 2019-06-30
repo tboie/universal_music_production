@@ -328,7 +328,9 @@ export const TrackRowView = observer(class TrackRowView extends Component {
               timeQuant = Tone.Time(Tone.Time(timeQuant) - Tone.Time(pattern.resolution)).toBarsBeatsSixteenths();
           }
           
-          let nTime = timeQuant;       
+          //some triplet times resulting in .667
+          //breaks note UI functionality - quick fix for now
+          let nTime = timeQuant.replace('.667','.666');       
           let note = pattern.getNote(nTime);
 
           if(!note){  
