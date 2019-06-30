@@ -4126,7 +4126,7 @@ const UI = types.model("UI", {
     function setViewLength(val) {
         if(self.selectedScene){
             if(self.viewMode === 'edit' && self.views.edit.mode === 'bar'){
-                if(Tone.Time(val) > Tone.Time('0:1:0') && Tone.Time(val) <= Tone.Time('1:0:0')){
+                if(Tone.Time(val) >= Tone.Time('0:1:0') && Tone.Time(val) <= Tone.Time('1:0:0')){
                     self.viewLength = val;
                     self.calibrateSizes();
                 }
