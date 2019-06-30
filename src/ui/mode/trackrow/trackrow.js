@@ -78,6 +78,17 @@ export const TrackRowView = observer(class TrackRowView extends Component {
       
       //only update sequencer tracks that are modified
       if(store.ui.viewMode === 'sequencer'){
+        
+        //sequencer view uses track instead of selectedPattern
+        if(prevProps.selectedPatternRes !== this.props.selectedPatternRes){
+          this.init();
+          return;
+        }
+        else if(prevProps.selectedPatternNotesLen !== this.props.selectedPatternNotesLen){
+          this.init();
+          return;
+        }
+
         if(!store.ui.mixMode){
           if(prevProps.playbackRate !== this.props.playbackRate){
             clearTimeout(this.waveRedrawTimeout);
@@ -165,16 +176,6 @@ export const TrackRowView = observer(class TrackRowView extends Component {
                 return;
               }
             }
-          }
-
-          //sequencer view uses track instead of selectedPattern
-          if(prevProps.selectedPatternRes !== this.props.selectedPatternRes){
-            this.init();
-            return;
-          }
-          else if(prevProps.selectedPatternNotesLen !== this.props.selectedPatternNotesLen){
-            this.init();
-            return;
           }
 
           /*      
