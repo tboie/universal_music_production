@@ -4823,8 +4823,18 @@ export const RootStore = types.model("RootStore", {
                     store.ui.selectPattern(undefined);
             }
             if(store.ui.selectedTrack){
-                if(store.ui.selectedTrack === track){
-                    store.ui.selectTrack(undefined);
+                if(store.ui.selectedTrack.id === track.id){
+                    const groupTracks = store.getTracksByGroup(store.ui.selectedGroup);
+
+                    if(groupTracks.length > 1){
+                        if(track.groupIndex + 1 === groupTracks.length)
+                            store.ui.selectTrack(groupTracks.find(t => t.groupIndex === track.groupIndex - 1).id);
+                        else
+                            store.ui.selectTrack(groupTracks.find(t => t.groupIndex === track.groupIndex + 1).id);
+                    }
+                    else{
+                        store.ui.selectTrack(undefined)
+                    }
                 }
             }
             if(store.ui.selectedNote){
