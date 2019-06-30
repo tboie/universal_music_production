@@ -193,9 +193,9 @@ export let ToneObjs = {
     
                 row.obj.start();
             }
-          });
+        });
     
-          ToneObjs.custom.filter(o => o.track === trackId).forEach(row => {
+        ToneObjs.custom.filter(o => o.track === trackId).forEach(row => {
             if(row.obj){
                 let ch = store.instruments.getInstrumentByTypeId("tinysynth", row.id).channel;
     
@@ -212,6 +212,10 @@ export let ToneObjs = {
                 }
             }
         });
+
+        ToneObjs.components.filter(o => o.track === trackId && o.id.split('_')[0] === 'amplitudeenvelope').forEach(component => {
+            component.obj.triggerAttack();      
+        })
     },
 
     trackInstNoteOff: (trackId, notes, mouseDown) => {
@@ -227,23 +231,33 @@ export let ToneObjs = {
                 row.obj.triggerRelease(notes.map(n => TonalNote.freq(n)));
               }
             }
-          });
+        });
           
-          ToneObjs.sources.filter(o => o.track === trackId).forEach(row => {
+        ToneObjs.sources.filter(o => o.track === trackId).forEach(row => {
             if(row.obj){
-              row.obj.stop();
+                let timeStop = Tone.now();
+                const connectionsEnv = store.getConnectionsByObjId(row.id).filter(c => c.dest.split('_')[0] === 'amplitudeenvelope');
+
+                //if connected to amplitude envelope, stop note at end of longest envelope release
+                if(connectionsEnv.length > 0){
+                    let envs = [];
+                    connectionsEnv.forEach(c => envs.push(store.components.getComponentByTypeId('amplitudeenvelope', c.dest)));
+                    timeStop += envs.sort((a, b) => b.release - a.release)[0].release;
+                }
+
+                row.obj.stop(timeStop);
             }
-          });
+        });
     
           //now unmute patterns that were muted on press
-          if(!mouseDown){
+        if(!mouseDown){
             ToneObjs.parts.filter(p => p.track === trackId).forEach(o => {
               if(o.obj.mute)
                 o.obj.mute = false; 
             });
-          }
+        }
     
-          ToneObjs.custom.filter(o => o.track === trackId).forEach(row => {
+        ToneObjs.custom.filter(o => o.track === trackId).forEach(row => {
             if(row.obj){ 
                 let ch = store.instruments.getInstrumentByTypeId("tinysynth", row.id).channel;
     
@@ -260,6 +274,10 @@ export let ToneObjs = {
                 }
             }
         });
+
+        ToneObjs.components.filter(o => o.track === trackId && o.id.split('_')[0] === 'amplitudeenvelope').forEach(component => {
+            component.obj.triggerRelease();     
+        })
     }
 }
 
