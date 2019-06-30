@@ -3907,22 +3907,26 @@ const UI = types.model("UI", {
     device: types.maybe(types.union(types.literal("mobile"), types.literal("desktop"))),
     showSideBar: types.optional(types.boolean, false),
 }).views(self => ({
-    getSelectedPatternProp(prop, trackId){
+    getSelectedPatternProp(prop, track){
         if(prop === "resolution"){
-            if(trackId)
-                return store.getTrack(trackId).resolution;
+            if(track){
+                if(track.type !== 'master')
+                    return track.resolution;
+            }
             else if(self.selectedPattern)
                 return self.selectedPattern.resolution;
-            else
-                return undefined;
+            
+            return undefined;
         }
         else if(prop === "notes"){
-            if(trackId)
-                return store.getPatternByTrackScene(trackId, self.selectedScene.id).getSortedNotesAsc().length;
+            if(track){
+                if(track.type !== 'master')
+                    return store.getPatternByTrackScene(track.id, self.selectedScene.id).getSortedNotesAsc().length;
+            }
             else if(self.selectedPattern)
                 return self.selectedPattern.getSortedNotesAsc();
-            else
-                return undefined;
+            
+            return undefined;
         }
     },
     getSelectedNoteValue(){
