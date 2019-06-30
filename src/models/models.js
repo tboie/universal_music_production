@@ -4131,7 +4131,7 @@ const UI = types.model("UI", {
                     self.calibrateSizes();
                 }
             }
-            else if(Tone.Time(val) <= store.getSceneLength(self.selectedScene.id) && Tone.Time(val) > Tone.Time("0:1:0")){
+            else if(Tone.Time(val) <= store.getSceneLength(self.selectedScene.id) && Tone.Time(val) >= Tone.Time("0:1:0")){
                 self.viewLength = val;
                 self.calibrateSizes();
             }
