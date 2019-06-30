@@ -4282,6 +4282,11 @@ const UI = types.model("UI", {
         else if (mode === "manager") {
             self.viewMode = "manager";
         }
+
+        if(self.viewMode === 'button' || self.viewMode === 'sequencer' || (self.viewMode === 'edit' && self.views.edit.mode === 'graph')){
+            if(Tone.Time(self.viewLength) > Tone.Time(self.selectedScene.getLength()))
+                self.viewLength = Tone.Time(self.selectedScene.getLength()).toBarsBeatsSixteenths();
+        }
     }
     function setDevice() {
         //take a look at matchMedia if needed
