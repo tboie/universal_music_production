@@ -151,9 +151,6 @@ const procBrowseItem = (item, browserId) => {
                 if(!store.getSample(sampleId))
                   store.addSample(sampleId, url, buffer.length, [], buffer.duration);
                 
-                if(buffer.duration < 2.5) // || result.id.split('_')[0] === 'region'){
-                  store.addTrack('track_' + randomId(), 'audio', false, false, sampleId);
-                
                 store.ui.selectObj(sampleId);
                 store.ui.selectToolbar('editor');
 
@@ -165,9 +162,6 @@ const procBrowseItem = (item, browserId) => {
         else{
           if(!store.getSample(sampleId))
             store.addSample(sampleId, url, result.data.length, [], result.duration);
-          
-          if(result.duration < 2.5 || result.id.split('_')[0] === 'region')
-            store.addTrack('track_' + randomId(), 'audio', false, false, sampleId);
           
           store.ui.selectObj(sampleId);
           store.ui.selectToolbar('editor');

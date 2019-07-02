@@ -142,6 +142,10 @@ export const ToolSampleEditor = observer(class ToolSampleEditor extends Componen
           storeSample.regions.forEach(function(region){
             s.addRegion({id: region.id, start: region.start, end: region.end});
           });
+
+          if(self.sample.getDuration() < 2.5 && storeSample.regions.length === 0){
+            s.addRegion({id: 'region_' + randomId(), start: 0, end: self.sample.getDuration()});
+          }
   
           if(store.ui.selectedTrack)
             if(store.ui.selectedTrack.region)
@@ -162,17 +166,18 @@ export const ToolSampleEditor = observer(class ToolSampleEditor extends Componen
             trackId = 'track_' + randomId();
           else
             trackId = regionTrack.id;
-  
+
           if(!storeSample.getRegion(region.id)){
             region.id = 'region_' + randomId();
-            storeSample.addRegion(region.id, sampleId);
+            storeSample.addRegion(region.id, sampleId, region.start, region.end);
           }
-  
+
           region.on('update-end', function(e) {
             let regionLength = region.end - region.start;
   
             if(regionLength > 0){
               let r = storeSample.getRegion(region.id);
+    
               if(store.getTrack(trackId)){
                 //region changed, set buffer and save to DB
                 if(r.start !== region.start || r.end !== region.end){
@@ -208,9 +213,18 @@ export const ToolSampleEditor = observer(class ToolSampleEditor extends Componen
                 });
               }
             }
-  
-            //s.seekAndCenter(region.start / s.getDuration());
           })
+
+          //fire update end to create track
+          if(self.sample.getDuration() < 2.5 && storeSample.regions.length === 1){
+            const storeRegion = storeSample.getRegion(region.id);
+            if(storeRegion){
+              if(storeRegion.start === 0 && storeRegion.end === self.sample.getDuration()){
+                region.handlers['update-end'][0]();
+              }
+            }  
+          }
+
         });
   
         this.sample.on('region-click', function(region){
