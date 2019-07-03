@@ -84,7 +84,7 @@ export const TrackRowView = observer(class TrackRowView extends Component {
           this.init();
           return;
         }
-        else if(prevProps.selectedPatternNotesLen !== this.props.selectedPatternNotesLen){
+        else if(prevProps.selectedPatternNotesLen !== this.props.selectedPatternNotesLen && store.ui.recordMode){
           this.init();
           return;
         }
