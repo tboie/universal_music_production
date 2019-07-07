@@ -4549,7 +4549,7 @@ export const RootStore = types.model("RootStore", {
             self.scenes.push(Scene.create({ id: sceneId, start: start, end: end, on: true }))
             self.tracks.forEach(function (track) {
                 if(track.type !== "master"){
-                    self.addPattern('pattern_' + randomId(), 16, track.id, sceneId, [])
+                    self.addPattern('pattern_' + randomId(), '16n', track.id, sceneId, [])
                 }
             });
             //TODO: scene gets added to end of song currently, need to shift scene times if middle of track
