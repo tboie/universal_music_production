@@ -163,7 +163,7 @@ export const TrackRowView = observer(class TrackRowView extends Component {
           }
 
           if(prevProps.selectedPattern !== this.props.selectedPattern){
-            if(prevProps.selectedPattern){
+            if(isAlive(prevProps.selectedPattern)){
               if(prevProps.selectedPattern.track.id === this.props.track.id){
                 this.init();
                 return;

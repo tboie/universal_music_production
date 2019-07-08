@@ -122,12 +122,23 @@ const procBrowseItem = (item, browserId) => {
     }
     else if(item.dir.substr(0,8) === '/Samples'){
       if(item.name.split('_')[0] === 'region'){
-        let region = store.getAllRegions().find(r => r.id === item.name);
-        if(region){
-          store.addTrack('track_' + randomId(), 'audio', false, false, region.getSample().id, item.name);
-          store.ui.selectObj(region.getSample().id);
-          store.ui.selectToolbar('editor');
-        }
+        store.DBLoadAudioFile(item.name).then(result => {
+          if(result && result.data){
+            if(result.data instanceof Blob || Array.isArray(result.data) || result.data instanceof Float32Array) {
+              const newId = 'sample_' + randomId();
+              store.DBSaveAudioFile({
+                id: newId,
+                url: undefined,
+                duration: result.duration,
+                data: result.data
+              }).then(() => {
+                store.addSample(newId, undefined, undefined, [], result.duration);
+                store.ui.selectObj(newId);
+                store.ui.selectToolbar('editor');
+              });
+            }
+          }
+        })
       }
       else{
         store.ui.selectObj(item.name);
