@@ -45,9 +45,9 @@ export const MixRowView = observer(class MixRowView extends Component{
     if(this.props.store.ui.viewMode === 'edit')
       firstButton = <MixRowButtonToggleEditViewMode track={this.props.track} editViewMode={this.props.store.ui.views.edit.mode} />
 
-    let secondButton = <MixRowButtonToggleRes track={this.props.track} mixSelection={this.mixSelection} toggleMixSelection={(p) => this.toggleMixSelection(p)}/>
+    let fourthButton = <MixRowButtonToggleRes track={this.props.track} mixSelection={this.mixSelection} toggleMixSelection={(p) => this.toggleMixSelection(p)}/>
     if(this.props.track.type === 'master')
-      secondButton = <MixRowButtonToggleGroup track={this.props.track}/>
+      fourthButton = <MixRowButtonToggleGroup track={this.props.track}/>
 
     let cssTopGap = '';
     if(this.props.store.ui.viewMode === 'button' || (this.props.store.ui.viewMode === 'edit' && this.props.store.ui.views.edit.mode === 'graph')){
@@ -58,9 +58,9 @@ export const MixRowView = observer(class MixRowView extends Component{
       <div className={'track-rowmix' + cssTopGap} id={'trackrowmix_' + this.props.track.id} style={{width: + this.props.store.ui.windowWidth}}>
         <div className='track-rowmix-left'>
           { firstButton }
-          { secondButton }
           <MixRowButtonMute track={this.props.track} mute={this.props.track.mute}/>
           <MixRowButtonSolo track={this.props.track} solo={this.props.track.solo}/>
+          { fourthButton }
           <MixRowButtonSliderProp track={this.props.track} toggleMixSelection={(p) => this.toggleMixSelection(p)} playbackRate={this.props.playbackRate} mixSelection={this.mixSelection}/>
         </div>
         <div className='track-rowmix-right'>
