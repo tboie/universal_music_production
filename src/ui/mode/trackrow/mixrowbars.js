@@ -3,11 +3,16 @@ import { observer } from "mobx-react";
 
 export const MixRowViewBars = observer(class MixRowViewBars extends Component{
     componentDidMount(){
+      this.props.store.ui.selectPattern(this.props.store.getPatternByTrackScene(this.props.track.id, this.props.selectedScene.id).id);
+
       this.togglePasteButton();
       this.toggleButtons(['Copy','Del','Rand']);
     }
 
     componentDidUpdate(prevProps){
+      if(prevProps.selectedScene.id !== this.props.selectedScene.id)
+        this.props.store.ui.selectPattern(this.props.store.getPatternByTrackScene(this.props.track.id, this.props.selectedScene.id).id);
+
       this.togglePasteButton();
       this.toggleButtons(['Copy','Del','Rand']);
     }
