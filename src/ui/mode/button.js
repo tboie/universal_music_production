@@ -15,6 +15,13 @@ export const GridButtonView = observer(class ButtonView extends Component {
     componentDidMount(){
       applyDraggableGrid();
       this.props.store.ui.calibrateSizes();
+
+      if(!store.ui.selectedTrack || store.ui.selectedTrack.group !== store.ui.selectedGroup){
+        let tracks = store.getTracksByGroup(store.ui.selectedGroup).sort((a, b) =>  a.groupIndex - b.groupIndex);
+        if(tracks.length > 0){
+          store.ui.selectTrack(tracks[0].id);
+        }
+      }
     }
   
     componentWillUnmount(){
