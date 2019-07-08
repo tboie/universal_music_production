@@ -4194,6 +4194,7 @@ const UI = types.model("UI", {
                 }
             }
 
+            self.selectedPattern = store.getPatternByTrackScene(selTrack.id, store.ui.selectedScene.id);
             self.selectedTrack = selTrack;
         }
     }
