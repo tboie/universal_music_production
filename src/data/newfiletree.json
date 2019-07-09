@@ -500,7 +500,8 @@
             "Basstones",
             "Bassdrums",
             "Snares",
-            "Closed Hi-Hats"
+            "Closed Hi-Hats",
+            "Hi-Hat-Loops"
         ],
         "files" : []
     },
@@ -1031,6 +1032,31 @@
             "hh088b.wav",
             "hh89a.wav",
             "hh89b.wav"
+        ]
+    },
+    "/Library/Kit1/Hi-Hat-Loops" : {
+        "folders" : [],
+        "files" : [
+            "hhloop001.wav",
+            "hhloop002.wav",
+            "hhloop003.wav",
+            "hhloop004.wav",
+            "hhloop005.wav",
+            "hhloop006.wav",
+            "hhloop007.wav",
+            "hhloop008.wav",
+            "hhloop009.wav",
+            "hhloop010.wav",
+            "hhloop011.wav",
+            "hhloop012.wav",
+            "hhloop013.wav",
+            "hhloop014.wav",
+            "hhloop015.wav",
+            "hhloop016.wav",
+            "hhloop017.wav",
+            "hhloop018.wav",
+            "hhloop019.wav",
+            "hhloop020.wav"
         ]
     },
     "/Song" : {
