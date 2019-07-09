@@ -24,8 +24,7 @@ export const UIAutoFilter = observer(class UIAutoFilter extends Component {
   }
 
   render() {
-    if(!this.obj)
-      this.obj = store.effects.autofilters.find(o => o.id === this.props.objId);
+    this.obj = store.effects.autofilters.find(o => o.id === this.props.objId);
 
     return (
       <div className='divToolRowEditorContainer'>

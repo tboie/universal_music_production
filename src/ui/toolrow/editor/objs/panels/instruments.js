@@ -75,8 +75,7 @@ export const UIAMSynth = observer(class UIAMSynth extends Component {
   }
 
   render() {
-    if(!this.obj)
-      this.obj = store.instruments.amsynths.find(o => o.id === this.props.objId);
+    this.obj = store.instruments.amsynths.find(o => o.id === this.props.objId);
 
     return (
       <div className='divToolRowEditorContainer'>
@@ -129,8 +128,7 @@ export const UIFMSynth = observer(class UIFMSynth extends Component {
   }
 
   render() {
-    if(!this.obj)
-      this.obj = store.instruments.fmsynths.find(o => o.id === this.props.objId);
+    this.obj = store.instruments.fmsynths.find(o => o.id === this.props.objId);
     
     return (
       <div className='divToolRowEditorContainer'>
@@ -186,8 +184,7 @@ export const UIMonoSynth = observer(class UIMonoSynth extends Component {
   }
 
   render() {
-    if(!this.obj)
-      this.obj = store.instruments.monosynths.find(o => o.id === this.props.objId);
+    this.obj = store.instruments.monosynths.find(o => o.id === this.props.objId);
 
     return (
       <div className='divToolRowEditorContainer'>
@@ -222,8 +219,7 @@ export const UIMetalSynth = observer(class UIMetalSynth extends Component {
   }
 
   render() {
-    if(!this.obj)
-      this.obj = store.instruments.metalsynths.find(o => o.id === this.props.objId);
+    this.obj = store.instruments.metalsynths.find(o => o.id === this.props.objId);
 
     return (
       <div className='divToolRowEditorContainer'>
@@ -269,8 +265,7 @@ export const UIMembraneSynth = observer(class UIMembraneSynth extends Component 
   }
 
   render() {
-    if(!this.obj)
-      this.obj = store.instruments.membranesynths.find(o => o.id === this.props.objId);
+    this.obj = store.instruments.membranesynths.find(o => o.id === this.props.objId);
 
     return (
       <div className='divToolRowEditorContainer'>
@@ -375,8 +370,7 @@ export const UIDuoSynth = observer(class UIDuoSynth extends Component {
   }
 
   render() {
-    if(!this.obj)
-      this.obj = store.instruments.duosynths.find(o => o.id === this.props.objId);
+    this.obj = store.instruments.duosynths.find(o => o.id === this.props.objId);
 
     let childHeader = null;
     if(this.selSection !== "main")
