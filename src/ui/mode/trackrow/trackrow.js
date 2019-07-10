@@ -703,13 +703,13 @@ export const TrackRowView = observer(class TrackRowView extends Component {
           if(this.props.selectedNote.getPattern().track.id === this.props.track.id)
             mixView = <MixRowViewEdit trackId={this.props.track.id} store={this.props.store} track={this.props.track} note={this.props.selectedNote} viewLength={this.props.viewLength}/>
           else
-            mixView = <MixRowView store={this.props.store} track={this.props.track} viewLength={this.props.viewLength} playbackRate={this.props.playbackRate}/>
+            mixView = <MixRowView store={this.props.store} track={this.props.track} selection={this.props.track.mixRow.mainSelection} viewLength={this.props.viewLength} playbackRate={this.props.playbackRate}/>
         else
-          mixView = <MixRowView store={this.props.store} track={this.props.track} viewLength={this.props.viewLength} playbackRate={this.props.playbackRate}/>
+          mixView = <MixRowView store={this.props.store} track={this.props.track} selection={this.props.track.mixRow.mainSelection} viewLength={this.props.viewLength} playbackRate={this.props.playbackRate}/>
       }
     }
     else if(this.props.mixMode || this.props.track.type === "master"){
-      mixView = <MixRowView store={this.props.store} track={this.props.track} viewLength={this.props.viewLength} playbackRate={this.props.playbackRate}/>
+      mixView = <MixRowView store={this.props.store} track={this.props.track} selection={this.props.track.mixRow.mainSelection} viewLength={this.props.viewLength} playbackRate={this.props.playbackRate}/>
     }
     
     let strSelected = "";

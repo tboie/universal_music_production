@@ -332,6 +332,21 @@ const Sample = types.model("Sample", {
 });
 
 
+const MixRow = types.model("TrackMixRow", {
+    mainSelection: types.optional(types.string, "Vol"),
+    editSelection: types.maybe(types.string)
+}).views(self => ({
+
+})).actions(self => ({
+    setMainSelection(val){
+        self.mainSelection = val;
+    },
+    setEditSelection(val){
+        self.editSelection = val;
+    }
+}));
+
+
 const Track = types.model("Track", {
     id: types.identifier,
     type: types.union(types.literal("audio"), types.literal("instrument"), types.literal("master")),
@@ -341,7 +356,8 @@ const Track = types.model("Track", {
     region: types.maybe(types.reference(Region)),
     group: types.maybe(types.union(types.literal("A"), types.literal("B"), types.literal("C"), types.literal("D"), types.literal("M"))),
     resolution: types.optional(types.string, "16n"),
-    groupIndex: types.maybe(types.number)
+    groupIndex: types.maybe(types.number),
+    mixRow: MixRow
 }).views(self => ({
     returnRegion(){
         let r = self.region;
@@ -4685,9 +4701,9 @@ export const RootStore = types.model("RootStore", {
                 const idTrack = 'track_' + group;
 
                 if (group === 'master')
-                    self.tracks.push(Track.create({ id: idTrack, type: 'master', mute: false, solo: false, sample: undefined, region: undefined, group: 'M' }));
+                    self.tracks.push(Track.create({ id: idTrack, type: 'master', mute: false, solo: false, sample: undefined, region: undefined, group: 'M', mixRow: MixRow.create({}) }));
                 else
-                    self.tracks.push(Track.create({ id: idTrack, type: 'master', mute: false, solo: false, sample: undefined, region: undefined, group: group }));
+                    self.tracks.push(Track.create({ id: idTrack, type: 'master', mute: false, solo: false, sample: undefined, region: undefined, group: group, mixRow: MixRow.create({}) }));
 
                 const idPanvol = 'panvol_' + group;
                 store.components.add("panvol", { id: idPanvol, track: idTrack });
@@ -4716,7 +4732,7 @@ export const RootStore = types.model("RootStore", {
             if(self.ui.selectedGroup !== 'M'){
 
                 let groupIndex = store.getTracksByGroup(self.ui.selectedGroup).length;
-                self.tracks.push(Track.create({ id: id, type: type, mute: mute, solo: solo, sample: sample, region: region, group: self.ui.selectedGroup, groupIndex: groupIndex}));
+                self.tracks.push(Track.create({ id: id, type: type, mute: mute, solo: solo, sample: sample, region: region, group: self.ui.selectedGroup, groupIndex: groupIndex, mixRow: MixRow.create({}) }));
 
                 let panvolId = 'panvol_' + randomId();
                 self.components.panvols.push(PanVol.create({ id: panvolId, track: id }));

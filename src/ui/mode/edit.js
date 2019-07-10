@@ -82,7 +82,7 @@ const EditViewBars = observer(class EditViewBars extends Component {
       }
     }
     else{
-      mixRow = <MixRowView store={this.props.store} track={this.props.track} viewLength={this.props.viewLength}/>
+      mixRow = <MixRowView store={this.props.store} track={this.props.track} selection={this.props.track.mixRow.mainSelection} viewLength={this.props.viewLength}/>
     }
 
     let numMeasures = 0;
