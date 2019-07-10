@@ -505,7 +505,8 @@
             "Open Hi-Hats",
             "Other",
             "Percussion",
-            "Real Hi-Hats"
+            "Real Hi-Hats",
+            "Rides"
         ],
         "files" : []
     },
@@ -1206,6 +1207,23 @@
             "real_hh_020.wav",
             "real_hh_021+realsnare.wav",
             "real_realsnare.wav"
+        ]
+    },
+    "/Library/Kit1/Rides" : {
+        "folders" : [],
+        "files" : [
+            "ride001a.wav",
+            "ride001b.wav",
+            "ride001c.wav",
+            "ride001d.wav",
+            "ride002a.wav",
+            "ride002b.wav",
+            "ride003a.wav",
+            "ride003b.wav",
+            "ride004a.wav",
+            "ride004b.wav",
+            "ride005a.wav",
+            "ride005b.wav"
         ]
     },
     "/Song" : {
