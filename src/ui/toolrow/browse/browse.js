@@ -637,11 +637,15 @@ export const ListBrowser = observer(class ListBrowser extends Component {
   }
 
   btnMainClick = (e) => {
+    browsePlayer.stop();
+    
     this.list = [];
     changeBrowseMenu('/', this.props.id)
   }
 
   btnBackClick = (e) => {
+    browsePlayer.stop();
+
     let tokens = store.ui.toolbar.browser[this.props.id].selectedDir.split('/').filter(t => t !== '');
     let strDir = '';
 
