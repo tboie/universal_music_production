@@ -502,7 +502,8 @@
             "Snares",
             "Closed Hi-Hats",
             "Hi-Hat-Loops",
-            "Open Hi-Hats"
+            "Open Hi-Hats",
+            "Other"
         ],
         "files" : []
     },
@@ -1087,6 +1088,33 @@
             "ohh022.wav",
             "ohh023.wav",
             "ohh024.wav"
+        ]
+    },
+    "/Library/Kit1/Other" : {
+        "folders" : [],
+        "files" : [
+            "roll001.wav",
+            "roll002.wav",
+            "roll003.wav",
+            "roll004.wav",
+            "roll005.wav",
+            "roll006.wav",
+            "roll007.wav",
+            "roll008.wav",
+            "roll009.wav",
+            "roll010.wav",
+            "roll011.wav",
+            "roll012.wav",
+            "spray001.wav",
+            "spray002.wav",
+            "spray003.wav",
+            "sub001.wav",
+            "sub002.wav",
+            "sub003.wav",
+            "sub004.wav",
+            "vinylcutoff.wav",
+            "water.wav",
+            "waves.wav"
         ]
     },
     "/Song" : {
