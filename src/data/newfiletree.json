@@ -507,7 +507,8 @@
             "Percussion",
             "Real Hi-Hats",
             "Rides",
-            "Shakers"
+            "Shakers",
+            "SnapsClaps"
         ],
         "files" : []
     },
@@ -1242,6 +1243,49 @@
             "shaker010.wav",
             "shaker011a.wav",
             "shaker011b.wav"
+        ]
+    },
+    "/Library/Kit1/SnapsClaps" : {
+        "folders" : [],
+        "files" : [
+            "clap001.wav",
+            "clap002.wav",
+            "clap003.wav",
+            "clap004.wav",
+            "clap005.wav",
+            "clap006.wav",
+            "clap007.wav",
+            "clap008.wav",
+            "clap009.wav",
+            "clap010.wav",
+            "clap011.wav",
+            "clap012.wav",
+            "clap013a.wav",
+            "clap013b.wav",
+            "clap013c.wav",
+            "clap014.wav",
+            "clap015.wav",
+            "clap016a.wav",
+            "clap016b.wav",
+            "clap016c.wav",
+            "clap016d.wav",
+            "clap016e.wav",
+            "clap016f.wav",
+            "clap016g.wav",
+            "clap016h.wav",
+            "clap017.wav",
+            "clap017a.wav",
+            "clap018a.wav",
+            "clap018b.wav",
+            "clap019.wav",
+            "clap020.wav",
+            "snap001.wav",
+            "snap002.wav",
+            "snap003.wav",
+            "snap004.wav",
+            "snap005.wav",
+            "snap006.wav",
+            "snap007.wav"
         ]
     },
     "/Song" : {
