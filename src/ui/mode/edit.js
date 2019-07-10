@@ -78,7 +78,7 @@ const EditViewBars = observer(class EditViewBars extends Component {
     }
     else if(this.props.selectedNote){
       if(this.props.selectedNote.getPattern().track.id === this.props.track.id){
-        mixRow = <MixRowViewEdit trackId={this.props.track.id} store={this.props.store} track={this.props.track} note={this.props.selectedNote} viewLength={this.props.viewLength}/>
+        mixRow = <MixRowViewEdit trackId={this.props.track.id} store={this.props.store} track={this.props.track} note={this.props.selectedNote} selection={this.props.track.mixRow.editSelection} viewLength={this.props.viewLength}/>
       }
     }
     else{

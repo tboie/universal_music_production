@@ -8,7 +8,6 @@ import { mapVal } from '../../utils.js';
 export const MixRowViewEdit = observer(class MixRowViewEdit extends Component{
     player;
     panvol;
-    mixSelection = "Vel";
     bPressed;
   
     componentDidMount(){
@@ -41,35 +40,23 @@ export const MixRowViewEdit = observer(class MixRowViewEdit extends Component{
       e.preventDefault();
       e.stopPropagation();
   
-      this.mixSelection = e.target.id.split('_')[1];
-  
-      let btns = e.target.parentElement.children;
-      for(let i=0; i<btns.length; i++){
-        if(btns[i].id.split('_')[1] !== this.mixSelection){
-          btns[i].className = 'btn-mix';
-        }
-        else{
-          btns[i].className = 'btn-mix btnSelected';
-        }
-      }
-  
-      this.forceUpdate();
+      this.props.track.mixRow.setEditSelection(e.target.id.split('_')[1]);
     }
   
     changeSlider = (e) => {
       e.preventDefault();
       e.stopPropagation();
   
-      if(this.mixSelection === "Vel"){
+      if(this.props.selection === "Vel"){
         if(this.props.track.type === 'audio')
           this.props.note.setVelocity(mapVal(parseFloat(e.target.value), 0, 1, -40, 0));
         else
           this.props.note.setVelocity(parseFloat(e.target.value));
       }
-      else if(this.mixSelection === "Prb"){
+      else if(this.props.selection === "Prb"){
         this.props.note.setProbability(parseFloat(e.target.value));
       }
-      else if(this.mixSelection === "Dur"){
+      else if(this.props.selection === "Dur"){
         if(this.props.track.type === "audio"){
           this.props.note.setDuration(parseFloat(e.target.value));
         }
@@ -83,7 +70,7 @@ export const MixRowViewEdit = observer(class MixRowViewEdit extends Component{
           }
         }
       }
-      else if(this.mixSelection === "Dly"){
+      else if(this.props.selection === "Dly"){
         let offsetTime = this.props.note.offset * Tone.Time(this.props.note.getPattern().resolution);
   
         if(Tone.Time(this.props.note.duration) > Tone.Time(offsetTime)){
@@ -91,19 +78,19 @@ export const MixRowViewEdit = observer(class MixRowViewEdit extends Component{
         }
       }
   
-      let btn = document.getElementById("btnMixNote_" + this.mixSelection);
+      let btn = document.getElementById("btnMixNote_" + this.props.selection);
   
       if(this.bPressed)
         btn.innerHTML = Math.round(parseFloat(e.target.value) * 100);
       else
-        btn.innerHTML = this.mixSelection;
+        btn.innerHTML = this.props.selection;
     }
   
     onPressDown = (e) => {
       e.stopPropagation();
   
       this.bPressed = true;
-      let btn = document.getElementById("btnMixNote_" + this.mixSelection);
+      let btn = document.getElementById("btnMixNote_" + this.props.selection);
       btn.innerHTML = Math.round(parseFloat(e.target.value) * 100);
     }
   
@@ -111,15 +98,15 @@ export const MixRowViewEdit = observer(class MixRowViewEdit extends Component{
       e.stopPropagation();
   
       this.bPressed = false;
-      let btn = document.getElementById("btnMixNote_" + this.mixSelection);
-      btn.innerHTML = this.mixSelection;
+      let btn = document.getElementById("btnMixNote_" + this.props.selection);
+      btn.innerHTML = this.props.selection
     }
   
     getSlider = () => {
       let eleSlider = null;
   
       //TODO: 1 slider, change attributes on selection
-      switch (this.mixSelection) {
+      switch (this.props.selection) {
         case "Vel":
           let val = this.props.note.velocity;
           
@@ -181,12 +168,12 @@ export const MixRowViewEdit = observer(class MixRowViewEdit extends Component{
         
       return (
         <div className={"track-rowmix" + cssTopGap} id={'trackrowmixedit_' + this.props.track.id} style={{width: + this.props.store.ui.windowWidth}}>
-          <div className="track-rowmix-left">
+          <div id="divMixRowBtnContainer" className="track-rowmix-left">
             <button id="btnMixBack" className="btn-mix" onClick={this.backButton}>{'<'}</button>
-            <button id="btnMixNote_Vel" className="btn-mix btnSelected" onClick={this.selectMixButton}>Vel</button>
-            <button id="btnMixNote_Dur" className="btn-mix" onClick={this.selectMixButton}>Dur</button>
-            <button id="btnMixNote_Dly" className="btn-mix" onClick={this.selectMixButton}>Dly</button>
-            <button id="btnMixNote_Prb" className="btn-mix" onClick={this.selectMixButton}>Prb</button>
+            <button id="btnMixNote_Vel" className={this.props.selection === "Vel" ? "btn-mix btnSelected" : "btn-mix"} onClick={this.selectMixButton}>Vel</button>
+            <button id="btnMixNote_Dur" className={this.props.selection === "Dur" ? "btn-mix btnSelected" : "btn-mix"} onClick={this.selectMixButton}>Dur</button>
+            <button id="btnMixNote_Dly" className={this.props.selection === "Dly" ? "btn-mix btnSelected" : "btn-mix"} onClick={this.selectMixButton}>Dly</button>
+            <button id="btnMixNote_Prb" className={this.props.selection === "Prb" ? "btn-mix btnSelected" : "btn-mix"} onClick={this.selectMixButton}>Prb</button>
             { /* <button id="btnMixNote_Spd" className="btn-mix" disabled={true} onClick={this.selectMixButton}>Spd</button> */ }
           </div>
           <div className="track-rowmix-right">
