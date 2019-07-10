@@ -148,7 +148,7 @@ export const MixRowViewEdit = observer(class MixRowViewEdit extends Component{
             let noteDelta = Tone.Time(patternLen) - Tone.Time(this.props.note.time);
             let stepLen = (1 / (Tone.Time(noteDelta) / Tone.Time("64n"))).toFixed(6);
             let currVal = (Tone.Time(this.props.note.duration) / Tone.Time(noteDelta)).toFixed(6);
-            eleSlider = <input type="range" min={stepLen} value={currVal} max="1" className="trackMixSlider" step={stepLen} id={"velSlider" + this.props.trackId} 
+            eleSlider = <input type="range" min={stepLen} value={currVal} max="1.001" className="trackMixSlider" step={stepLen} id={"velSlider" + this.props.trackId} 
                             onChange={this.changeSlider} onInput={this.changeSlider} onMouseDown={this.onPressDown} onMouseUp={this.onPressUp} onTouchStart={this.onPressDown} onTouchEnd={this.onPressUp}/>;
           }
           break;
