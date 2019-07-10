@@ -477,9 +477,12 @@ export const TrackRowView = observer(class TrackRowView extends Component {
             if(note.id === this.props.selectedNote.id)
               ctx.fillStyle = '#065ae0'
           
+          ctx.globalAlpha = 0.8;
           ctx.fillRect((x+1) + offsetWidth, 0, (noteWidth - offsetWidth) - 1, height);
 
+          ctx.globalAlpha = 1;
           ctx.fillStyle = '#ffffff';
+
           ctx.fillRect(x + offsetWidth, 0, 1, height);
           ctx.fillRect(x + noteWidth, 0, 1, height);
 
