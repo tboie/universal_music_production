@@ -501,7 +501,8 @@
             "Bassdrums",
             "Snares",
             "Closed Hi-Hats",
-            "Hi-Hat-Loops"
+            "Hi-Hat-Loops",
+            "Open Hi-Hats"
         ],
         "files" : []
     },
@@ -1057,6 +1058,35 @@
             "hhloop018.wav",
             "hhloop019.wav",
             "hhloop020.wav"
+        ]
+    },
+    "/Library/Kit1/Open Hi-Hats" : {
+        "folders" : [],
+        "files" : [
+            "ohh001.wav",
+            "ohh002.wav",
+            "ohh003.wav",
+            "ohh004.wav",
+            "ohh005.wav",
+            "ohh006.wav",
+            "ohh007.wav",
+            "ohh008.wav",
+            "ohh009.wav",
+            "ohh010.wav",
+            "ohh011.wav",
+            "ohh012.wav",
+            "ohh013.wav",
+            "ohh014.wav",
+            "ohh015.wav",
+            "ohh016.wav",
+            "ohh017.wav",
+            "ohh018.wav",
+            "ohh019.wav",
+            "ohh020.wav",
+            "ohh021.wav",
+            "ohh022.wav",
+            "ohh023.wav",
+            "ohh024.wav"
         ]
     },
     "/Song" : {
