@@ -506,7 +506,8 @@
             "Other",
             "Percussion",
             "Real Hi-Hats",
-            "Rides"
+            "Rides",
+            "Shakers"
         ],
         "files" : []
     },
@@ -1224,6 +1225,23 @@
             "ride004b.wav",
             "ride005a.wav",
             "ride005b.wav"
+        ]
+    },
+    "/Library/Kit1/Shakers" : {
+        "folders" : [],
+        "files" : [
+            "shaker001.wav",
+            "shaker002.wav",
+            "shaker003.wav",
+            "shaker004.wav",
+            "shaker005.wav",
+            "shaker006.wav",
+            "shaker007.wav",
+            "shaker008.wav",
+            "shaker009.wav",
+            "shaker010.wav",
+            "shaker011a.wav",
+            "shaker011b.wav"
         ]
     },
     "/Song" : {
