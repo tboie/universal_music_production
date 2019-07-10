@@ -334,7 +334,7 @@ const Sample = types.model("Sample", {
 
 const MixRow = types.model("TrackMixRow", {
     mainSelection: types.optional(types.string, "Vol"),
-    editSelection: types.maybe(types.string)
+    editSelection: types.optional(types.string, "Dur")
 }).views(self => ({
 
 })).actions(self => ({

@@ -170,8 +170,8 @@ export const MixRowViewEdit = observer(class MixRowViewEdit extends Component{
         <div className={"track-rowmix" + cssTopGap} id={'trackrowmixedit_' + this.props.track.id} style={{width: + this.props.store.ui.windowWidth}}>
           <div id="divMixRowBtnContainer" className="track-rowmix-left">
             <button id="btnMixBack" className="btn-mix" onClick={this.backButton}>{'<'}</button>
-            <button id="btnMixNote_Vel" className={this.props.selection === "Vel" ? "btn-mix btnSelected" : "btn-mix"} onClick={this.selectMixButton}>Vel</button>
             <button id="btnMixNote_Dur" className={this.props.selection === "Dur" ? "btn-mix btnSelected" : "btn-mix"} onClick={this.selectMixButton}>Dur</button>
+            <button id="btnMixNote_Vel" className={this.props.selection === "Vel" ? "btn-mix btnSelected" : "btn-mix"} onClick={this.selectMixButton}>Vel</button>
             <button id="btnMixNote_Dly" className={this.props.selection === "Dly" ? "btn-mix btnSelected" : "btn-mix"} onClick={this.selectMixButton}>Dly</button>
             <button id="btnMixNote_Prb" className={this.props.selection === "Prb" ? "btn-mix btnSelected" : "btn-mix"} onClick={this.selectMixButton}>Prb</button>
             { /* <button id="btnMixNote_Spd" className="btn-mix" disabled={true} onClick={this.selectMixButton}>Spd</button> */ }
