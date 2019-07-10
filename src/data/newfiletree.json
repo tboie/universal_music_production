@@ -504,7 +504,8 @@
             "Hi-Hat-Loops",
             "Open Hi-Hats",
             "Other",
-            "Percussion"
+            "Percussion",
+            "Real Hi-Hats"
         ],
         "files" : []
     },
@@ -1178,6 +1179,33 @@
             "triangle3.wav",
             "umbr.wav",
             "umbr2.wav"
+        ]
+    },
+    "/Library/Kit1/Real Hi-Hats" : {
+        "folders" : [],
+        "files" : [
+            "real_hh_001.wav",
+            "real_hh_002.wav",
+            "real_hh_003.wav",
+            "real_hh_004.wav",
+            "real_hh_005.wav",
+            "real_hh_006.wav",
+            "real_hh_007.wav",
+            "real_hh_008.wav",
+            "real_hh_009.wav",
+            "real_hh_010.wav",
+            "real_hh_011.wav",
+            "real_hh_012.wav",
+            "real_hh_013.wav",
+            "real_hh_014.wav",
+            "real_hh_015.wav",
+            "real_hh_016.wav",
+            "real_hh_017.wav",
+            "real_hh_018.wav",
+            "real_hh_019.wav",
+            "real_hh_020.wav",
+            "real_hh_021+realsnare.wav",
+            "real_realsnare.wav"
         ]
     },
     "/Song" : {
