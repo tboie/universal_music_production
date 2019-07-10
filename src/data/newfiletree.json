@@ -509,7 +509,8 @@
             "Rides",
             "Shakers",
             "SnapsClaps",
-            "Dirty Stuff"
+            "Dirty Stuff",
+            "Instruments"
         ],
         "files" : []
     },
@@ -1456,6 +1457,99 @@
             "break_snare_027a.wav",
             "break_snare_027b.wav",
             "break_snare_027c.wav"
+        ]
+    },
+    "/Library/Kit1/Instruments" : {
+        "folders" : [
+            "flute",
+            "vibra"
+        ],
+        "files" : [
+            "flute001.wav",
+            "flute002.wav",
+            "flute003.wav",
+            "flute004.wav",
+            "flute005.wav",
+            "flute006.wav",
+            "flute007.wav",
+            "guit001.wav",
+            "guit002.wav",
+            "guit003.wav",
+            "harp001.wav",
+            "harp002.wav",
+            "harp003.wav",
+            "harp004.wav",
+            "harp005.wav",
+            "organ001.wav",
+            "organ002.wav",
+            "piano001.wav",
+            "piano002.wav",
+            "piano003.wav",
+            "piano004.wav",
+            "piano005.wav",
+            "piano006.wav",
+            "rhodes001.wav",
+            "rhodes002.wav",
+            "rhodes003.wav",
+            "rhodes004.wav",
+            "rhodes005.wav",
+            "rhodes006.wav",
+            "sax001.wav",
+            "sax002.wav",
+            "sax003.wav",
+            "sax004.wav",
+            "strings001.wav",
+            "strings002.wav",
+            "strings003.wav",
+            "trump001.wav",
+            "violin001.wav"
+        ]
+    },
+    "/Library/Kit1/Instruments/flute" : {
+        "folders" : [],
+        "files" : [
+            "a0.wav",
+            "a1.wav",
+            "a2.wav",
+            "c0.wav",
+            "c1.wav",
+            "c2.wav",
+            "d0.wav",
+            "d1.wav",
+            "e0.wav",
+            "e1.wav",
+            "e2.wav",
+            "f1.wav",
+            "f2.wav",
+            "g0.wav",
+            "g1.wav",
+            "g2.wav",
+            "h0.wav",
+            "h1.wav",
+            "h2.wav"
+        ]
+    },
+    "/Library/Kit1/Instruments/vibra" : {
+        "folders" : [],
+        "files" : [
+            "a1.wav",
+            "a2.wav",
+            "a3.wav",
+            "c1.wav",
+            "c2.wav",
+            "c3.wav",
+            "d1.wav",
+            "d2.wav",
+            "e1.wav",
+            "e2.wav",
+            "f2.wav",
+            "f3.wav",
+            "g1.wav",
+            "g2.wav",
+            "g3.wav",
+            "h1.wav",
+            "h2.wav",
+            "h3.wav"
         ]
     },
     "/Song" : {
