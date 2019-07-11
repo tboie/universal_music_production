@@ -1557,7 +1557,8 @@
         "folders" : [
             "kicks",
             "snares",
-            "hi-hats"
+            "hi-hats",
+            "claps"
         ],
         "files" : []
     },
@@ -1911,6 +1912,46 @@
             "hihat_croup_070a.wav",
             "hihat_croup_070b.wav",
             "hihat_croup_070c.wav"
+        ]
+    },
+    "/Library/Kit2/claps" : {
+        "folders" : [],
+        "files" : [
+            "clap_croup_01.wav",
+            "clap_croup_02a.wav",
+            "clap_croup_02b.wav",
+            "clap_croup_02c.wav",
+            "clap_croup_02d.wav",
+            "clap_croup_02e.wav",
+            "clap_croup_02f.wav",
+            "clap_croup_03.wav",
+            "clap_croup_04.wav",
+            "clap_croup_05.wav",
+            "clap_croup_06a.wav",
+            "clap_croup_06b.wav",
+            "clap_croup_07.wav",
+            "clap_croup_08a.wav",
+            "clap_croup_08b.wav",
+            "clap_croup_09.wav",
+            "clap_croup_11.wav",
+            "clap_croup_12.wav",
+            "clap_croup_13.wav",
+            "clap_croup_14a.wav",
+            "clap_croup_14b.wav",
+            "clap_croup_14c.wav",
+            "clap_croup_14d.wav",
+            "clap_croup_15a.wav",
+            "clap_croup_15b.wav",
+            "clap_croup_15c.wav",
+            "clap_croup_15d.wav",
+            "clap_croup_15e.wav",
+            "clap_croup_16.wav",
+            "clap_croup_17.wav",
+            "clap_croup_17a.wav",
+            "snap_croup_01.wav",
+            "snap_croup_02a.wav",
+            "snap_croup_02b.wav",
+            "snap_croup_03.wav"
         ]
     },
     "/Song" : {
