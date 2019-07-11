@@ -1563,7 +1563,8 @@
             "hihatloops",
             "open hi-hats",
             "percussion",
-            "raw"
+            "raw",
+            "rims"
         ],
         "files" : []
     },
@@ -2217,6 +2218,29 @@
             "ss_hat_croup_04.wav",
             "ss_hat_croup_05.wav",
             "ss_hat_croup_06.wav"
+        ]
+    },
+    "/Library/Kit2/rims" : {
+        "folders" : [],
+        "files" : [
+            "rim_croup_01.wav",
+            "rim_croup_02.wav",
+            "rim_croup_03.wav",
+            "rim_croup_04.wav",
+            "rim_croup_05.wav",
+            "rim_croup_06.wav",
+            "rim_croup_07.wav",
+            "rim_croup_08.wav",
+            "rim_croup_09.wav",
+            "rim_croup_10.wav",
+            "rim_croup_11.wav",
+            "rim_croup_12.wav",
+            "rim_croup_13.wav",
+            "rim_croup_14.wav",
+            "rim_croup_15.wav",
+            "rim_croup_16.wav",
+            "rim_croup_17.wav",
+            "rim_croup_18.wav"
         ]
     },
     "/Song" : {
