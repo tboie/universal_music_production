@@ -59,15 +59,15 @@ export const GridButtonView = observer(class ButtonView extends Component {
             playbackRate={track.getPlaybackRate} 
             selectedTrack={this.props.store.ui.selectedTrack} 
             selectedNote={this.props.store.ui.selectedNote} 
-            selectedNoteValue={this.props.store.ui.getSelectedNoteValue()}
+            selectedNoteValue={this.props.store.ui.getSelectedNoteValue}
             selectedNoteVelocity={this.props.store.ui.getSelectedNoteVelocity}
             selectedPattern={this.props.store.ui.selectedPattern} 
             selectedPatternRes={this.props.store.ui.getSelectedPatternProp('resolution')} 
             selectedPatternNotes={this.props.store.ui.getSelectedPatternProp('notes')}
             selectedKey={this.props.store.ui.selectedKey}
             windowWidth={this.props.store.ui.windowWidth}
-            selectedNoteDuration={this.props.store.ui.getSelectedNoteDuration()}
-            selectedNoteOffset={this.props.store.ui.getSelectedNoteOffset()}
+            selectedNoteDuration={this.props.store.ui.getSelectedNoteDuration}
+            selectedNoteOffset={this.props.store.ui.getSelectedNoteOffset}
             />
         }
       }

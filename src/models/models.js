@@ -3966,35 +3966,20 @@ const UI = types.model("UI", {
     get getSelectedNoteVelocity(){
         return self.selectedNote ? self.selectedNote.velocity : undefined;
     },
-    getSelectedNoteValue(){
-        if(self.selectedNote){
-            if(self.selectedNote.note)
-                return self.selectedNote.note.map(n => n);
-            else
-                return undefined;
-        }
+    get getSelectedNoteValue(){
+        if(self.selectedNote)
+            return self.selectedNote.note ? self.selectedNote.note.map(n => n) : undefined;
         else
-          return undefined;
+            return undefined;
     },
-    getSelectedNoteDuration(){
-        if(self.selectedNote){
-            if(self.selectedNote.duration)
-                return self.selectedNote.duration;
-            else
-                return undefined;
-        }
+    get getSelectedNoteDuration(){
+        if(self.selectedNote)
+            return self.selectedNote.duration ? self.selectedNote.duration : undefined;
         else
-          return undefined;
+            return undefined;
     },
-    getSelectedNoteOffset(){
-        if(self.selectedNote){
-            if(self.selectedNote.offset)
-                return self.selectedNote.offset;
-            else
-                return undefined;
-        }
-        else
-          return undefined;
+    get getSelectedNoteOffset(){
+        return self.selectedNote ? self.selectedNote.offset : undefined;
     },
     getGridSizes(){
         if(self.selectedScene){
