@@ -1564,7 +1564,9 @@
             "open hi-hats",
             "percussion",
             "raw",
-            "rims"
+            "rims",
+            "sfx",
+            "shakers"
         ],
         "files" : []
     },
@@ -2241,6 +2243,46 @@
             "rim_croup_16.wav",
             "rim_croup_17.wav",
             "rim_croup_18.wav"
+        ]
+    },
+    "/Library/Kit2/sfx" : {
+        "folders" : [],
+        "files" : [
+            "sfx__croup_001.wav",
+            "sfx__croup_002.wav",
+            "sfx__croup_003.wav",
+            "sfx__croup_004a.wav",
+            "sfx__croup_004b.wav",
+            "sfx__croup_005.wav",
+            "sfx__croup_006.wav",
+            "sfx__croup_007.wav",
+            "sfx__croup_008.wav",
+            "sfx__croup_scrtches2.wav",
+            "sfx__croup_shhaker.wav",
+            "sfx__croup_shhaker2.wav"
+        ]
+    },
+    "/Library/Kit2/shakers" : {
+        "folders" : [],
+        "files" : [
+            "shaker_croup_01.wav",
+            "shaker_croup_01a.wav",
+            "shaker_croup_01b.wav",
+            "shaker_croup_02.wav",
+            "shaker_croup_03.wav",
+            "shaker_croup_04.wav",
+            "shaker_croup_05.wav",
+            "shaker_croup_06.wav",
+            "shaker_croup_07.wav",
+            "shaker_croup_08.wav",
+            "shaker_croup_09.wav",
+            "shaker_croup_10.wav",
+            "shaker_croup_11.wav",
+            "shaker_croup_12.wav",
+            "shaker_croup_13.wav",
+            "shaker_croup_a1.wav",
+            "shaker_croup_a2.wav",
+            "shaker_croup_a3.wav"
         ]
     },
     "/Song" : {
