@@ -1566,7 +1566,8 @@
             "raw",
             "rims",
             "sfx",
-            "shakers"
+            "shakers",
+            "tambourine"
         ],
         "files" : []
     },
@@ -2283,6 +2284,23 @@
             "shaker_croup_a1.wav",
             "shaker_croup_a2.wav",
             "shaker_croup_a3.wav"
+        ]
+    },
+    "/Library/Kit2/tambourine" : {
+        "folders" : [],
+        "files" : [
+            "tamb_croup_001.wav",
+            "tamb_croup_001a.wav",
+            "tamb_croup_002.wav",
+            "tamb_croup_003a.wav",
+            "tamb_croup_003b.wav",
+            "tamb_croup_004a.wav",
+            "tamb_croup_004b.wav",
+            "tamb_croup_004c.wav",
+            "tamb_croup_005.wav",
+            "tamb_croup_006.wav",
+            "tamb_croup_007.wav",
+            "tamb_croup_008.wav"
         ]
     },
     "/Song" : {
