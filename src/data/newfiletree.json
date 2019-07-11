@@ -1558,7 +1558,8 @@
             "kicks",
             "snares",
             "hi-hats",
-            "claps"
+            "claps",
+            "crashes"
         ],
         "files" : []
     },
@@ -1952,6 +1953,29 @@
             "snap_croup_02a.wav",
             "snap_croup_02b.wav",
             "snap_croup_03.wav"
+        ]
+    },
+    "/Library/Kit2/crashes" : {
+        "folders" : [],
+        "files" : [
+            "crash_croup_001.wav",
+            "crash_croup_002.wav",
+            "crash_croup_003a.wav",
+            "crash_croup_003c.wav",
+            "crash_croup_003d.wav",
+            "crash_croup_004.wav",
+            "crash_croup_005.wav",
+            "crash_croup_006.wav",
+            "crash_croup_007.wav",
+            "crash_croup_008.wav",
+            "crash_croup_009.wav",
+            "crash_croup_010.wav",
+            "crash_croup_011.wav",
+            "crash_croup_012.wav",
+            "crash_croup_013.wav",
+            "crash_croup_014.wav",
+            "crash_croup_015.wav",
+            "crash_croup_016.wav"
         ]
     },
     "/Song" : {
