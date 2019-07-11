@@ -1560,7 +1560,8 @@
             "hi-hats",
             "claps",
             "crashes",
-            "hihatloops"
+            "hihatloops",
+            "open hi-hats"
         ],
         "files" : []
     },
@@ -2014,6 +2015,38 @@
             "hhloop_croup_07.wav",
             "hhloop_croup_08.wav",
             "hhloop_croup_09.wav"
+        ]
+    },
+    "/Library/Kit2/open hi-hats" : {
+        "folders" : [],
+        "files" : [
+            "ohh_croup_001.wav",
+            "ohh_croup_002.wav",
+            "ohh_croup_003.wav",
+            "ohh_croup_003a.wav",
+            "ohh_croup_004.wav",
+            "ohh_croup_005.wav",
+            "ohh_croup_006.wav",
+            "ohh_croup_007.wav",
+            "ohh_croup_008.wav",
+            "ohh_croup_009.wav",
+            "ohh_croup_010.wav",
+            "ohh_croup_011.wav",
+            "ohh_croup_012a.wav",
+            "ohh_croup_012b.wav",
+            "ohh_croup_013.wav",
+            "ohh_croup_014.wav",
+            "ohh_croup_015.wav",
+            "ohh_croup_016.wav",
+            "ohh_croup_017.wav",
+            "ohh_croup_018.wav",
+            "ohh_croup_018a.wav",
+            "ohh_croup_019.wav",
+            "ohh_croup_019a.wav",
+            "ohh_croup_019b.wav",
+            "ohh_croup_019c.wav",
+            "ohh_croup_020.wav",
+            "ohh_croup_021.wav"
         ]
     },
     "/Song" : {
