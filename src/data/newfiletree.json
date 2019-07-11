@@ -1555,6 +1555,7 @@
     },
     "/Library/Kit2" : {
         "folders" : [
+            "bass",
             "kicks",
             "snares",
             "hi-hats",
@@ -1570,6 +1571,41 @@
             "tambourine"
         ],
         "files" : []
+    },
+    "/Library/Kit2/bass" : {
+        "folders" : [
+            "e-bass set1"
+        ],
+        "files" : [
+            "bass_001.wav",
+            "bass_002.wav",
+            "bass_003.wav",
+            "bass_004.wav",
+            "bass_004a.wav",
+            "bass_005.wav",
+            "bass_006.wav",
+            "bass_007.wav",
+            "bass_007a.wav",
+            "bass_007b.wav",
+            "bass_008.wav",
+            "bass_slap_001.wav",
+            "bass_slap_002.wav",
+            "bass_slap_003.wav",
+            "bassslide.wav",
+            "fartybass.wav",
+            "fartybass2.wav",
+            "fartybass3.wav"
+        ]
+    },
+    "/Library/Kit2/bass/e-bass set1" : {
+        "folders" : [],
+        "files" : [
+            "01.wav",
+            "02.wav",
+            "03.wav",
+            "04.wav",
+            "05.wav"
+        ]
     },
     "/Library/Kit2/kicks" : {
         "folders" : [],
