@@ -3963,6 +3963,9 @@ const UI = types.model("UI", {
             return undefined;
         }
     },
+    get getSelectedNoteVelocity(){
+        return self.selectedNote ? self.selectedNote.velocity : undefined;
+    },
     getSelectedNoteValue(){
         if(self.selectedNote){
             if(self.selectedNote.note)

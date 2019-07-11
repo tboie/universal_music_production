@@ -472,20 +472,36 @@ export const TrackRowView = observer(class TrackRowView extends Component {
           let noteWidth = Tone.Time(note.duration) / Tone.Time(viewLength) * windowWidth;
           let offsetWidth = squareWidth * note.offset;
           
+          //selected note color
           ctx.fillStyle = '#133e83';
           if(this.props.selectedNote)
             if(note.id === this.props.selectedNote.id)
               ctx.fillStyle = '#065ae0'
           
+          //draw note
           ctx.globalAlpha = 0.8;
           ctx.fillRect((x+1) + offsetWidth, 0, (noteWidth - offsetWidth) - 1, height);
 
+          //draw velocity
+          if(store.ui.selectedNote && this.props.track.mixRow.editSelection === 'Vel'){
+            ctx.fillStyle = '#19937a';
+            
+            if(this.props.selectedNote){
+              if(note.id === this.props.selectedNote.id)
+                ctx.fillStyle = 'gray';
+            }
+            
+            ctx.fillRect((x+1) + offsetWidth, 40 - (note.velocity * height), (noteWidth - offsetWidth) - 1, note.velocity * height);
+          }
+
+          //draw white lines at beginning and end of note
           ctx.globalAlpha = 1;
           ctx.fillStyle = '#ffffff';
 
           ctx.fillRect(x + offsetWidth, 0, 1, height);
           ctx.fillRect(x + noteWidth, 0, 1, height);
 
+          //note value text
           ctx.font="12px Arial";
           let count = 0;
           note.note.forEach(n => {
