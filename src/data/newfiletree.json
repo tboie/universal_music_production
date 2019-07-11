@@ -1561,7 +1561,8 @@
             "claps",
             "crashes",
             "hihatloops",
-            "open hi-hats"
+            "open hi-hats",
+            "percussion"
         ],
         "files" : []
     },
@@ -2047,6 +2048,33 @@
             "ohh_croup_019c.wav",
             "ohh_croup_020.wav",
             "ohh_croup_021.wav"
+        ]
+    },
+    "/Library/Kit2/percussion" : {
+        "folders" : [],
+        "files" : [
+            "perc_croup_001.wav",
+            "perc_croup_002.wav",
+            "perc_croup_003.wav",
+            "perc_croup_004.wav",
+            "perc_croup_005.wav",
+            "perc_croup_005a.wav",
+            "perc_croup_005b.wav",
+            "perc_croup_006a.wav",
+            "perc_croup_006b.wav",
+            "perc_croup_006c.wav",
+            "perc_croup_007a.wav",
+            "perc_croup_007b.wav",
+            "perc_croup_007c.wav",
+            "perc_croup_008.wav",
+            "perc_croup_009.wav",
+            "perc_croup_010.wav",
+            "perc_croup_011.wav",
+            "perc_croup_012.wav",
+            "perc_croup_013.wav",
+            "perc_croup_014.wav",
+            "perc_croup_015.wav",
+            "perc_croup_016.wav"
         ]
     },
     "/Song" : {
