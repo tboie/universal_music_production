@@ -1559,7 +1559,8 @@
             "snares",
             "hi-hats",
             "claps",
-            "crashes"
+            "crashes",
+            "hihatloops"
         ],
         "files" : []
     },
@@ -1976,6 +1977,43 @@
             "crash_croup_014.wav",
             "crash_croup_015.wav",
             "crash_croup_016.wav"
+        ]
+    },
+    "/Library/Kit2/hihatloops" : {
+        "folders" : [],
+        "files" : [
+            "hhloop_croup_01.wav",
+            "hhloop_croup_010.wav",
+            "hhloop_croup_011.wav",
+            "hhloop_croup_012a.wav",
+            "hhloop_croup_012b.wav",
+            "hhloop_croup_013.wav",
+            "hhloop_croup_014.wav",
+            "hhloop_croup_015.wav",
+            "hhloop_croup_016.wav",
+            "hhloop_croup_017.wav",
+            "hhloop_croup_018.wav",
+            "hhloop_croup_019a.wav",
+            "hhloop_croup_019b.wav",
+            "hhloop_croup_02.wav",
+            "hhloop_croup_020.wav",
+            "hhloop_croup_021.wav",
+            "hhloop_croup_022.wav",
+            "hhloop_croup_023.wav",
+            "hhloop_croup_024.wav",
+            "hhloop_croup_025.wav",
+            "hhloop_croup_026.wav",
+            "hhloop_croup_027.wav",
+            "hhloop_croup_028.wav",
+            "hhloop_croup_028a.wav",
+            "hhloop_croup_03a.wav",
+            "hhloop_croup_03b.wav",
+            "hhloop_croup_04a.wav",
+            "hhloop_croup_04b.wav",
+            "hhloop_croup_05.wav",
+            "hhloop_croup_07.wav",
+            "hhloop_croup_08.wav",
+            "hhloop_croup_09.wav"
         ]
     },
     "/Song" : {
