@@ -3804,6 +3804,7 @@ const UIEditView = types.model("UIEditView", {
     copySelectedBars(){
         self.copiedPattern = store.ui.selectedPattern;
         self.copiedBars = [...self.selectedBars];
+        self.selectedBars = [];
     },
     pasteCopiedBars(){
         let firstSelectedBarNum = self.selectedBars.sort((a, b) =>  a - b)[0];
