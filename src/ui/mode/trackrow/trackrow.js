@@ -485,11 +485,11 @@ export const TrackRowView = observer(class TrackRowView extends Component {
 
           //draw velocity
           if(store.ui.selectedNote && this.props.track.mixRow.editSelection === 'Vel'){
-            ctx.fillStyle = '#19937a';
+            ctx.fillStyle = 'gray';
             
             if(this.props.selectedNote){
               if(note.id === this.props.selectedNote.id)
-                ctx.fillStyle = 'gray';
+                ctx.fillStyle = '#19937a';
             }
             
             ctx.fillRect((x+1) + offsetWidth, 40 - (note.velocity * height), (noteWidth - offsetWidth) - 1, note.velocity * height);
