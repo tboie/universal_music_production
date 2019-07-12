@@ -8,6 +8,7 @@ import { store } from '../../../data/store.js';
 import { renderWaveform } from "../../utils.js";
 import { MixRowView } from "./mixrow.js";
 import { MixRowViewEdit } from "./mixrowedit.js";
+import { mapVal } from '../../utils.js';
 
 
 export const TrackRowView = observer(class TrackRowView extends Component {
@@ -649,6 +650,22 @@ export const TrackRowView = observer(class TrackRowView extends Component {
         else{
           ctx.drawImage(img, xOffset, 0, imgWidth, height);
         }
+      }
+
+      //draw velocity
+      if(store.ui.selectedNote && this.props.track.mixRow.editSelection === 'Vel'){
+        ctx.fillStyle = 'gray';
+        
+        if(this.props.selectedNote){
+          if(note.id === this.props.selectedNote.id)
+            ctx.fillStyle = 'white';
+        }
+
+        const mappedVal = mapVal(note.velocity, -40, 0, 0, 1);
+        ctx.globalAlpha = 0.75;
+        ctx.fillRect(x+1, 40 - (mappedVal * height), squareWidth - 1, mappedVal * height);
+        ctx.globalAlpha = 1;
+
       }
     })
   }
