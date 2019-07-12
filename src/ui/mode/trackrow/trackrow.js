@@ -652,6 +652,13 @@ export const TrackRowView = observer(class TrackRowView extends Component {
         }
       }
 
+      if(this.props.selectedNote === note){
+        ctx.fillStyle = '#065ae0';
+        ctx.globalAlpha = 0.4;
+        ctx.fillRect(x, 0, squareWidth, height);
+        ctx.globalAlpha = 1;
+      }
+
       //draw velocity
       if(store.ui.selectedNote && this.props.track.mixRow.editSelection === 'Vel'){
         ctx.fillStyle = 'gray';
