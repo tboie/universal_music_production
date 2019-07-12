@@ -661,11 +661,11 @@ export const TrackRowView = observer(class TrackRowView extends Component {
 
       //draw velocity
       if(store.ui.selectedNote && this.props.track.mixRow.editSelection === 'Vel'){
-        ctx.fillStyle = 'gray';
+        ctx.fillStyle = 'white';
         
         if(this.props.selectedNote){
           if(note.id === this.props.selectedNote.id)
-            ctx.fillStyle = 'white';
+            ctx.fillStyle = '#19937a';
         }
 
         const mappedVal = mapVal(note.velocity, -40, 0, 0, 1);
