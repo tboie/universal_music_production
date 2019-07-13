@@ -3786,6 +3786,9 @@ const UIEditView = types.model("UIEditView", {
 })).actions(self => ({
     toggleMultiNoteSelect(){
         self.multiNoteSelect = !self.multiNoteSelect;
+        
+        if(!self.multiNoteSelect)
+            self.selectedNotes = [];
     },
     toggleNote(noteId){
         if(self.selectedNotes.find(n => n === noteId))

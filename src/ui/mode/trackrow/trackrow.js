@@ -195,6 +195,11 @@ export const TrackRowView = observer(class TrackRowView extends Component {
             this.init();
             return;
           }
+
+          if(prevProps.numSelectedNotes !== this.props.numSelectedNotes){
+            this.init();
+            return;
+          }
         }
       }
       //all other views
@@ -346,29 +351,41 @@ export const TrackRowView = observer(class TrackRowView extends Component {
               note = pattern.getNote(nTime);
               store.ui.selectNote(note);
             }
+
+            //edit bar view multiple note select 
+            if(store.ui.views.edit.multiNoteSelect){
+              store.ui.views.edit.toggleNote(note.id);
+            }
           } 
           else{
-            if(pattern.track.type === "audio"){
-              if(note !== this.props.selectedNote){
-                store.ui.selectNote(note);
-              }
-              else{
-                store.ui.selectNote(undefined);
-                note.getPattern().deleteNote(note);
-              }
+
+            //edit bar view multiple note select 
+            if(store.ui.views.edit.multiNoteSelect){
+              store.ui.views.edit.toggleNote(note.id);
             }
-            else if(pattern.track.type === "instrument"){
-              //unselect and delete
-              if(this.props.selectedNote === note && this.props.selectedNote.getNote()[0]){  
-                store.ui.selectNote(undefined);
-                note.getPattern().deleteNote(note);
+            else{
+              if(pattern.track.type === "audio"){
+                if(note !== this.props.selectedNote){
+                  store.ui.selectNote(note);
+                }
+                else{
+                  store.ui.selectNote(undefined);
+                  note.getPattern().deleteNote(note);
+                }
               }
-              //unselect (selectnote() will delete empty note)
-              else if(this.props.selectedNote === note && !this.props.selectedNote.getNote()[0]){  
-                store.ui.selectNote(undefined);
-              }
-              else{
-                store.ui.selectNote(note);
+              else if(pattern.track.type === "instrument"){
+                //unselect and delete
+                if(this.props.selectedNote === note && this.props.selectedNote.getNote()[0]){  
+                  store.ui.selectNote(undefined);
+                  note.getPattern().deleteNote(note);
+                }
+                //unselect (selectnote() will delete empty note)
+                else if(this.props.selectedNote === note && !this.props.selectedNote.getNote()[0]){  
+                  store.ui.selectNote(undefined);
+                }
+                else{
+                  store.ui.selectNote(note);
+                }
               }
             }
           }
@@ -459,8 +476,8 @@ export const TrackRowView = observer(class TrackRowView extends Component {
     }
 
     sorted.forEach(note => {
-      if(note.note){
-        if(note.note[0] !== '' || this.props.selectedNote === note){
+      if(note.note || store.ui.views.edit.multiNoteSelect){
+        if(note.note[0] !== '' || this.props.selectedNote === note || store.ui.views.edit.selectedNotes.find(n => n === note.id)){
           let x;
           if(this.props.bar){
             let barOffset = Tone.Time(note.time) - Tone.Time(currBar);
@@ -475,9 +492,13 @@ export const TrackRowView = observer(class TrackRowView extends Component {
           
           //selected note color
           ctx.fillStyle = '#133e83';
-          if(this.props.selectedNote)
+          if(this.props.selectedNote && !store.ui.views.edit.multiNoteSelect){
             if(note.id === this.props.selectedNote.id)
               ctx.fillStyle = '#065ae0'
+          }
+
+          if(store.ui.views.edit.multiNoteSelect && store.ui.views.edit.selectedNotes.find(n => n === note.id))
+            ctx.fillStyle = '#065ae0'
           
           //draw note
           ctx.globalAlpha = 0.8;

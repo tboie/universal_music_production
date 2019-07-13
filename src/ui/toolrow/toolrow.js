@@ -330,7 +330,7 @@ const ToggleModeIcons = props => {
     store.ui.selectGroup(group);
   }
 
-  const toggleMultNoteSelect = (e) => {
+  const toggleMultiNoteSelect = (e) => {
     store.ui.views.edit.toggleMultiNoteSelect();
   }
 
@@ -395,7 +395,7 @@ const ToggleModeIcons = props => {
   }
   else if(props.viewMode === 'edit' && store.ui.views.edit.mode === 'bar'){
     const opacity = props.multiNoteSelect ? 1 : 0.3;
-    groupIcons = <button id={'btnToggleMultNoteSelect'} className="btnToolRowIconsLeft" onClick={toggleMultNoteSelect} style={{display:showGroupIcon, opacity:opacity, top:'-6px'}}>
+    groupIcons = <button id={'btnToggleMultNoteSelect'} className="btnToolRowIconsLeft" onClick={toggleMultiNoteSelect} style={{display:showGroupIcon, opacity:opacity, top:'-6px'}}>
                    <i className="material-icons i-36">music_note</i>
                  </button>
   }

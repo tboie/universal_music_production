@@ -61,6 +61,9 @@ const EditViewBars = observer(class EditViewBars extends Component {
     }
   }
   componentWillUnmount(){
+    if(store.ui.views.edit.multiNoteSelect)
+        store.ui.views.edit.toggleMultiNoteSelect();
+    
     interact(document.querySelector('body')).unset();
     interact('#gridContainer').unset();
   }
@@ -127,6 +130,7 @@ const EditViewBars = observer(class EditViewBars extends Component {
           selectedBars={this.props.store.ui.views.edit.selectedBars}
           numSelectedBars={this.props.store.ui.views.edit.getNumSelectedBars}
           numCopiedBars={this.props.store.ui.views.edit.getNumCopiedBars}
+          numSelectedNotes={this.props.store.ui.views.edit.selectedNotes.length}
         />)
     }
 
