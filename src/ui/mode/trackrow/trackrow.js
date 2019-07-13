@@ -340,16 +340,17 @@ export const TrackRowView = observer(class TrackRowView extends Component {
           let nTime = timeQuant.replace('.667','.666');       
           let note = pattern.getNote(nTime);
 
-          if(!note){  
+          if(!note){ 
             if(pattern.track.type === "audio"){
               pattern.addNote(nTime, false, undefined, 1);
               note = pattern.getNote(nTime);
-              store.ui.selectNote(note);
             }
             else if(pattern.track.type === "instrument"){
               pattern.addNote(nTime, false, [''], pattern.resolution);
               note = pattern.getNote(nTime);
-              store.ui.selectNote(note);
+
+              if(!store.ui.views.edit.multiNoteSelect)
+                store.ui.selectNote(note);
             }
 
             if(store.ui.views.edit.multiNoteSelect){

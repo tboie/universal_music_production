@@ -249,8 +249,16 @@ export const ToolSynth = observer(class ToolSynth extends Component {
         }
       }
    
-      if(store.ui.selectedNote){
+      //set note value
+      if(store.ui.selectedNote && !store.ui.views.edit.multiNoteSelect){
         store.ui.selectedNote.setNote(notes)
+      }
+      else if(store.ui.views.edit.multiNoteSelect){
+        store.ui.views.edit.selectedNotes.forEach(id => {
+          store.getNotesByTrack(store.ui.selectedTrack.id).filter(n => n.id === id).forEach(note => {
+            note.setNote(notes);
+          })
+        })
       }
        
       //hacky way to trigger when same key is set to trackview

@@ -3792,8 +3792,7 @@ const UIEditView = types.model("UIEditView", {
 
             //del inst notes with no note val
             store.getNotesByTrack(store.ui.selectedTrack.id)
-                .filter(n => n.note[0] === '' && n !== store.ui.selectedNote)
-                    .forEach(note => note.getPattern().deleteNote(note));
+                .filter(n => n.note[0] === '').forEach(note => note.getPattern().deleteNote(note));
         }
         else if(store.ui.selectedNote){
             store.ui.selectNote(undefined);
