@@ -241,7 +241,8 @@ export const ToolRow = observer(class ToolRow extends Component {
         <div id="divToolRowContainer" style={{width: this.props.store.ui.windowWidth + 'px'}}>
           <ToggleModeIcons store={this.props.store} windowWidth={this.props.store.ui.windowWidth} viewMode={this.props.store.ui.viewMode} 
                               selectedGroup={this.props.store.ui.selectedGroup} mixMode={this.props.store.ui.mixMode} editMode={this.props.store.ui.editMode}
-                              editViewMode={this.props.store.ui.views.edit.mode} managerMode={this.props.store.ui.views.manager.mode}/>
+                              editViewMode={this.props.store.ui.views.edit.mode} managerMode={this.props.store.ui.views.manager.mode}
+                              multiNoteSelect={this.props.store.ui.views.edit.multiNoteSelect}/>
           <div id="divZoom">
             <button id="btnUIZoomOut" className="btnUIZoom" onClick={this.UIZoomOut}><i className="material-icons i-36" style={{marginLeft: '-4px'}}>remove_circle</i></button>
             <button id="btnUIZoomIn" className="btnUIZoom" onClick={this.UIZoomIn}><i className="material-icons i-36" style={{marginLeft: '-4px'}}>add_circle</i></button>
@@ -329,6 +330,10 @@ const ToggleModeIcons = props => {
     store.ui.selectGroup(group);
   }
 
+  const toggleMultNoteSelect = (e) => {
+    store.ui.views.edit.toggleMultiNoteSelect();
+  }
+
   const toggleMode = () => {
     if(props.viewMode === "edit" || props.viewMode === "button"){
       store.ui.toggleEditMode();
@@ -351,8 +356,8 @@ const ToggleModeIcons = props => {
       iconOpacity = 0.3;
   
   let showGroupIcon = 'block', iconStyleClass = '';
-  if(props.viewMode === "edit"){
-    showGroupIcon = 'none';
+  if(props.viewMode === 'edit'){
+    showGroupIcon = store.ui.views.edit.mode === 'bar' ? 'visible' : 'none';
     iconStyleClass = ' editViewIconsBottom';
   }
 
@@ -367,7 +372,7 @@ const ToggleModeIcons = props => {
   }
 
   let groupIcons;
-  if(props.viewMode !== 'manager' && props.viewMode !== 'edit'){
+  if(props.viewMode === 'sequencer' || props.viewMode == 'button'){
       groupIcons = <button id="btnToggleGroup" className="btnToolRowIconsLeft" onClick={e => toggleGroup(e, true)} style={{visibility:showGroupIcon, top:'-6px'}}>
                       <i className="material-icons i-36">{props.selectedGroup}</i>
                     </button>
@@ -387,6 +392,12 @@ const ToggleModeIcons = props => {
                             </button>
                   });
     }
+  }
+  else if(props.viewMode === 'edit' && store.ui.views.edit.mode === 'bar'){
+    const opacity = props.multiNoteSelect ? 1 : 0.3;
+    groupIcons = <button id={'btnToggleMultNoteSelect'} className="btnToolRowIconsLeft" onClick={toggleMultNoteSelect} style={{display:showGroupIcon, opacity:opacity, top:'-6px'}}>
+                   <i className="material-icons i-36">music_note</i>
+                 </button>
   }
   
   return (

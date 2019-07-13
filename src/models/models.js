@@ -3767,7 +3767,9 @@ const UIEditView = types.model("UIEditView", {
     mode: types.optional(types.union(types.literal("graph"), types.literal("bar")), "bar"),
     selectedBars: types.array(types.number),
     copiedBars: types.array(types.number),
-    copiedPattern: types.maybe(types.reference(Pattern))
+    copiedPattern: types.maybe(types.reference(Pattern)),
+    multiNoteSelect: types.optional(types.boolean, false),
+    selectedNotes: types.array(types.string)
 }).views(self => ({
     isBarSelected(bar){
         return self.selectedBars.find(b => b === bar);
@@ -3782,6 +3784,15 @@ const UIEditView = types.model("UIEditView", {
         return self.copiedBars.length;
     }
 })).actions(self => ({
+    toggleMultiNoteSelect(){
+        self.multiNoteSelect = !self.multiNoteSelect;
+    },
+    toggleNote(noteId){
+        if(self.selectedNotes.find(n => n === noteId))
+            self.selectedNotes = self.selectedNotes.filter(n => n !== noteId);
+        else
+            self.selectedNotes.push(noteId);
+    },
     toggleMode() {
         if(self.mode === 'graph'){
             store.ui.setViewLength('1:0:0');
