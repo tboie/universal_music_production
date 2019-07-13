@@ -3787,10 +3787,17 @@ const UIEditView = types.model("UIEditView", {
     toggleMultiNoteSelect(){
         self.multiNoteSelect = !self.multiNoteSelect;
         
-        if(!self.multiNoteSelect)
+        if(!self.multiNoteSelect){
             self.selectedNotes = [];
-        else if(store.ui.selectedNote)
+
+            //del inst notes with no note val
+            store.getNotesByTrack(store.ui.selectedTrack.id)
+                .filter(n => n.note[0] === '' && n !== store.ui.selectedNote)
+                    .forEach(note => note.getPattern().deleteNote(note));
+        }
+        else if(store.ui.selectedNote){
             store.ui.selectNote(undefined);
+        }
     },
     toggleNote(noteId){
         if(self.selectedNotes.find(n => n === noteId))
@@ -4245,7 +4252,7 @@ const UI = types.model("UI", {
         if(note)
             self.selectedTrack = note.getPattern().track;
 
-        if(prevNote){
+        if(prevNote && !self.views.edit.multiNoteSelect){
             if(self.selectedNote !== prevNote){
                 if(prevNote.getPattern().track.type === 'instrument'){
                     let noteVals = prevNote.getNote();
