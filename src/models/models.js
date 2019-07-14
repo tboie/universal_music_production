@@ -3271,18 +3271,7 @@ const Note = types.model("Note", {
         self.setPartNote();
     },
     setRandomNote(){
-        const minOctave = 0, maxOctave = 7;
-        const arrayNotes = Scale.notes(store.settings.key, store.settings.scale)
-
-        const randOctave = Math.floor(Math.random() * (maxOctave - minOctave + 1) ) + minOctave;
-        const randNote = arrayNotes[Math.floor(Math.random() * (arrayNotes.length - 0))];
-
-        let noteVal = [randNote + randOctave];
-
-        if(store.ui.selectedChord !== undefined)
-            noteVal = Chord.notes(noteVal[0], store.ui.selectedChord);
-
-        self.note = noteVal;
+        self.note = self.getPattern().getRandomNote();
         self.setPartNote();
     },
     setNote(note){
@@ -3375,6 +3364,20 @@ const Pattern = types.model("Pattern", {
     },
     getLength(){
         return store.getSceneLength(self.scene.id);
+    },
+    getRandomNote(){
+        const minOctave = 0, maxOctave = 7;
+        const arrayNotes = Scale.notes(store.settings.key, store.settings.scale)
+
+        const randOctave = Math.floor(Math.random() * (maxOctave - minOctave + 1) ) + minOctave;
+        const randNote = arrayNotes[Math.floor(Math.random() * (arrayNotes.length - 0))];
+
+        let noteVal = [randNote + randOctave];
+
+        if(store.ui.selectedChord !== undefined)
+            noteVal = Chord.notes(noteVal[0], store.ui.selectedChord);
+
+        return noteVal;
     }
 })).actions(self => {
     function addNote(time, mute, val, dur, vel, prob, offset) {
@@ -3446,25 +3449,14 @@ const Pattern = types.model("Pattern", {
             timeEnd = bar + ':0:0';
         }
         
-        let startBar = parseInt(timeStart.split(':')[0], 10);
-        let totalBars = parseInt(timeEnd.split(':')[0], 10) - startBar;
-        let totalNotes = totalBars * self.resolution.slice(0, -1);
-
-        let minOctave = 0, maxOctave = 7;
-        let arrayNotes = Scale.notes(store.settings.key, store.settings.scale)
+        const startBar = parseInt(timeStart.split(':')[0], 10);
+        const totalBars = parseInt(timeEnd.split(':')[0], 10) - startBar;
+        const totalNotes = totalBars * self.resolution.slice(0, -1);
 
         for(let i=0; i<totalBars; i++){
             for(let k=0; k<totalNotes; k++){
-                let noteTime = Tone.Time(Tone.Time((i + startBar) + ':0:0') + (Tone.Time((self.resolution)) * k)).toBarsBeatsSixteenths();
-
-                let randOctave = Math.floor(Math.random() * (maxOctave - minOctave + 1) ) + minOctave;
-                let randNote = arrayNotes[Math.floor(Math.random() * (arrayNotes.length - 0))];
-                let noteVal = [randNote + randOctave];
-
-                if(store.ui.selectedChord !== undefined)
-                    noteVal = Chord.notes(noteVal[0], store.ui.selectedChord);
-
-                self.addNote(noteTime, false, noteVal, self.resolution);
+                const noteTime = Tone.Time(Tone.Time((i + startBar) + ':0:0') + (Tone.Time((self.resolution)) * k)).toBarsBeatsSixteenths();
+                self.addNote(noteTime, false, self.getRandomNote(), self.resolution);
             }
         }
     }
