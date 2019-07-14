@@ -351,17 +351,17 @@ export const TrackRowView = observer(class TrackRowView extends Component {
               pattern.addNote(nTime, false, [''], pattern.resolution);
               note = pattern.getNote(nTime);
 
-              if(!store.ui.views.edit.multiNoteSelect || (store.ui.views.edit.multiNoteSelect && store.ui.editMode))
+              if(!store.ui.views.edit.multiNoteSelect)
                 store.ui.selectNote(note);
             }
 
-            if(store.ui.views.edit.multiNoteSelect && !store.ui.editMode){
+            if(store.ui.views.edit.multiNoteSelect){
               store.ui.views.edit.toggleNote(note.id);
             }
           } 
           else if(note){
             //edit bar view multiple note select 
-            if(store.ui.views.edit.multiNoteSelect && !store.ui.editMode){
+            if(store.ui.views.edit.multiNoteSelect){
               store.ui.views.edit.toggleNote(note.id);
             }
             else{
@@ -498,7 +498,7 @@ export const TrackRowView = observer(class TrackRowView extends Component {
               ctx.fillStyle = '#065ae0'
           }
 
-          if(store.ui.views.edit.multiNoteSelect && store.ui.views.edit.selectedNotes.find(n => n === note.id) && !store.ui.editMode)
+          if(store.ui.views.edit.multiNoteSelect && store.ui.views.edit.selectedNotes.find(n => n === note.id))
             ctx.fillStyle = '#065ae0'
           
           //draw note
