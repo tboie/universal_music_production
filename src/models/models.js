@@ -3837,6 +3837,9 @@ const UIEditView = types.model("UIEditView", {
     clearSelectedNote(){
         self.selectedNote = undefined;
     },
+    clearCopiedNote(){
+        self.copiedNote = undefined;
+    },
     toggleMode() {
         if(self.mode === 'graph'){
             store.ui.setViewLength('1:0:0');
@@ -4206,12 +4209,14 @@ const UI = types.model("UI", {
         if(self.viewMode === 'edit' && self.views.edit.mode === 'bar'){
             if(!self.editMode){
                 self.views.edit.clearSelectedBars();
+                self.views.edit.clearCopiedNote();
 
                 if(self.views.edit.multiNoteSelect)
                     self.views.edit.delSelectedNotes();
             }
-            else
+            else{
                 self.views.edit.delSelectedNotes();
+            }
         }
     }
     function toggleRecordMode() {
