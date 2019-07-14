@@ -372,7 +372,7 @@ const ToggleModeIcons = props => {
   }
 
   let groupIcons;
-  if(props.viewMode === 'sequencer' || props.viewMode == 'button'){
+  if(props.viewMode === 'sequencer' || props.viewMode === 'button'){
       groupIcons = <button id="btnToggleGroup" className="btnToolRowIconsLeft" onClick={e => toggleGroup(e, true)} style={{visibility:showGroupIcon, top:'-6px'}}>
                       <i className="material-icons i-36">{props.selectedGroup}</i>
                     </button>
