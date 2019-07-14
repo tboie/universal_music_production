@@ -51,7 +51,7 @@ export const MixRowViewNotes = observer(class MixRowViewNotes extends Component{
           this.props.store.ui.views.edit.pasteCopiedNote();
           break;
         case 'Del':
-          //this.props.store.ui.views.edit.deleteSelectedBarNotes();
+          this.props.store.ui.views.edit.clearSelectedNotes();
           break;
         case 'Rand':
           this.props.store.ui.views.edit.randomizeSelectedNotes();

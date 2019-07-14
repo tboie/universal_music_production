@@ -3840,7 +3840,6 @@ const UIEditView = types.model("UIEditView", {
             const dstNote = store.getNotesByTrack(store.ui.selectedTrack.id).find(n => n.id === id);
             dstNote.pasteNoteProps(self.copiedNote);
         });
-
         self.selectedNotes = [];
     },
     clearSelectedNote(){
@@ -3891,6 +3890,12 @@ const UIEditView = types.model("UIEditView", {
     },
     clearCopiedBars(){
         self.copiedBars = [];
+    },
+    clearSelectedNotes(){
+        self.selectedNotes.forEach(id => {
+            store.getNotesByTrack(store.ui.selectedTrack.id).find(n => n.id === id).setNote(['']);
+        })
+        self.delSelectedNotes();
     },
     randomizeSelectedBarNotes(){
         self.selectedBars.forEach(bar => {
