@@ -146,6 +146,7 @@ const EditViewBars = observer(class EditViewBars extends Component {
           numSelectedBars={this.props.store.ui.views.edit.getNumSelectedBars}
           numCopiedBars={this.props.store.ui.views.edit.getNumCopiedBars}
           numSelectedNotes={this.props.store.ui.views.edit.selectedNotes.length}
+          copiedNote={this.props.store.ui.views.edit.copiedNote}
         />)
     }
 

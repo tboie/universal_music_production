@@ -195,11 +195,6 @@ export const TrackRowView = observer(class TrackRowView extends Component {
             this.init();
             return;
           }
-
-          if(prevProps.numSelectedNotes !== this.props.numSelectedNotes){
-            this.init();
-            return;
-          }
         }
       }
       //all other views
@@ -499,7 +494,12 @@ export const TrackRowView = observer(class TrackRowView extends Component {
           }
 
           if(store.ui.views.edit.multiNoteSelect && store.ui.views.edit.selectedNotes.find(n => n === note.id))
-            ctx.fillStyle = '#065ae0'
+            ctx.fillStyle = '#065ae0';
+
+          if(store.ui.views.edit.copiedNote){
+            if(store.ui.views.edit.copiedNote.id === note.id)
+              ctx.fillStyle = '#19937a';
+          }
           
           //draw note
           ctx.globalAlpha = 0.8;
