@@ -10,6 +10,7 @@ import { TrackRowView } from './trackrow/trackrow.js';
 import { MixRowView } from './trackrow/mixrow.js';
 import { MixRowViewEdit } from './trackrow/mixrowedit.js';
 import { MixRowViewBars } from "./trackrow/mixrowbars.js";
+import { MixRowViewNotes } from "./trackrow/mixrownotes.js";
 import { GridTimeline } from './timeline/timeline.js';
 
 
@@ -77,7 +78,10 @@ const EditViewBars = observer(class EditViewBars extends Component {
     let mixRow;
 
     if(store.ui.viewMode === 'edit' && store.ui.views.edit.mode === 'bar' && this.props.editMode){
-      mixRow = <MixRowViewBars store={this.props.store} track={this.props.track} selectedScene={store.ui.selectedScene} numSelectedBars={store.ui.views.edit.getNumSelectedBars} numCopiedBars={store.ui.views.edit.getNumCopiedBars}/>
+      if(store.ui.views.edit.multiNoteSelect)
+        mixRow = <MixRowViewNotes store={this.props.store} track={this.props.track} selectedScene={store.ui.selectedScene} numSelectedNotes={store.ui.views.edit.getNumSelectedNotes()} /*numCopiedBars={store.ui.views.edit.getNumCopiedBars}*//>
+      else
+        mixRow = <MixRowViewBars store={this.props.store} track={this.props.track} selectedScene={store.ui.selectedScene} numSelectedBars={store.ui.views.edit.getNumSelectedBars} numCopiedBars={store.ui.views.edit.getNumCopiedBars}/>
     }
     else if(this.props.selectedNote && !store.ui.views.edit.multiNoteSelect && !store.ui.editMode){
       if(this.props.selectedNote.getPattern().track.id === this.props.track.id){

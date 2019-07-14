@@ -3241,7 +3241,6 @@ const Note = types.model("Note", {
     id: types.identifier,
     time: types.string,
     mute: types.optional(types.boolean, false),
-    //note: types.maybe(types.union(types.number, types.string)), //freq and string..
     note: types.maybe(types.union(types.array(types.number), types.array(types.string))), //freq and string..
     duration: types.maybe(types.union(types.number, types.string)), //audio tracks use % .. insts use quantized time for now
     velocity: types.optional(types.number, 1),
@@ -3260,6 +3259,16 @@ const Note = types.model("Note", {
             return undefined
     }
 })).actions(self => ({
+    pasteNoteProps(srcNote){
+        for(const prop in srcNote){
+            if(prop !== 'id' && prop !== 'time'){
+                if(prop === 'note')
+                    self[prop] = srcNote[prop].map(n => n)
+                else
+                    self[prop] = srcNote[prop];
+            }
+        }
+    },
     setRandomNote(){
       //  self.note = randNote;
       //  self.setPartNote();
@@ -3769,7 +3778,8 @@ const UIEditView = types.model("UIEditView", {
     copiedBars: types.array(types.number),
     copiedPattern: types.maybe(types.reference(Pattern)),
     multiNoteSelect: types.optional(types.boolean, false),
-    selectedNotes: types.array(types.string)
+    selectedNotes: types.array(types.string),
+    copiedNote: types.maybe(types.reference(Note))
 }).views(self => ({
     isBarSelected(bar){
         return self.selectedBars.find(b => b === bar);
@@ -3782,6 +3792,9 @@ const UIEditView = types.model("UIEditView", {
     },
     get getNumCopiedBars(){
         return self.copiedBars.length;
+    },
+    getNumSelectedNotes(){
+        return self.selectedNotes.length;
     }
 })).actions(self => ({
     toggleMultiNoteSelect(){
@@ -3805,6 +3818,21 @@ const UIEditView = types.model("UIEditView", {
         store.ui.selectNote(undefined);
         store.getNotesByTrack(store.ui.selectedTrack.id)
             .filter(n => n.note[0] === '').forEach(note => note.getPattern().deleteNote(note));
+    },
+    copySelectedNote(){
+        self.copiedNote = store.getNotesByTrack(store.ui.selectedTrack.id).find(n => n.id === self.selectedNotes[0]).id;
+        self.selectedNotes = [];
+    },
+    pasteCopiedNote(){
+        self.selectedNotes.forEach(id => {
+            const dstNote = store.getNotesByTrack(store.ui.selectedTrack.id).find(n => n.id === id);
+            dstNote.pasteNoteProps(self.copiedNote);
+        });
+
+        self.selectedNotes = [];
+    },
+    clearSelectedNote(){
+        self.selectedNote = undefined;
     },
     toggleMode() {
         if(self.mode === 'graph'){
