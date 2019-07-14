@@ -3788,11 +3788,7 @@ const UIEditView = types.model("UIEditView", {
         self.multiNoteSelect = !self.multiNoteSelect;
         
         if(!self.multiNoteSelect){
-            self.selectedNotes = [];
-
-            //del inst notes with no note val
-            store.getNotesByTrack(store.ui.selectedTrack.id)
-                .filter(n => n.note[0] === '').forEach(note => note.getPattern().deleteNote(note));
+            self.delSelectedNotes();
         }
         else if(store.ui.selectedNote){
             store.ui.selectNote(undefined);
@@ -3803,6 +3799,12 @@ const UIEditView = types.model("UIEditView", {
             self.selectedNotes = self.selectedNotes.filter(n => n !== noteId);
         else
             self.selectedNotes.push(noteId);
+    },
+    delSelectedNotes(){
+        self.selectedNotes = [];
+        store.ui.selectNote(undefined);
+        store.getNotesByTrack(store.ui.selectedTrack.id)
+            .filter(n => n.note[0] === '').forEach(note => note.getPattern().deleteNote(note));
     },
     toggleMode() {
         if(self.mode === 'graph'){
@@ -4153,8 +4155,15 @@ const UI = types.model("UI", {
     function toggleEditMode() {
         self.editMode = !self.editMode;
 
-        if(store.ui.viewMode === 'edit' && store.ui.views.edit.mode === 'bar' && !self.editMode){
-            store.ui.views.edit.clearSelectedBars();
+        if(self.viewMode === 'edit' && self.views.edit.mode === 'bar'){
+            if(!self.editMode){
+                self.views.edit.clearSelectedBars();
+
+                if(self.views.edit.multiNoteSelect)
+                    self.views.edit.delSelectedNotes();
+            }
+            else
+                self.views.edit.delSelectedNotes();
         }
     }
     function toggleRecordMode() {

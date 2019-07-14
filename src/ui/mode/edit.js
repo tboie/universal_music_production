@@ -79,11 +79,17 @@ const EditViewBars = observer(class EditViewBars extends Component {
     if(store.ui.viewMode === 'edit' && store.ui.views.edit.mode === 'bar' && this.props.editMode){
       mixRow = <MixRowViewBars store={this.props.store} track={this.props.track} selectedScene={store.ui.selectedScene} numSelectedBars={store.ui.views.edit.getNumSelectedBars} numCopiedBars={store.ui.views.edit.getNumCopiedBars}/>
     }
-    else if(this.props.selectedNote){
+    else if(this.props.selectedNote && !store.ui.views.edit.multiNoteSelect && !store.ui.editMode){
       if(this.props.selectedNote.getPattern().track.id === this.props.track.id){
         mixRow = <MixRowViewEdit trackId={this.props.track.id} store={this.props.store} track={this.props.track} note={this.props.selectedNote} selection={this.props.track.mixRow.editSelection} viewLength={this.props.viewLength}/>
       }
     }
+    /*
+    else if(store.ui.views.edit.multiNoteSelect && store.ui.views.edit.selectedNotes.length > 0){
+      let note = store.getNotesByTrack(store.ui.selectedTrack.id).find(n => n.id === store.ui.views.edit.selectedNotes[0]);
+      mixRow = <MixRowViewEdit trackId={this.props.track.id} store={this.props.store} track={this.props.track} note={note} selection={this.props.track.mixRow.editSelection} viewLength={this.props.viewLength}/>
+    }
+    */
     else{
       mixRow = <MixRowView store={this.props.store} track={this.props.track} selection={this.props.track.mixRow.mainSelection} viewLength={this.props.viewLength}/>
     }

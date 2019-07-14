@@ -300,8 +300,10 @@ export const TrackRowView = observer(class TrackRowView extends Component {
     if(distance <= 60 && clickX){
       //bar view toggle select during edit mode
       if(store.ui.viewMode === 'edit' && store.ui.views.edit.mode === 'bar' && store.ui.editMode){
-          store.ui.views.edit.toggleBarSelect(this.props.bar);
-          return;
+          if(!store.ui.views.edit.multiNoteSelect){
+            store.ui.views.edit.toggleBarSelect(this.props.bar);
+            return;
+          }
       }
   
       //Get click Seconds and also Tone time of click
@@ -349,17 +351,17 @@ export const TrackRowView = observer(class TrackRowView extends Component {
               pattern.addNote(nTime, false, [''], pattern.resolution);
               note = pattern.getNote(nTime);
 
-              if(!store.ui.views.edit.multiNoteSelect)
+              if(!store.ui.views.edit.multiNoteSelect || (store.ui.views.edit.multiNoteSelect && store.ui.editMode))
                 store.ui.selectNote(note);
             }
 
-            if(store.ui.views.edit.multiNoteSelect){
+            if(store.ui.views.edit.multiNoteSelect && !store.ui.editMode){
               store.ui.views.edit.toggleNote(note.id);
             }
           } 
           else if(note){
             //edit bar view multiple note select 
-            if(store.ui.views.edit.multiNoteSelect){
+            if(store.ui.views.edit.multiNoteSelect && !store.ui.editMode){
               store.ui.views.edit.toggleNote(note.id);
             }
             else{
@@ -491,12 +493,12 @@ export const TrackRowView = observer(class TrackRowView extends Component {
           
           //selected note color
           ctx.fillStyle = '#133e83';
-          if(this.props.selectedNote && !store.ui.views.edit.multiNoteSelect){
+          if(this.props.selectedNote){
             if(note.id === this.props.selectedNote.id)
               ctx.fillStyle = '#065ae0'
           }
 
-          if(store.ui.views.edit.multiNoteSelect && store.ui.views.edit.selectedNotes.find(n => n === note.id))
+          if(store.ui.views.edit.multiNoteSelect && store.ui.views.edit.selectedNotes.find(n => n === note.id) && !store.ui.editMode)
             ctx.fillStyle = '#065ae0'
           
           //draw note
