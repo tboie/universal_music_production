@@ -3856,6 +3856,12 @@ const UIEditView = types.model("UIEditView", {
         let totalBars = parseInt(Tone.Time(store.ui.selectedPattern.getLength()).toBarsBeatsSixteenths().split(':')[0], 10);
         self.selectedBars = [...Array(totalBars).keys()].map(x => x+1);
     },
+    selectAllNotes(){
+        self.selectedNotes = [];
+        store.getNotesByTrack(store.ui.selectedTrack.id).forEach(note => {
+            self.selectedNotes.push(note.id);
+        })
+    },
     copySelectedBars(){
         self.copiedPattern = store.ui.selectedPattern;
         self.copiedBars = [...self.selectedBars];

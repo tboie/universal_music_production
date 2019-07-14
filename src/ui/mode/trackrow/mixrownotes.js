@@ -42,7 +42,7 @@ export const MixRowViewNotes = observer(class MixRowViewNotes extends Component{
 
       switch(e.target.id.split('_')[1]){
         case 'All':
-          //this.props.store.ui.views.edit.selectAllBars();
+          this.props.store.ui.views.edit.selectAllNotes();
           break;
         case 'Copy':
           this.props.store.ui.views.edit.copySelectedNote();
