@@ -3263,15 +3263,27 @@ const Note = types.model("Note", {
         for(const prop in srcNote){
             if(prop !== 'id' && prop !== 'time'){
                 if(prop === 'note')
-                    self[prop] = srcNote[prop].map(n => n)
+                    self[prop] = srcNote.getNote();
                 else
                     self[prop] = srcNote[prop];
             }
         }
+        self.setPartNote();
     },
     setRandomNote(){
-      //  self.note = randNote;
-      //  self.setPartNote();
+        const minOctave = 0, maxOctave = 7;
+        const arrayNotes = Scale.notes(store.settings.key, store.settings.scale)
+
+        const randOctave = Math.floor(Math.random() * (maxOctave - minOctave + 1) ) + minOctave;
+        const randNote = arrayNotes[Math.floor(Math.random() * (arrayNotes.length - 0))];
+
+        let noteVal = [randNote + randOctave];
+
+        if(store.ui.selectedChord !== undefined)
+            noteVal = Chord.notes(noteVal[0], store.ui.selectedChord);
+
+        self.note = noteVal;
+        self.setPartNote();
     },
     setNote(note){
         self.note = note;
@@ -3884,6 +3896,11 @@ const UIEditView = types.model("UIEditView", {
         self.selectedBars.forEach(bar => {
             store.ui.selectedPattern.deleteNotesByBar(bar);
             store.ui.selectedPattern.createRandomNotes(bar);
+        })
+    },
+    randomizeSelectedNotes(){
+        self.selectedNotes.forEach(id => {
+            store.getNotesByTrack(store.ui.selectedTrack.id).find(n => n.id === id).setRandomNote();
         })
     }
 }))

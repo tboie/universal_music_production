@@ -74,12 +74,17 @@ const EditViewBars = observer(class EditViewBars extends Component {
     this.forceUpdate();
   }
 
+  //easier than a prop update for now
+  updateAfterNoteRandomize = () => {
+    this.forceUpdate();
+  }
+
   render(){
     let mixRow;
 
     if(store.ui.viewMode === 'edit' && store.ui.views.edit.mode === 'bar' && this.props.editMode){
       if(store.ui.views.edit.multiNoteSelect)
-        mixRow = <MixRowViewNotes store={this.props.store} track={this.props.track} selectedScene={store.ui.selectedScene} numSelectedNotes={store.ui.views.edit.getNumSelectedNotes()} /*numCopiedBars={store.ui.views.edit.getNumCopiedBars}*//>
+        mixRow = <MixRowViewNotes store={this.props.store} track={this.props.track} selectedScene={store.ui.selectedScene} numSelectedNotes={store.ui.views.edit.getNumSelectedNotes()} update={this.updateAfterNoteRandomize} /*numCopiedBars={store.ui.views.edit.getNumCopiedBars}*//>
       else
         mixRow = <MixRowViewBars store={this.props.store} track={this.props.track} selectedScene={store.ui.selectedScene} numSelectedBars={store.ui.views.edit.getNumSelectedBars} numCopiedBars={store.ui.views.edit.getNumCopiedBars}/>
     }
