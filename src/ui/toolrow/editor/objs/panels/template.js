@@ -148,10 +148,10 @@ export const UICustomRangeControl = observer(class UICustomRangeControl extends 
     let bValChanged = false;
     if(val){
       if(props.child){
-        if(props.obj[props.child][props.propName] != val)
+        if(props.obj[props.child][props.propName] !== parseFloat(val))
           bValChanged = true;
       }
-      else if(props.obj[props.propName] != val)
+      else if(props.obj[props.propName] !== parseFloat(val))
         bValChanged = true;
     }
 
@@ -321,7 +321,7 @@ export const UITimeControl = observer(class UITimeControl extends Component {
   updateValue = (val) => {
     let bValChanged = false;
     if(val){
-        if(this.props.obj[this.props.propName] != val)
+        if(this.props.obj[this.props.propName] !== val)
           bValChanged = true;
     }
 
@@ -420,15 +420,13 @@ export const UIWaveTypeControl = observer(class UIWaveTypeControl extends Compon
   }
 
   updateValue = (val) => {
-    //don't update if same value
-    //take note of the != operator instead of !==
     let bValChanged = false;
     if(val){
       if(this.props.child){
-        if(this.props.obj[this.props.child][this.props.propName] != val)
+        if(this.props.obj[this.props.child][this.props.propName] !== val)
           bValChanged = true;
       }
-      else if(this.props.obj[this.props.propName] != val)
+      else if(this.props.obj[this.props.propName] !== val)
         bValChanged = true;
     }
 
@@ -562,15 +560,13 @@ export const UIFilterTypeControl = observer(class UIFilterTypeControl extends Co
   }
 
   updateValue = (val) => {
-    //don't update if same value
-    //take note of the != operator instead of !==
     let bValChanged = false;
     if(val){
       if(this.props.child){
-        if(this.props.obj[this.props.child][this.props.propName] != val)
+        if(this.props.obj[this.props.child][this.props.propName] !== val)
           bValChanged = true;
       }
-      else if(this.props.obj[this.props.propName] != val)
+      else if(this.props.obj[this.props.propName] !== val)
         bValChanged = true;
     }
 
@@ -699,15 +695,13 @@ export const UICurveTypeControl = observer(class UICurveTypeControl extends Comp
   }
 
   updateValue = (val) => {
-    //don't update if same value
-    //take note of the != operator instead of !==
     let bValChanged = false;
     if(val){
       if(this.props.child){
-        if(this.props.obj[this.props.child][this.props.propName] != val)
+        if(this.props.obj[this.props.child][this.props.propName] !== val)
           bValChanged = true;
       }
-      else if(this.props.obj[this.props.propName] != val)
+      else if(this.props.obj[this.props.propName] !== val)
         bValChanged = true;
     }
 
@@ -825,15 +819,13 @@ export const UIFilterRolloffControl = observer(class UIFilterRolloffControl exte
   }
 
   updateValue = (val) => {
-    //don't update if same value
-    //take note of the != operator instead of !==
     let bValChanged = false;
     if(val){
       if(this.props.child){
-        if(this.props.obj[this.props.child][this.props.propName] != val)
+        if(this.props.obj[this.props.child][this.props.propName] !== parseInt(val, 10))
           bValChanged = true;
       }
-      else if(this.props.obj[this.props.propName] != val)
+      else if(this.props.obj[this.props.propName] !== parseInt(val, 10))
         bValChanged = true;
     }
 
@@ -945,15 +937,13 @@ export const UINoiseTypeControl = observer(class UINoiseTypeControl extends Comp
   }
 
   updateValue = (val) => {
-    //don't update if same value
-    //take note of the != operator instead of !==
     let bValChanged = false;
     if(val){
       if(this.props.child){
-        if(this.props.obj[this.props.child][this.props.propName] != val)
+        if(this.props.obj[this.props.child][this.props.propName] !== val)
           bValChanged = true;
       }
-      else if(this.props.obj[this.props.propName] != val)
+      else if(this.props.obj[this.props.propName] !== val)
         bValChanged = true;
     }
 
@@ -1049,7 +1039,7 @@ export const UIOverSample = observer(class UIOverSample extends Component {
   updateValue = (val) => {
     let bValChanged = false;
     if(val){
-        if(this.props.obj[this.props.propName] != val)
+        if(this.props.obj[this.props.propName] !== val)
           bValChanged = true;
     }
 
