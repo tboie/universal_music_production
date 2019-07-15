@@ -633,11 +633,12 @@ export const TrackRowView = observer(class TrackRowView extends Component {
       }
 
       //Draw square
+      ctx.fillStyle = '#133e83';
       if(this.props.selectedNote === note || (store.ui.views.edit.multiNoteSelect && store.ui.views.edit.selectedNotes.find(n => n === note.id)))
         ctx.fillStyle = '#065ae0';
-      else 
-        ctx.fillStyle = '#133e83';
-      
+      if(store.ui.views.edit.copiedNote && store.ui.views.edit.copiedNote.id === note.id)
+        ctx.fillStyle = '#19937a';
+       
       ctx.fillRect(x, 0, squareWidth, height);
 
       //draw border separator lines
@@ -677,11 +678,13 @@ export const TrackRowView = observer(class TrackRowView extends Component {
         }
       }
 
-      if(this.props.selectedNote === note || (store.ui.views.edit.multiNoteSelect && store.ui.views.edit.selectedNotes.find(n => n === note.id))){
+      if(this.props.selectedNote === note 
+        || (store.ui.views.edit.multiNoteSelect && store.ui.views.edit.selectedNotes.find(n => n === note.id))
+        || (store.ui.views.edit.copiedNote && store.ui.views.edit.copiedNote.id === note.id)){
         ctx.fillStyle = '#065ae0';
-  
+
         if(store.ui.views.edit.copiedNote && store.ui.views.edit.copiedNote.id === note.id)
-            ctx.fillStyle = '#19937a';
+          ctx.fillStyle = '#19937a';
 
         ctx.globalAlpha = 0.4;
         ctx.fillRect(x, 0, squareWidth, height);
