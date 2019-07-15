@@ -3791,10 +3791,10 @@ const UIEditView = types.model("UIEditView", {
     isBarCopied(bar){
         return self.copiedBars.find(b => b === bar);
     },
-    get getNumSelectedBars(){
+    getNumSelectedBars(){
         return self.selectedBars.length;
     },
-    get getNumCopiedBars(){
+    getNumCopiedBars(){
         return self.copiedBars.length;
     },
     getNumSelectedNotes(){

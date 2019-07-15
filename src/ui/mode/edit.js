@@ -84,9 +84,9 @@ const EditViewBars = observer(class EditViewBars extends Component {
 
     if(store.ui.viewMode === 'edit' && store.ui.views.edit.mode === 'bar' && this.props.editMode){
       if(store.ui.views.edit.multiNoteSelect)
-        mixRow = <MixRowViewNotes store={this.props.store} track={this.props.track} selectedScene={store.ui.selectedScene} numSelectedNotes={store.ui.views.edit.getNumSelectedNotes()} update={this.updateAfterNoteRandomize} /*numCopiedBars={store.ui.views.edit.getNumCopiedBars}*//>
+        mixRow = <MixRowViewNotes store={this.props.store} track={this.props.track} selectedScene={store.ui.selectedScene} numSelectedNotes={store.ui.views.edit.getNumSelectedNotes()} update={this.updateAfterNoteRandomize} /*numCopiedBars={store.ui.views.edit.getNumCopiedBars()}*//>
       else
-        mixRow = <MixRowViewBars store={this.props.store} track={this.props.track} selectedScene={store.ui.selectedScene} numSelectedBars={store.ui.views.edit.getNumSelectedBars} numCopiedBars={store.ui.views.edit.getNumCopiedBars}/>
+        mixRow = <MixRowViewBars store={this.props.store} track={this.props.track} selectedScene={store.ui.selectedScene} numSelectedBars={store.ui.views.edit.getNumSelectedBars()} numCopiedBars={store.ui.views.edit.getNumCopiedBars()}/>
     }
     else if(this.props.selectedNote && !store.ui.views.edit.multiNoteSelect && !store.ui.editMode){
       if(this.props.selectedNote.getPattern().track.id === this.props.track.id){
@@ -143,8 +143,8 @@ const EditViewBars = observer(class EditViewBars extends Component {
           strSVG={this.strSVG}
           setSVG={this.setSVG}
           selectedBars={this.props.store.ui.views.edit.selectedBars}
-          numSelectedBars={this.props.store.ui.views.edit.getNumSelectedBars}
-          numCopiedBars={this.props.store.ui.views.edit.getNumCopiedBars}
+          numSelectedBars={this.props.store.ui.views.edit.getNumSelectedBars()}
+          numCopiedBars={this.props.store.ui.views.edit.getNumCopiedBars()}
           numSelectedNotes={this.props.store.ui.views.edit.selectedNotes.length}
           copiedNote={this.props.store.ui.views.edit.copiedNote}
         />)
