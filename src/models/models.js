@@ -3805,18 +3805,28 @@ const UIEditView = types.model("UIEditView", {
         self.multiNoteSelect = !self.multiNoteSelect;
         
         if(!self.multiNoteSelect){
+            self.copiedNote = undefined;
+
             if(store.ui.selectedTrack.type === 'instrument')
                 self.delSelectedNotes();
             else
                 self.selectedNotes = [];
         }
         else if(store.ui.selectedNote){
+            self.selectedNotes = [store.ui.selectedNote.id]
             store.ui.selectNote(undefined);
         }
     },
     toggleNote(noteId){
-        if(self.selectedNotes.find(n => n === noteId))
-            self.selectedNotes = self.selectedNotes.filter(n => n !== noteId);
+        if(self.selectedNotes.find(n => n === noteId)){
+            //keep copiednote selected
+            if(self.copiedNote){
+                if(noteId !== self.copiedNote.id)
+                    self.selectedNotes = self.selectedNotes.filter(n => n !== noteId);
+            }
+            else
+                self.selectedNotes = self.selectedNotes.filter(n => n !== noteId);
+        }
         else
             self.selectedNotes.push(noteId);
     },
@@ -3833,12 +3843,12 @@ const UIEditView = types.model("UIEditView", {
                 note.getPattern().deleteNote(note);
             })
         }
-
+        
         self.selectedNotes = [];
     },
     copySelectedNote(){
         self.copiedNote = store.getNotesByTrack(store.ui.selectedTrack.id).find(n => n.id === self.selectedNotes[0]).id;
-        self.selectedNotes = [];
+        self.selectedNotes = [self.copiedNote.id];
     },
     pasteCopiedNote(){
         self.selectedNotes.forEach(id => {
