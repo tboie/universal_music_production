@@ -338,21 +338,23 @@ export const TrackRowView = observer(class TrackRowView extends Component {
           let note = pattern.getNote(nTime);
 
           if(!note){ 
-            if(pattern.track.type === "audio"){
+            if(pattern.track.type === "audio" && !store.ui.views.edit.multiNoteSelect){
               pattern.addNote(nTime, false, undefined, 1);
               note = pattern.getNote(nTime);
             }
             else if(pattern.track.type === "instrument"){
               pattern.addNote(nTime, false, [''], pattern.resolution);
               note = pattern.getNote(nTime);
-
-              if(!store.ui.views.edit.multiNoteSelect)
-                store.ui.selectNote(note);
             }
 
+            //select
             if(store.ui.views.edit.multiNoteSelect){
-              store.ui.views.edit.toggleNote(note.id);
+              if(note)
+                store.ui.views.edit.toggleNote(note.id);
             }
+            else
+              store.ui.selectNote(note);
+            
           } 
           else if(note){
             //edit bar view multiple note select 
@@ -493,6 +495,7 @@ export const TrackRowView = observer(class TrackRowView extends Component {
               ctx.fillStyle = '#065ae0'
           }
 
+          //editviewbars multinote select
           if(store.ui.views.edit.multiNoteSelect && store.ui.views.edit.selectedNotes.find(n => n === note.id))
             ctx.fillStyle = '#065ae0';
 
@@ -630,7 +633,7 @@ export const TrackRowView = observer(class TrackRowView extends Component {
       }
 
       //Draw square
-      if(this.props.selectedNote === note)
+      if(this.props.selectedNote === note || (store.ui.views.edit.multiNoteSelect && store.ui.views.edit.selectedNotes.find(n => n === note.id)))
         ctx.fillStyle = '#065ae0';
       else 
         ctx.fillStyle = '#133e83';
@@ -674,8 +677,12 @@ export const TrackRowView = observer(class TrackRowView extends Component {
         }
       }
 
-      if(this.props.selectedNote === note){
+      if(this.props.selectedNote === note || (store.ui.views.edit.multiNoteSelect && store.ui.views.edit.selectedNotes.find(n => n === note.id))){
         ctx.fillStyle = '#065ae0';
+  
+        if(store.ui.views.edit.copiedNote && store.ui.views.edit.copiedNote.id === note.id)
+            ctx.fillStyle = '#19937a';
+
         ctx.globalAlpha = 0.4;
         ctx.fillRect(x, 0, squareWidth, height);
         ctx.globalAlpha = 1;

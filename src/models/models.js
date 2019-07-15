@@ -3805,7 +3805,10 @@ const UIEditView = types.model("UIEditView", {
         self.multiNoteSelect = !self.multiNoteSelect;
         
         if(!self.multiNoteSelect){
-            self.delSelectedNotes();
+            if(store.ui.selectedTrack.type === 'instrument')
+                self.delSelectedNotes();
+            else
+                self.selectedNotes = [];
         }
         else if(store.ui.selectedNote){
             store.ui.selectNote(undefined);
@@ -3818,10 +3821,20 @@ const UIEditView = types.model("UIEditView", {
             self.selectedNotes.push(noteId);
     },
     delSelectedNotes(){
-        self.selectedNotes = [];
         store.ui.selectNote(undefined);
-        store.getNotesByTrack(store.ui.selectedTrack.id)
-            .filter(n => n.note[0] === '').forEach(note => note.getPattern().deleteNote(note));
+        
+        if(store.ui.selectedTrack.type === 'instrument'){
+            store.getNotesByTrack(store.ui.selectedTrack.id)
+                .filter(n => n.note[0] === '').forEach(note => note.getPattern().deleteNote(note));
+        }
+        else if(store.ui.selectedTrack.type === 'audio'){
+            self.selectedNotes.forEach(id => {
+                const note = store.getNotesByTrack(store.ui.selectedTrack.id).find(n => n.id === id)
+                note.getPattern().deleteNote(note);
+            })
+        }
+
+        self.selectedNotes = [];
     },
     copySelectedNote(){
         self.copiedNote = store.getNotesByTrack(store.ui.selectedTrack.id).find(n => n.id === self.selectedNotes[0]).id;
@@ -3839,6 +3852,9 @@ const UIEditView = types.model("UIEditView", {
     },
     clearCopiedNote(){
         self.copiedNote = undefined;
+    },
+    resetSelectedNotes(){
+        self.selectedNotes = [];
     },
     toggleMode() {
         if(self.mode === 'graph'){
@@ -4211,11 +4227,12 @@ const UI = types.model("UI", {
                 self.views.edit.clearSelectedBars();
                 self.views.edit.clearCopiedNote();
 
-                if(self.views.edit.multiNoteSelect)
-                    self.views.edit.delSelectedNotes();
-            }
-            else{
-                self.views.edit.delSelectedNotes();
+                if(self.views.edit.multiNoteSelect){
+                    if(store.ui.selectedTrack.type === 'instrument')
+                        self.views.edit.delSelectedNotes();
+                    else
+                        self.views.edit.resetSelectedNotes();
+                }
             }
         }
     }
