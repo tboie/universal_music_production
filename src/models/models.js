@@ -3801,6 +3801,17 @@ const UIEditView = types.model("UIEditView", {
         return self.selectedNotes.length;
     }
 })).actions(self => ({
+    toggleMode() {
+        if(self.mode === 'graph'){
+            store.ui.setViewLength('1:0:0');
+            self.mode = 'bar';
+        }
+        else{
+            self.mode = 'graph';
+        }
+    },
+
+    /***** multinote select funcs *****/
     toggleMultiNoteSelect(){
         self.multiNoteSelect = !self.multiNoteSelect;
         
@@ -3857,24 +3868,31 @@ const UIEditView = types.model("UIEditView", {
         });
         self.selectedNotes = [];
     },
-    clearSelectedNote(){
-        self.selectedNote = undefined;
-    },
     clearCopiedNote(){
         self.copiedNote = undefined;
     },
     resetSelectedNotes(){
         self.selectedNotes = [];
     },
-    toggleMode() {
-        if(self.mode === 'graph'){
-            store.ui.setViewLength('1:0:0');
-            self.mode = 'bar';
-        }
-        else{
-            self.mode = 'graph';
-        }
+    selectAllNotes(){
+        self.selectedNotes = [];
+        store.getNotesByTrack(store.ui.selectedTrack.id).forEach(note => {
+            self.selectedNotes.push(note.id);
+        })
     },
+    clearSelectedNotes(){
+        self.selectedNotes.forEach(id => {
+            store.getNotesByTrack(store.ui.selectedTrack.id).find(n => n.id === id).setNote(['']);
+        })
+        self.delSelectedNotes();
+    },
+    randomizeSelectedNotes(){
+        self.selectedNotes.forEach(id => {
+            store.getNotesByTrack(store.ui.selectedTrack.id).find(n => n.id === id).setRandomNote();
+        })
+    },
+
+    /******* bar edit funcs ********/
     toggleBarSelect(bar){
         if(self.isBarSelected(bar))
             self.selectedBars = self.selectedBars.filter(b => b !== bar);
@@ -3884,12 +3902,6 @@ const UIEditView = types.model("UIEditView", {
     selectAllBars(){
         let totalBars = parseInt(Tone.Time(store.ui.selectedPattern.getLength()).toBarsBeatsSixteenths().split(':')[0], 10);
         self.selectedBars = [...Array(totalBars).keys()].map(x => x+1);
-    },
-    selectAllNotes(){
-        self.selectedNotes = [];
-        store.getNotesByTrack(store.ui.selectedTrack.id).forEach(note => {
-            self.selectedNotes.push(note.id);
-        })
     },
     copySelectedBars(){
         self.copiedPattern = store.ui.selectedPattern;
@@ -3918,21 +3930,10 @@ const UIEditView = types.model("UIEditView", {
     clearCopiedBars(){
         self.copiedBars = [];
     },
-    clearSelectedNotes(){
-        self.selectedNotes.forEach(id => {
-            store.getNotesByTrack(store.ui.selectedTrack.id).find(n => n.id === id).setNote(['']);
-        })
-        self.delSelectedNotes();
-    },
     randomizeSelectedBarNotes(){
         self.selectedBars.forEach(bar => {
             store.ui.selectedPattern.deleteNotesByBar(bar);
             store.ui.selectedPattern.createRandomNotes(bar);
-        })
-    },
-    randomizeSelectedNotes(){
-        self.selectedNotes.forEach(id => {
-            store.getNotesByTrack(store.ui.selectedTrack.id).find(n => n.id === id).setRandomNote();
         })
     }
 }))
