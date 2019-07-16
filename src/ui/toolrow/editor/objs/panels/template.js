@@ -185,7 +185,14 @@ export const UICustomRangeControl = observer(class UICustomRangeControl extends 
           ToneObjs.setPropVal(props.obj.id, this.objType, props.propName, typedVal, props.signal, props.child);
 
           if(instName === "reverb"){
-            ToneObjs.effects.find(i => i.id === props.obj.id).obj.generate().then(() => {
+            //reverb errors when preDelay >= decay
+            //temp fix     if preDelay >= decay : preDelay = decay - 0.01
+            let reverbToneObj = ToneObjs.effects.find(i => i.id === props.obj.id).obj;
+
+            if(reverbToneObj.preDelay >= reverbToneObj.decay)
+              ToneObjs.setPropVal(props.obj.id, this.objType, 'preDelay', reverbToneObj.decay - 0.01, props.signal, props.child);
+            
+            reverbToneObj.generate().then(() => {
               //console.log('generated finished')
             });
           }
