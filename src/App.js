@@ -137,6 +137,7 @@ const AppView = observer(class AppView extends Component {
           selectedTrack={this.props.store.ui.selectedTrack} 
           objs={this.props.store.getObjsByTrackObj(this.props.store.ui.selectedTrack)}
           editViewMode={this.props.store.ui.views.edit.mode}
+          editMode={this.props.store.ui.editMode}
           />
         <DropZone 
           store={this.props.store} 

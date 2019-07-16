@@ -30,7 +30,8 @@ export const Draw = observer(class Draw extends Component {
       this.initPlayhead();
 
       if((!prevProps.mixMode && this.props.mixMode) || prevProps.viewMode !== this.props.viewMode 
-        || prevProps.selectedTrack !== this.props.selectedTrack || prevProps.numTracks !== this.props.numTracks){
+        || prevProps.selectedTrack !== this.props.selectedTrack || prevProps.numTracks !== this.props.numTracks
+        || (!this.props.editMode && prevProps.editMode && this.props.editViewMode === 'bar')){
         this.initMeters();
       }
       
