@@ -589,9 +589,8 @@ const EditViewGraph = observer(class EditViewGraph extends Component {
         playhead = <div className="progressLine" id="playhead"></div>;
       }
 
-      let cssCursor = '';
-      if(!this.props.edit)
-        cssCursor = 'cursorCrosshair'
+      let cssCursor = this.props.edit ? '' : 'cursorCrosshair';
+      let cssTop = this.props.track.type === 'master' ? ' divEditViewBGMasterTop' : '';
 
       let sizes = store.ui.getGridSizes();
       return (
@@ -601,7 +600,7 @@ const EditViewGraph = observer(class EditViewGraph extends Component {
             { playhead }
             { trackRow }
           </div>
-          <div id='divEditViewBG' className={cssCursor} style={{width: store.ui.windowWidth + 'px'}}>
+          <div id='divEditViewBG' className={cssCursor + cssTop} style={{width: store.ui.windowWidth + 'px'}}>
             { /* save for later? <canvas id="canvasEditViewBG" style={{backgroundColor: 'white', width:'100%', height:'100%', position:'fixed'}}></canvas> */ }
             { store.instruments.getAllByTrack(this.props.track.id).filter(o => o.id.split('_')[0] !== "mix" && o.id.split('_')[0] !== "tinysynth").map((obj, index) => 
               <EditViewObj key={obj.id} index={index} obj={obj} edit={this.props.edit} active={this.activateObj} drawConnection={this.drawConnection} selectedObj={this.props.store.ui.selectedObj}/>) }

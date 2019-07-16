@@ -593,6 +593,10 @@ wave {
   left:0;
 }
 
+.divEditViewBGMasterTop { 
+  top:100px !important;
+}
+
 .canvasEditViewObj {
   height:100%;
   width:100%;
