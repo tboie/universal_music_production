@@ -3532,7 +3532,7 @@ const Pattern = types.model("Pattern", {
                 let type = instrument.id.split('_')[0];
                 if (!value.mute){
                     if(type === 'player'){
-                        instrument.obj.volume.value = value.velocity;
+                        instrument.obj.volume.setValueAtTime(value.velocity, time + offset)
                         instrument.obj.stop(time + offset); //stop current play at next note
                         instrument.obj.start(time + offset);
                         if(value.duration < 1){
