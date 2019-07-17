@@ -31,9 +31,9 @@ export const MixRowViewNotes = observer(class MixRowViewNotes extends Component{
         if(id === 'Rand' && this.props.track.type === 'audio')
           eleBtn.disabled = true;
         else if(id === 'Copy')
-          eleBtn.disabled = this.props.numSelectedNotes === 1 ? false : true;
-        else if(id === 'Paste')
           eleBtn.disabled = this.props.numSelectedNotes > 0 ? false : true;
+        else if(id === 'Paste')
+          eleBtn.disabled = (this.props.numSelectedNotes > 0 && this.props.store.ui.views.edit.copiedNotes.length > 0) ? false : true;
       })
     }
 
@@ -45,7 +45,7 @@ export const MixRowViewNotes = observer(class MixRowViewNotes extends Component{
           this.props.store.ui.views.edit.selectAllNotes();
           break;
         case 'Copy':
-          this.props.store.ui.views.edit.copySelectedNote();
+          this.props.store.ui.views.edit.copySelectedNotes();
           break;
         case 'Paste':
           this.props.store.ui.views.edit.pasteCopiedNote();

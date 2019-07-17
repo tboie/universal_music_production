@@ -499,8 +499,8 @@ export const TrackRowView = observer(class TrackRowView extends Component {
           if(store.ui.views.edit.multiNoteSelect && store.ui.views.edit.selectedNotes.find(n => n === note.id))
             ctx.fillStyle = '#065ae0';
 
-          if(store.ui.views.edit.copiedNote){
-            if(store.ui.views.edit.copiedNote.id === note.id)
+          if(this.props.numCopiedNotes > 0){
+            if(store.ui.editMode && store.ui.views.edit.copiedNotes.find(copied => copied.id.split('_')[2] === note.id.split('_')[1]))
               ctx.fillStyle = '#19937a';
           }
           
@@ -636,7 +636,7 @@ export const TrackRowView = observer(class TrackRowView extends Component {
       ctx.fillStyle = '#133e83';
       if(this.props.selectedNote === note || (store.ui.views.edit.multiNoteSelect && store.ui.views.edit.selectedNotes.find(n => n === note.id)))
         ctx.fillStyle = '#065ae0';
-      if(store.ui.views.edit.copiedNote && store.ui.views.edit.copiedNote.id === note.id)
+      if(store.ui.editMode && store.ui.views.edit.copiedNotes.find(copied => copied.id.split('_')[2] === note.id.split('_')[1]))
         ctx.fillStyle = '#19937a';
        
       ctx.fillRect(x, 0, squareWidth, height);

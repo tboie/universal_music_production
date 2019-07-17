@@ -3268,7 +3268,9 @@ const Note = types.model("Note", {
                     self[prop] = srcNote[prop];
             }
         }
-        self.setPartNote();
+
+        if(self.id.split('_')[1] !== 'copy')
+            self.setPartNote();
     },
     setRandomNote(){
         self.note = self.getPattern().getRandomNote();
@@ -3309,20 +3311,15 @@ const Note = types.model("Note", {
         event.humanize = self.humanize;
     },
     afterAttach() {
-        self.setPartNote();
+        //editview copiedNotes are not added to Tone Part
+        if(self.id.split('_')[1] !== 'copy')
+            self.setPartNote();
     },
-    /*
-    beforeDetach() {
-        console.log('note being DETACHED')
-        let part = ToneObjs.parts.find(p => p.id === getParent(self, 2).id);
-        //part.obj.remove(self.time, self.note);
-        part.obj.remove(self.time);
-    },
-    */
     beforeDestroy() {
-        let part = ToneObjs.parts.find(p => p.id === getParent(self, 2).id);
-        //part.obj.remove(self.time, self.note);
-        part.obj.remove(self.time);
+        if(self.id.split('_')[1] !== 'copy'){
+            let part = ToneObjs.parts.find(p => p.id === getParent(self, 2).id);
+            part.obj.remove(self.time);
+        }
     }
 }));
 
@@ -3782,7 +3779,7 @@ const UIEditView = types.model("UIEditView", {
     copiedPattern: types.maybe(types.reference(Pattern)),
     multiNoteSelect: types.optional(types.boolean, false),
     selectedNotes: types.array(types.string),
-    copiedNote: types.maybe(types.reference(Note))
+    copiedNotes: types.array(Note)
 }).views(self => ({
     isBarSelected(bar){
         return self.selectedBars.find(b => b === bar);
@@ -3815,28 +3812,21 @@ const UIEditView = types.model("UIEditView", {
         self.multiNoteSelect = !self.multiNoteSelect;
         
         if(!self.multiNoteSelect){
-            self.copiedNote = undefined;
-
             if(store.ui.selectedTrack.type === 'instrument')
                 self.delSelectedNotes();
             else
                 self.selectedNotes = [];
         }
-        else if(store.ui.selectedNote){
-            self.selectedNotes = [store.ui.selectedNote.id]
-            store.ui.selectNote(undefined);
+        else{
+            if(store.ui.selectedNote){
+                self.selectedNotes = [store.ui.selectedNote.id]
+                store.ui.selectNote(undefined);
+            }
         }
     },
     toggleNote(noteId){
-        if(self.selectedNotes.find(n => n === noteId)){
-            //keep copiednote selected
-            if(self.copiedNote){
-                if(noteId !== self.copiedNote.id)
-                    self.selectedNotes = self.selectedNotes.filter(n => n !== noteId);
-            }
-            else
-                self.selectedNotes = self.selectedNotes.filter(n => n !== noteId);
-        }
+        if(self.selectedNotes.find(n => n === noteId))
+            self.selectedNotes = self.selectedNotes.filter(n => n !== noteId);
         else
             self.selectedNotes.push(noteId);
     },
@@ -3850,25 +3840,33 @@ const UIEditView = types.model("UIEditView", {
         else if(store.ui.selectedTrack.type === 'audio'){
             self.selectedNotes.forEach(id => {
                 const note = store.getNotesByTrack(store.ui.selectedTrack.id).find(n => n.id === id)
-                note.getPattern().deleteNote(note);
+                note.getPattern().deleteNote(note, true);
             })
         }
         
         self.selectedNotes = [];
     },
-    copySelectedNote(){
-        self.copiedNote = store.getNotesByTrack(store.ui.selectedTrack.id).find(n => n.id === self.selectedNotes[0]).id;
-        self.selectedNotes = [self.copiedNote.id];
+    copySelectedNotes(){
+        self.clearCopiedNotes();
+        self.selectedNotes.forEach(id => {
+            const srcNote = store.getNotesByTrack(store.ui.selectedTrack.id).find(n => n.id === id);
+            const copiedNote = Note.create({id: 'note_copy_' + srcNote.id.split('_')[1], time: srcNote.time})
+            copiedNote.pasteNoteProps(srcNote);
+            self.copiedNotes.push(copiedNote)
+        })
+        self.selectedNotes = [];
     },
     pasteCopiedNote(){
-        self.selectedNotes.forEach(id => {
+        self.selectedNotes.forEach((id, idx) => {
             const dstNote = store.getNotesByTrack(store.ui.selectedTrack.id).find(n => n.id === id);
-            dstNote.pasteNoteProps(self.copiedNote);
+            if(self.copiedNotes[idx])
+                dstNote.pasteNoteProps(self.copiedNotes[idx]);
         });
         self.selectedNotes = [];
     },
-    clearCopiedNote(){
-        self.copiedNote = undefined;
+    clearCopiedNotes(){
+        self.copiedNotes.forEach(n => destroy(n));
+        self.copiedNotes = [];
     },
     resetSelectedNotes(){
         self.selectedNotes = [];
@@ -4235,7 +4233,6 @@ const UI = types.model("UI", {
         if(self.viewMode === 'edit' && self.views.edit.mode === 'bar'){
             if(!self.editMode){
                 self.views.edit.clearSelectedBars();
-                self.views.edit.clearCopiedNote();
 
                 if(self.views.edit.multiNoteSelect){
                     if(store.ui.selectedTrack.type === 'instrument')
