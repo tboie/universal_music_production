@@ -3984,19 +3984,23 @@ const UIToolbarBrowser = types.model("UIToolbarBrowser", {
     }
 }))
 
-const UIToolbarEdit= types.model("UIToolbarEdit", {
+const UIToolbarEditor = types.model("UIToolbarEdit", {
+    selectedObj: types.maybe(types.string)
 }).views(self => ({
-
 })).actions(self => ({
-
+    selectObj(id){
+        self.selectedObj = id;
+    }
 }))
 
+/*
 const UIToolbarSong = types.model("UIToolbarSong", {
 }).views(self => ({
 
 })).actions(self => ({
 
 }))
+*/
 
 const UIToolbarKeys = types.model("UIToolbarKeys", {
 }).views(self => ({
@@ -4008,8 +4012,8 @@ const UIToolbarKeys = types.model("UIToolbarKeys", {
 const UIToolbar = types.model("UIToolbar", {
     main: UIToolbarMain,
     browser: UIToolbarBrowser,
-    edit1: UIToolbarEdit,
-    edit2: UIToolbarEdit,
+    editor1: UIToolbarEditor,
+    editor2: UIToolbarEditor,
     /* song: UIToolbarSong, */
     keys: UIToolbarKeys
 }).views(self => ({
@@ -4324,6 +4328,11 @@ const UI = types.model("UI", {
     }
     function selectObj(id) {
         self.selectedObj = id;
+
+        if(self.selectedToolbar === 'editor1')
+            self.toolbar.editor1.selectObj(id);
+        else if(self.selectedToolbar === 'editor2')
+            self.toolbar.editor2.selectObj(id);
     }
     function selectGroup(group) {
         if(group === 'M' && !self.mixMode)

@@ -256,8 +256,8 @@ export const ToolRow = observer(class ToolRow extends Component {
             </div>
             <ToolHome store={this.props.store}/>
             { toolBrowse }
-            <ToolEditor store={this.props.store} editorNum={1} file={this.selectedFile} tracks={this.props.store.tracks} objId={this.props.store.ui.selectedObj}/>
-            <ToolEditor store={this.props.store} editorNum={2} file={this.selectedFile} tracks={this.props.store.tracks} objId={this.props.store.ui.selectedObj}/>
+            <ToolEditor store={this.props.store} editorNum={1} file={this.selectedFile} tracks={this.props.store.tracks} objId={this.props.store.ui.toolbar.editor1.selectedObj}/>
+            <ToolEditor store={this.props.store} editorNum={2} file={this.selectedFile} tracks={this.props.store.tracks} objId={this.props.store.ui.toolbar.editor2.selectedObj}/>
             { /* <ToolSong store={this.props.store} bpm={this.props.store.settings.bpm} numTracks={this.props.store.getTracksByGroup(this.props.store.ui.selectedGroup).length}/> */}
             <ToolSynth store={this.props.store} selectedTrack={this.props.store.ui.selectedTrack} height={this.toolRowHeight} 
                             scale={this.props.store.settings.scale} scaleKey={this.props.store.settings.key} chord={this.props.store.ui.selectedChord}/>
