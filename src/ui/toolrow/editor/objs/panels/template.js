@@ -50,6 +50,13 @@ export const UIEditorHeader = observer(class UIEditorHeader extends Component {
     this.props.selectSection(section, this.props.parent);
   }
 
+  btnClickTitle = (e) => {
+    if(store.ui.views.edit.mode !== 'graph')
+      store.ui.views.edit.toggleMode();
+    
+    store.ui.toggleViewMode('edit');
+  }
+
   render() {
     let top = 0;
     let title = this.props.obj.id.split("_")[0];
@@ -89,7 +96,7 @@ export const UIEditorHeader = observer(class UIEditorHeader extends Component {
     return (
       <div style={{height:height + 'px'}}>
         <div style={{position:'absolute', backgroundColor: 'rgb(12, 11, 27)', width:'100%', height:'32px', top:top + 'px', zIndex:99}}>
-          <label style={{float:'left', position:'relative', top:'7px'}}>{title}</label>
+          <button style={{float:'left', position:'relative', height:'100%', zIndex:1}} onClick={this.btnClickTitle}>{title}</button>
           { btnRand }
           <div id="divEditorHdrSectionContainer">
             {
