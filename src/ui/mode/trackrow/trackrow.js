@@ -491,10 +491,8 @@ export const TrackRowView = observer(class TrackRowView extends Component {
           //color notes
           ctx.fillStyle = '#133e83';
 
-          if(this.props.numCopiedNotes > 0){
-            if(store.ui.editMode && store.ui.views.edit.copiedNotes.find(copied => copied.id.split('_')[2] === note.id.split('_')[1]))
-              ctx.fillStyle = '#19937a';
-          }
+          if(store.ui.editMode && store.ui.views.edit.copiedNotes.find(copied => copied.id.split('_')[2] === note.id.split('_')[1]))
+            ctx.fillStyle = '#19937a';
 
           if(this.props.selectedNote){
             if(note.id === this.props.selectedNote.id)
@@ -633,13 +631,14 @@ export const TrackRowView = observer(class TrackRowView extends Component {
         xOffset = (Tone.Time(note.time) + noteOffset) / Tone.Time(viewLength) * this.props.windowWidth;
       }
 
-      //Draw square
+      //set note color
       ctx.fillStyle = '#133e83';
-      if(this.props.selectedNote === note || (store.ui.views.edit.multiNoteSelect && store.ui.views.edit.selectedNotes.find(n => n === note.id)))
-        ctx.fillStyle = '#065ae0';
       if(store.ui.editMode && store.ui.views.edit.copiedNotes.find(copied => copied.id.split('_')[2] === note.id.split('_')[1]))
         ctx.fillStyle = '#19937a';
+      if(this.props.selectedNote === note || (store.ui.views.edit.multiNoteSelect && store.ui.views.edit.selectedNotes.find(n => n === note.id)))
+        ctx.fillStyle = '#065ae0';
        
+      //Draw note square
       ctx.fillRect(x, 0, squareWidth, height);
 
       //draw border separator lines
@@ -681,10 +680,10 @@ export const TrackRowView = observer(class TrackRowView extends Component {
 
       if(this.props.selectedNote === note 
         || (store.ui.views.edit.multiNoteSelect && store.ui.views.edit.selectedNotes.find(n => n === note.id))
-        || (store.ui.views.edit.copiedNote && store.ui.views.edit.copiedNote.id === note.id)){
+        || (store.ui.editMode && store.ui.views.edit.copiedNotes.find(copied => copied.id.split('_')[2] === note.id.split('_')[1]))){
         ctx.fillStyle = '#065ae0';
 
-        if(store.ui.views.edit.copiedNote && store.ui.views.edit.copiedNote.id === note.id)
+        if(store.ui.editMode && store.ui.views.edit.copiedNotes.find(copied => copied.id.split('_')[2] === note.id.split('_')[1]))
           ctx.fillStyle = '#19937a';
 
         ctx.globalAlpha = 0.4;
