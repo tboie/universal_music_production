@@ -488,8 +488,14 @@ export const TrackRowView = observer(class TrackRowView extends Component {
           let noteWidth = Tone.Time(note.duration) / Tone.Time(viewLength) * windowWidth;
           let offsetWidth = squareWidth * note.offset;
           
-          //selected note color
+          //color notes
           ctx.fillStyle = '#133e83';
+
+          if(this.props.numCopiedNotes > 0){
+            if(store.ui.editMode && store.ui.views.edit.copiedNotes.find(copied => copied.id.split('_')[2] === note.id.split('_')[1]))
+              ctx.fillStyle = '#19937a';
+          }
+
           if(this.props.selectedNote){
             if(note.id === this.props.selectedNote.id)
               ctx.fillStyle = '#065ae0'
@@ -498,11 +504,6 @@ export const TrackRowView = observer(class TrackRowView extends Component {
           //editviewbars multinote select
           if(store.ui.views.edit.multiNoteSelect && store.ui.views.edit.selectedNotes.find(n => n === note.id))
             ctx.fillStyle = '#065ae0';
-
-          if(this.props.numCopiedNotes > 0){
-            if(store.ui.editMode && store.ui.views.edit.copiedNotes.find(copied => copied.id.split('_')[2] === note.id.split('_')[1]))
-              ctx.fillStyle = '#19937a';
-          }
           
           //draw note
           ctx.globalAlpha = 0.8;
