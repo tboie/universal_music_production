@@ -882,7 +882,7 @@ input {
   display:inline-block;
 }
 
-#divEditorHdrSectionContainer {
+.divEditorHdrSectionContainer {
   position: absolute;
   width: 100%;
   height: 31px;

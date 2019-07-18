@@ -34,17 +34,17 @@ export const UISynth = observer(class UISynth extends Component {
     
     return (
       <div className='divToolRowEditorContainer'>
-        <UIEditorHeader obj={this.obj} sections={this.arrSections} selSection={this.selSection} type={this.props.type} selectSection={this.selectSection} funcRandom={this.setRandomVals}/>
+        <UIEditorHeader obj={this.obj} editorNum={this.props.editorNum} sections={this.arrSections} selSection={this.selSection} type={this.props.type} selectSection={this.selectSection} funcRandom={this.setRandomVals}/>
         <div style={{display:this.getDisplay('main')}}>
-          <UIOmniOscTypeControl obj={this.obj} propName={'type'} child={'oscillator'} random={this.random}/>
-          <UICustomRangeControl obj={this.obj} propName='volume' min={-100} max={10} mode={'range'} step={0.1} density={1} numType={'float'} signal={true}/>
-          <UICustomRangeControl obj={this.obj} propName='portamento' min={0} max={0.3} mode={'range'} step={0.01} density={1} numType={'float'} signal={false}/>
+          <UIOmniOscTypeControl obj={this.obj} editorNum={this.props.editorNum} propName={'type'} child={'oscillator'} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='volume' min={-100} max={10} mode={'range'} step={0.1} density={1} numType={'float'} signal={true}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='portamento' min={0} max={0.3} mode={'range'} step={0.01} density={1} numType={'float'} signal={false}/>
         </div>
         <div style={{display:this.getDisplay('env')}}>
-          <UICustomRangeControl obj={this.obj} propName='attack' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
-          <UICustomRangeControl obj={this.obj} propName='decay' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
-          <UICustomRangeControl obj={this.obj} propName='sustain' min={0.01} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
-          <UICustomRangeControl obj={this.obj} propName='release' min={0.01} max={4} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='attack' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='decay' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='sustain' min={0.01} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='release' min={0.01} max={4} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
         </div>
       </div>
     )
@@ -79,26 +79,26 @@ export const UIAMSynth = observer(class UIAMSynth extends Component {
 
     return (
       <div className='divToolRowEditorContainer'>
-        <UIEditorHeader obj={this.obj} sections={this.arrSections} selSection={this.selSection} type={this.props.type} selectSection={this.selectSection} funcRandom={this.setRandomVals}/>
+        <UIEditorHeader obj={this.obj} editorNum={this.props.editorNum} sections={this.arrSections} selSection={this.selSection} type={this.props.type} selectSection={this.selectSection} funcRandom={this.setRandomVals}/>
         <div style={{display:this.getDisplay('main')}}>
-          <UIOmniOscTypeControl obj={this.obj} propName={'type'} child={'oscillator'} random={this.random}/>
-          <UICustomRangeControl obj={this.obj} propName='volume' min={-100} max={10} mode={'range'} step={0.1} density={1} numType={'float'} signal={true}/>
-          <UICustomRangeControl obj={this.obj} propName='harmonicity' min={0} max={4} mode={'range'} step={0.1} density={1} numType={'float'} signal={true} random={this.random}/>
-          <UICustomRangeControl obj={this.obj} propName='portamento' min={0} max={0.3} mode={'range'} step={0.01} density={1} numType={'float'} signal={false}/>
-          <UICustomRangeControl obj={this.obj} propName='detune' min={-100} max={100} mode={'range'} step={0.1} density={1} numType={'float'} signal={true}/>
+          <UIOmniOscTypeControl obj={this.obj} editorNum={this.props.editorNum} propName={'type'} child={'oscillator'} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='volume' min={-100} max={10} mode={'range'} step={0.1} density={1} numType={'float'} signal={true}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='harmonicity' min={0} max={4} mode={'range'} step={0.1} density={1} numType={'float'} signal={true} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='portamento' min={0} max={0.3} mode={'range'} step={0.01} density={1} numType={'float'} signal={false}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='detune' min={-100} max={100} mode={'range'} step={0.1} density={1} numType={'float'} signal={true}/>
         </div>
         <div style={{display:this.getDisplay('env')}}>
-          <UICustomRangeControl obj={this.obj} propName='attack' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
-          <UICustomRangeControl obj={this.obj} propName='decay' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
-          <UICustomRangeControl obj={this.obj} propName='sustain' min={0.01} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
-          <UICustomRangeControl obj={this.obj} propName='release' min={0.01} max={4} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='attack' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='decay' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='sustain' min={0.01} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='release' min={0.01} max={4} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
         </div>
         <div style={{display:this.getDisplay('mod')}}>
-          <UIWaveTypeControl obj={this.obj} propName={"type"} child={'modulation'} random={this.random}/>
-          <UICustomRangeControl obj={this.obj} propName='attack' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'modulationEnvelope'} random={this.random}/>
-          <UICustomRangeControl obj={this.obj} propName='decay' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'modulationEnvelope'} random={this.random}/>
-          <UICustomRangeControl obj={this.obj} propName='sustain' min={0.01} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'modulationEnvelope'} random={this.random}/>
-          <UICustomRangeControl obj={this.obj} propName='release' min={0.01} max={4} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'modulationEnvelope'} random={this.random}/>
+          <UIWaveTypeControl obj={this.obj} editorNum={this.props.editorNum} propName={"type"} child={'modulation'} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='attack' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'modulationEnvelope'} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='decay' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'modulationEnvelope'} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='sustain' min={0.01} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'modulationEnvelope'} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='release' min={0.01} max={4} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'modulationEnvelope'} random={this.random}/>
         </div>
       </div>
     )
@@ -132,27 +132,27 @@ export const UIFMSynth = observer(class UIFMSynth extends Component {
     
     return (
       <div className='divToolRowEditorContainer'>
-        <UIEditorHeader obj={this.obj} sections={this.arrSections} selSection={this.selSection} type={this.props.type} selectSection={this.selectSection} funcRandom={this.setRandomVals}/>
+        <UIEditorHeader obj={this.obj} editorNum={this.props.editorNum} sections={this.arrSections} selSection={this.selSection} type={this.props.type} selectSection={this.selectSection} funcRandom={this.setRandomVals}/>
         <div style={{display:this.getDisplay('main')}}>
-          <UICustomRangeControl obj={this.obj} propName='modulationIndex' min={0} max={40} mode={'range'} step={0.1} density={1} numType={'float'} signal={true} random={this.random}/>
-          <UICustomRangeControl obj={this.obj} propName='volume' min={-100} max={10} mode={'range'} step={0.1} density={1} numType={'float'} signal={true}/>
-          <UICustomRangeControl obj={this.obj} propName='harmonicity' min={0} max={4} mode={'range'} step={0.1} density={1} numType={'float'} signal={true} random={this.random}/>
-          <UICustomRangeControl obj={this.obj} propName='portamento' min={0} max={0.3} mode={'range'} step={0.01} density={1} numType={'float'} signal={false}/>
-          <UICustomRangeControl obj={this.obj} propName='detune' min={-100} max={100} mode={'range'} step={0.1} density={1} numType={'float'} signal={true}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='modulationIndex' min={0} max={40} mode={'range'} step={0.1} density={1} numType={'float'} signal={true} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='volume' min={-100} max={10} mode={'range'} step={0.1} density={1} numType={'float'} signal={true}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='harmonicity' min={0} max={4} mode={'range'} step={0.1} density={1} numType={'float'} signal={true} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='portamento' min={0} max={0.3} mode={'range'} step={0.01} density={1} numType={'float'} signal={false}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='detune' min={-100} max={100} mode={'range'} step={0.1} density={1} numType={'float'} signal={true}/>
         </div>
         <div style={{display:this.getDisplay('osc')}}>
-          <UIOmniOscTypeControl obj={this.obj} propName={'type'} child={'oscillator'} random={this.random}/>
-          <UICustomRangeControl obj={this.obj} propName='attack' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
-          <UICustomRangeControl obj={this.obj} propName='decay' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
-          <UICustomRangeControl obj={this.obj} propName='sustain' min={0.01} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
-          <UICustomRangeControl obj={this.obj} propName='release' min={0.01} max={4} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
+          <UIOmniOscTypeControl obj={this.obj} editorNum={this.props.editorNum} propName={'type'} child={'oscillator'} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='attack' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='decay' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='sustain' min={0.01} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='release' min={0.01} max={4} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
         </div>
         <div style={{display:this.getDisplay('mod')}}>
-          <UIWaveTypeControl obj={this.obj} propName={"type"} child={'modulation'} random={this.random}/>
-          <UICustomRangeControl obj={this.obj} propName='attack' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'modulationEnvelope'} random={this.random}/>
-          <UICustomRangeControl obj={this.obj} propName='decay' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'modulationEnvelope'} random={this.random}/>
-          <UICustomRangeControl obj={this.obj} propName='sustain' min={0.01} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'modulationEnvelope'} random={this.random}/>
-          <UICustomRangeControl obj={this.obj} propName='release' min={0.01} max={4} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'modulationEnvelope'} random={this.random}/>
+          <UIWaveTypeControl obj={this.obj} editorNum={this.props.editorNum} propName={"type"} child={'modulation'} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='attack' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'modulationEnvelope'} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='decay' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'modulationEnvelope'} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='sustain' min={0.01} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'modulationEnvelope'} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='release' min={0.01} max={4} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'modulationEnvelope'} random={this.random}/>
         </div>
 
       </div>
@@ -188,8 +188,8 @@ export const UIMonoSynth = observer(class UIMonoSynth extends Component {
 
     return (
       <div className='divToolRowEditorContainer'>
-        <UIEditorHeader obj={this.obj} sections={this.arrSections} selSection={this.selSection} type={this.props.type} selectSection={this.selectSection} funcRandom={this.setRandomVals}/>
-        <MonoSynthVoice obj={this.obj} voice={null} getDisplay={(section, child) => this.getDisplay(section)} random={this.random}/>
+        <UIEditorHeader obj={this.obj} editorNum={this.props.editorNum} sections={this.arrSections} selSection={this.selSection} type={this.props.type} selectSection={this.selectSection} funcRandom={this.setRandomVals}/>
+        <MonoSynthVoice obj={this.obj} editorNum={this.props.editorNum} voice={null} getDisplay={(section, child) => this.getDisplay(section)} random={this.random}/>
       </div>
     )
   }
@@ -223,19 +223,19 @@ export const UIMetalSynth = observer(class UIMetalSynth extends Component {
 
     return (
       <div className='divToolRowEditorContainer'>
-        <UIEditorHeader obj={this.obj} sections={this.arrSections} selSection={this.selSection} type={this.props.type} selectSection={this.selectSection} funcRandom={this.setRandomVals}/>
+        <UIEditorHeader obj={this.obj} editorNum={this.props.editorNum} sections={this.arrSections} selSection={this.selSection} type={this.props.type} selectSection={this.selectSection} funcRandom={this.setRandomVals}/>
         <div style={{display:this.getDisplay('main')}}>
-          <UICustomRangeControl obj={this.obj} propName='volume' min={-100} max={10} mode={'range'} step={0.1} density={1} numType={'float'} signal={true}/>
-          <UICustomRangeControl obj={this.obj} propName='modulationIndex' min={0} max={40} mode={'range'} step={0.1} density={1} numType={'float'} signal={false} random={this.random}/>
-          <UICustomRangeControl obj={this.obj} propName='resonance' min={0} max={8000} mode={'range'} step={null} density={1} numType={'float'} signal={false}/>
-          <UICustomRangeControl obj={this.obj} propName='octaves' min={0} max={4} mode={'steps'} step={0.25} density={1} numType={'float'} signal={false}/>
-          <UICustomRangeControl obj={this.obj} propName='harmonicity' min={0} max={10} mode={'range'} step={0.1} density={1} numType={'float'} signal={false} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='volume' min={-100} max={10} mode={'range'} step={0.1} density={1} numType={'float'} signal={true}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='modulationIndex' min={0} max={40} mode={'range'} step={0.1} density={1} numType={'float'} signal={false} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='resonance' min={0} max={8000} mode={'range'} step={null} density={1} numType={'float'} signal={false}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='octaves' min={0} max={4} mode={'steps'} step={0.25} density={1} numType={'float'} signal={false}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='harmonicity' min={0} max={10} mode={'range'} step={0.1} density={1} numType={'float'} signal={false} random={this.random}/>
         </div>
         <div style={{display:this.getDisplay('env')}}>
-          <UICustomRangeControl obj={this.obj} propName='attack' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
-          <UICustomRangeControl obj={this.obj} propName='decay' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
-          <UICustomRangeControl obj={this.obj} propName='sustain' min={0.01} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
-          <UICustomRangeControl obj={this.obj} propName='release' min={0.01} max={4} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='attack' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='decay' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='sustain' min={0.01} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='release' min={0.01} max={4} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
         </div>
       </div>
     )
@@ -269,19 +269,19 @@ export const UIMembraneSynth = observer(class UIMembraneSynth extends Component 
 
     return (
       <div className='divToolRowEditorContainer'>
-        <UIEditorHeader obj={this.obj} sections={this.arrSections} selSection={this.selSection} type={this.props.type} selectSection={this.selectSection} funcRandom={this.setRandomVals}/>
+        <UIEditorHeader obj={this.obj} editorNum={this.props.editorNum} sections={this.arrSections} selSection={this.selSection} type={this.props.type} selectSection={this.selectSection} funcRandom={this.setRandomVals}/>
         <div style={{display:this.getDisplay('main')}}>
-          <UIOmniOscTypeControl obj={this.obj} propName={'type'} child={'oscillator'} random={this.random}/>
-          <UICustomRangeControl obj={this.obj} propName='volume' min={-100} max={10} mode={'range'} step={0.1} density={1} numType={'float'} signal={true}/>
-          <UICustomRangeControl obj={this.obj} propName='octaves' min={0.5} max={6} mode={'steps'} step={0.5} density={1} numType={'float'} signal={false} random={this.random}/>
-          <UICustomRangeControl obj={this.obj} propName='pitchDecay' min={0} max={0.2} mode={'range'} step={0.01} density={1} numType={'float'} signal={false} random={this.random}/>
+          <UIOmniOscTypeControl obj={this.obj} editorNum={this.props.editorNum} propName={'type'} child={'oscillator'} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='volume' min={-100} max={10} mode={'range'} step={0.1} density={1} numType={'float'} signal={true}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='octaves' min={0.5} max={6} mode={'steps'} step={0.5} density={1} numType={'float'} signal={false} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='pitchDecay' min={0} max={0.2} mode={'range'} step={0.01} density={1} numType={'float'} signal={false} random={this.random}/>
         </div>
         <div style={{display:this.getDisplay('env')}}>
-          <UICustomRangeControl obj={this.obj} propName='attack' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
-          <UICustomRangeControl obj={this.obj} propName='decay' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
-          <UICustomRangeControl obj={this.obj} propName='sustain' min={0.01} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
-          <UICustomRangeControl obj={this.obj} propName='release' min={0.01} max={4} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
-          <UICurveTypeControl obj={this.obj} propName={"attackCurve"} child={'envelope'} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='attack' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='decay' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='sustain' min={0.01} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='release' min={0.01} max={4} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={this.random}/>
+          <UICurveTypeControl obj={this.obj} editorNum={this.props.editorNum} propName={"attackCurve"} child={'envelope'} random={this.random}/>
         </div>
       </div>
     )
@@ -301,11 +301,11 @@ export const UIPluckSynth = observer(class UIPluckSynth extends Component {
 
     return (
       <div className='divToolRowEditorContainer'>
-        <UIEditorHeader obj={this.obj} type={this.props.type} funcRandom={this.setRandomVals}/>
-        <UICustomRangeControl obj={this.obj} propName='attackNoise' min={0.1} max={20} mode={'range'} step={0.01} density={1} numType={'float'} signal={false} random={this.random}/>
-        <UICustomRangeControl obj={this.obj} propName='dampening' min={20} max={10000} mode='range' step={null} density={1} numType={'float'} signal={true} random={this.random}/>
-        <UICustomRangeControl obj={this.obj} propName='resonance' min={0} max={1} mode='range' step={0.01} density={1} numType={'float'} signal={true} random={this.random}/>
-        <UICustomRangeControl obj={this.obj} propName='volume' min={-100} max={10} mode={'range'} step={0.1} density={1} numType={'float'} signal={true}/>
+        <UIEditorHeader obj={this.obj} editorNum={this.props.editorNum} type={this.props.type} funcRandom={this.setRandomVals}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='attackNoise' min={0.1} max={20} mode={'range'} step={0.01} density={1} numType={'float'} signal={false} random={this.random}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='dampening' min={20} max={10000} mode='range' step={null} density={1} numType={'float'} signal={true} random={this.random}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='resonance' min={0} max={1} mode='range' step={0.01} density={1} numType={'float'} signal={true} random={this.random}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='volume' min={-100} max={10} mode={'range'} step={0.1} density={1} numType={'float'} signal={true}/>
       </div>
     )
   }
@@ -319,13 +319,13 @@ export const UINoiseSynth = observer(class UINoiseSynth extends Component {
 
     return (
       <div className='divToolRowEditorContainer'>
-        <UIEditorHeader obj={this.obj} type={this.props.type} />
-        <UICustomRangeControl obj={this.obj} propName='volume' min={-100} max={10} mode={'range'} step={0.1} density={1} numType={'float'} signal={true}/>
-        <UINoiseTypeControl obj={this.obj} propName={"type"} child={'noise'}/>
-        <UICustomRangeControl obj={this.obj} propName='attack' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'}/>
-        <UICustomRangeControl obj={this.obj} propName='decay' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'}/>
-        <UICustomRangeControl obj={this.obj} propName='sustain' min={0.01} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'}/>
-        <UICustomRangeControl obj={this.obj} propName='release' min={0.01} max={4} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'}/>
+        <UIEditorHeader obj={this.obj} editorNum={this.props.editorNum} type={this.props.type} />
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='volume' min={-100} max={10} mode={'range'} step={0.1} density={1} numType={'float'} signal={true}/>
+        <UINoiseTypeControl obj={this.obj} editorNum={this.props.editorNum} propName={"type"} child={'noise'}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='attack' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='decay' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='sustain' min={0.01} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='release' min={0.01} max={4} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'}/>
       </div>
     )
   }
@@ -374,20 +374,20 @@ export const UIDuoSynth = observer(class UIDuoSynth extends Component {
 
     let childHeader = null;
     if(this.selSection !== "main")
-      childHeader = <div style={{height:'32px'}}><UIEditorHeader obj={this.obj} sections={this.arrChildSections} selSection={this.selChildSection} type={this.props.type} selectSection={this.selectSection} parent={this.selSection}/><br/><br/></div>
+      childHeader = <div style={{height:'32px'}}><UIEditorHeader obj={this.obj} editorNum={this.props.editorNum} sections={this.arrChildSections} selSection={this.selChildSection} type={this.props.type} selectSection={this.selectSection} parent={this.selSection}/><br/><br/></div>
 
     return (
       <div className='divToolRowEditorContainer'>
-        <UIEditorHeader obj={this.obj} sections={this.arrSections} selSection={this.selSection} type={this.props.type} selectSection={this.selectSection} funcRandom={this.setRandomVals}/>
+        <UIEditorHeader obj={this.obj} editorNum={this.props.editorNum} sections={this.arrSections} selSection={this.selSection} type={this.props.type} selectSection={this.selectSection} funcRandom={this.setRandomVals}/>
         { childHeader }
         <div style={{display:this.getDisplay('main')}}>
-          <UICustomRangeControl obj={this.obj} propName='volume' min={-100} max={10} mode={'range'} step={0.1} density={1} numType={'float'} signal={true}/>
-          <UICustomRangeControl obj={this.obj} propName='vibratoAmount' min={0} max={20} mode={'range'} step={0.1} density={1} numType={'float'} signal={true} random={this.random}/>
-          <UICustomRangeControl obj={this.obj} propName='vibratoRate' min={0} max={1000} mode={'range'} step={null} density={1} numType={'float'} signal={true} random={this.random}/>
-          <UICustomRangeControl obj={this.obj} propName='harmonicity' min={0} max={10} mode={'range'} step={0.1} density={1} numType={'float'} signal={true} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='volume' min={-100} max={10} mode={'range'} step={0.1} density={1} numType={'float'} signal={true}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='vibratoAmount' min={0} max={20} mode={'range'} step={0.1} density={1} numType={'float'} signal={true} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='vibratoRate' min={0} max={1000} mode={'range'} step={null} density={1} numType={'float'} signal={true} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='harmonicity' min={0} max={10} mode={'range'} step={0.1} density={1} numType={'float'} signal={true} random={this.random}/>
         </div>
-        <MonoSynthVoice obj={this.obj.voice0} voice={'voice0'} getDisplay={(section, child) => this.getDisplay(section, child)} random={this.random}/>
-        <MonoSynthVoice obj={this.obj.voice1} voice={'voice1'} getDisplay={(section, child) => this.getDisplay(section, child)} random={this.random}/>
+        <MonoSynthVoice obj={this.obj.voice0} editorNum={this.props.editorNum} voice={'voice0'} getDisplay={(section, child) => this.getDisplay(section, child)} random={this.random}/>
+        <MonoSynthVoice obj={this.obj.voice1} editorNum={this.props.editorNum} voice={'voice1'} getDisplay={(section, child) => this.getDisplay(section, child)} random={this.random}/>
     </div>
     )
   }
@@ -396,31 +396,31 @@ export const UIDuoSynth = observer(class UIDuoSynth extends Component {
 const MonoSynthVoice = observer(props =>
   <div style={{display: props.getDisplay(props.voice)}}>
     <div style={{display: props.getDisplay('main', true)}}>
-      <UICustomRangeControl obj={props.obj} voice={props.voice} propName='volume' min={-100} max={10} mode={'range'} step={0.1} density={1} numType={'float'} signal={true}/>
-      <UIOmniOscTypeControl obj={props.obj} propName={'type'} child={'oscillator'} random={props.random}/>
-      <UICustomRangeControl obj={props.obj} voice={props.voice} propName='detune' min={-100} max={100} mode={'range'} step={0.1} density={1} numType={'float'} signal={true}/>
-      <UICustomRangeControl obj={props.obj} voice={props.voice} propName='portamento' min={0} max={0.3} mode={'range'} step={0.01} density={1} numType={'float'} signal={false}/>
+      <UICustomRangeControl obj={props.obj} editorNum={props.editorNum} voice={props.voice} propName='volume' min={-100} max={10} mode={'range'} step={0.1} density={1} numType={'float'} signal={true}/>
+      <UIOmniOscTypeControl obj={props.obj} editorNum={props.editorNum} propName={'type'} child={'oscillator'} random={props.random}/>
+      <UICustomRangeControl obj={props.obj} editorNum={props.editorNum} voice={props.voice} propName='detune' min={-100} max={100} mode={'range'} step={0.1} density={1} numType={'float'} signal={true}/>
+      <UICustomRangeControl obj={props.obj} editorNum={props.editorNum} voice={props.voice} propName='portamento' min={0} max={0.3} mode={'range'} step={0.01} density={1} numType={'float'} signal={false}/>
     </div>
     <div style={{display: props.getDisplay('filter', true)}}>
-      <UICustomRangeControl obj={props.obj} voice={props.voice} propName='Q' min={0} max={10} mode={'steps'} step={1} density={10} numType={'integer'} signal={true} child={'filter'} random={props.random}/>
-      <UIFilterTypeControl obj={props.obj} voice={props.voice} propName={"type"} child={'filter'} random={props.random}/>
-      <UIFilterRolloffControl obj={props.obj} voice={props.voice} propName={"rolloff"} child={'filter'} random={props.random}/>
-      <UICustomRangeControl obj={props.obj} voice={props.voice} propName='gain' min={-20} max={3} mode={'range'} step={null} density={1} numType={'float'} signal={true} child={'filter'} random={props.random}/>
+      <UICustomRangeControl obj={props.obj} editorNum={props.editorNum} voice={props.voice} propName='Q' min={0} max={10} mode={'steps'} step={1} density={10} numType={'integer'} signal={true} child={'filter'} random={props.random}/>
+      <UIFilterTypeControl obj={props.obj} editorNum={props.editorNum} voice={props.voice} propName={"type"} child={'filter'} random={props.random}/>
+      <UIFilterRolloffControl obj={props.obj} editorNum={props.editorNum} voice={props.voice} propName={"rolloff"} child={'filter'} random={props.random}/>
+      <UICustomRangeControl obj={props.obj} editorNum={props.editorNum} voice={props.voice} propName='gain' min={-20} max={3} mode={'range'} step={null} density={1} numType={'float'} signal={true} child={'filter'} random={props.random}/>
     </div>
     <div style={{display: props.getDisplay('env1', true)}}>
-      <UICustomRangeControl obj={props.obj} voice={props.voice} propName='attack' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={props.random}/>
-      <UICustomRangeControl obj={props.obj} voice={props.voice} propName='decay' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={props.random}/>
-      <UICustomRangeControl obj={props.obj} voice={props.voice} propName='sustain' min={0.01} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={props.random}/>
-      <UICustomRangeControl obj={props.obj} voice={props.voice} propName='release' min={0.01} max={4} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={props.random}/>
+      <UICustomRangeControl obj={props.obj} editorNum={props.editorNum} voice={props.voice} propName='attack' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={props.random}/>
+      <UICustomRangeControl obj={props.obj} editorNum={props.editorNum} voice={props.voice} propName='decay' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={props.random}/>
+      <UICustomRangeControl obj={props.obj} editorNum={props.editorNum} voice={props.voice} propName='sustain' min={0.01} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={props.random}/>
+      <UICustomRangeControl obj={props.obj} editorNum={props.editorNum} voice={props.voice} propName='release' min={0.01} max={4} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'envelope'} random={props.random}/>
     </div>
     <div style={{display: props.getDisplay('env2', true)}}>
-      <UICustomRangeControl obj={props.obj} voice={props.voice} propName='attack' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'filterEnvelope'} random={props.random}/>
-      <UICustomRangeControl obj={props.obj} voice={props.voice} propName='decay' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'filterEnvelope'} random={props.random}/>
-      <UICustomRangeControl obj={props.obj} voice={props.voice} propName='sustain' min={0.01} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'filterEnvelope'} random={props.random}/>
-      <UICustomRangeControl obj={props.obj} voice={props.voice} propName='release' min={0.01} max={4} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'filterEnvelope'} random={props.random}/>
-      <UICustomRangeControl obj={props.obj} voice={props.voice} propName='baseFrequency' min={20} max={1000} mode='range' step={null} density={1} numType={'float'} signal={false} child={'filterEnvelope'} random={props.random}/>
-      <UICustomRangeControl obj={props.obj} voice={props.voice} propName='octaves' min={0} max={10} mode={'steps'} step={1} density={1} numType={'float'} signal={false} child={'filterEnvelope'} random={props.random}/>
-      <UICustomRangeControl obj={props.obj} voice={props.voice} propName='exponent' min={1} max={10} mode={'steps'} step={1} density={1} numType={'integer'} signal={false} child={'filterEnvelope'} random={props.random}/>
+      <UICustomRangeControl obj={props.obj} editorNum={props.editorNum} voice={props.voice} propName='attack' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'filterEnvelope'} random={props.random}/>
+      <UICustomRangeControl obj={props.obj} editorNum={props.editorNum} voice={props.voice} propName='decay' min={0.01} max={2} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'filterEnvelope'} random={props.random}/>
+      <UICustomRangeControl obj={props.obj} editorNum={props.editorNum} voice={props.voice} propName='sustain' min={0.01} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'filterEnvelope'} random={props.random}/>
+      <UICustomRangeControl obj={props.obj} editorNum={props.editorNum} voice={props.voice} propName='release' min={0.01} max={4} mode={'range'} step={null} density={1} numType={'float'} signal={false} child={'filterEnvelope'} random={props.random}/>
+      <UICustomRangeControl obj={props.obj} editorNum={props.editorNum} voice={props.voice} propName='baseFrequency' min={20} max={1000} mode='range' step={null} density={1} numType={'float'} signal={false} child={'filterEnvelope'} random={props.random}/>
+      <UICustomRangeControl obj={props.obj} editorNum={props.editorNum} voice={props.voice} propName='octaves' min={0} max={10} mode={'steps'} step={1} density={1} numType={'float'} signal={false} child={'filterEnvelope'} random={props.random}/>
+      <UICustomRangeControl obj={props.obj} editorNum={props.editorNum} voice={props.voice} propName='exponent' min={1} max={10} mode={'steps'} step={1} density={1} numType={'integer'} signal={false} child={'filterEnvelope'} random={props.random}/>
     </div>
   </div>
 )
@@ -436,10 +436,10 @@ export const UITinySynth = observer(class UITinySynth extends Component {
     
     return (
       <div className='divToolRowEditorContainer'>
-        <UIEditorHeader obj={this.obj} type={this.props.type} />
-        {/*<UICustomRangeControl obj={this.obj} propName='channel' min={0} max={15} mode={'steps'} step={1} density={1} numType={'integer'} signal={false}/>*/}
-        <UICustomRangeControl obj={this.obj} propName='instrument' min={0} max={127} mode={'steps'} step={1} density={10} numType={'integer'} signal={false}/>
-        <UICustomRangeControl obj={this.panvol} propName='volume' min={-100} max={10} mode={'range'} step={0.1} density={1} numType={'float'} signal={true}/>
+        <UIEditorHeader obj={this.obj} editorNum={this.props.editorNum} type={this.props.type} />
+        {/*<UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='channel' min={0} max={15} mode={'steps'} step={1} density={1} numType={'integer'} signal={false}/>*/}
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} editorNum={this.props.editorNum} propName='instrument' min={0} max={127} mode={'steps'} step={1} density={10} numType={'integer'} signal={false}/>
+        <UICustomRangeControl obj={this.panvol} editorNum={this.props.editorNum} propName='volume' min={-100} max={10} mode={'range'} step={0.1} density={1} numType={'float'} signal={true}/>
       </div>
     )
   }

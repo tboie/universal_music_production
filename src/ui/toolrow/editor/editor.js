@@ -17,13 +17,14 @@ export const ToolEditor = props => {
                   winWidth={props.store.ui.windowWidth}
                   selectedToolbar={props.store.ui.selectedToolbar} 
                   selectedGroup={props.store.ui.selectedGroup}
+                  editorNum={props.editorNum}
                 />
     }
     else if(props.objId.split("_")[0] === "record"){
-      type = <ToolRecord store={props.store} objId={props.objId}/>
+      type = <ToolRecord store={props.store} objId={props.objId} editorNum={props.editorNum}/>
     }
     else{
-      type = <ToolObjEditor objId={props.objId}/>
+      type = <ToolObjEditor objId={props.objId} editorNum={props.editorNum}/>
     }
   }
   else{
@@ -33,7 +34,7 @@ export const ToolEditor = props => {
   }
 
   return(
-      <div id="divToolEditor" className="divToolRowPanelContainer">
+      <div id={"divToolEditor" + props.editorNum} className="divToolRowPanelContainer">
         {type}
       </div>
     )

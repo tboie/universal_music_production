@@ -8,12 +8,14 @@ import { ToneObjs } from '../../../../../models/models.js';
 
 
 export const UIEditorHeader = observer(class UIEditorHeader extends Component {
+  editorId;
+
   componentDidMount(){
     if(this.props.selSection){
-      let strId = 'btnEditHeaderToggleSection_' + this.props.selSection;
+      let strId = this.editorId + '_btnEditHeaderToggleSection_' + this.props.selSection;
       
       if(this.props.parent)
-        strId = 'btnEditHeaderToggleSection_' + this.props.parent + '_' + this.props.selSection;
+        strId = this.editorId + '_btnEditHeaderToggleSection_' + this.props.parent + '_' + this.props.selSection;
       
       document.getElementById(strId).style.backgroundColor = '#2671ea';
     }
@@ -32,12 +34,12 @@ export const UIEditorHeader = observer(class UIEditorHeader extends Component {
   }
 
   selectSection = (e) => {
-    let section = e.target.id.split('_')[1];
-    let id = 'btnEditHeaderToggleSection';
+    let section = e.target.id.split('_')[2];
+    let id = this.editorId + '_btnEditHeaderToggleSection';
 
     if(this.props.parent){
-      section = e.target.id.split('_')[2];
-      id = 'btnEditHeaderToggleSection_' + this.props.parent;
+      section = e.target.id.split('_')[3];
+      id = this.editorId + '_btnEditHeaderToggleSection_' + this.props.parent;
     }
     
     this.props.sections.forEach(s => {
@@ -60,11 +62,13 @@ export const UIEditorHeader = observer(class UIEditorHeader extends Component {
   }
 
   render() {
+    this.editorId = 'editor' + this.props.editorNum;
+
     let top = 0;
     let title = this.props.obj.id.split("_")[0];
     title = toneObjNames.find(n => n.toLowerCase() === title);
 
-    let id = 'btnEditHeaderToggleSection';
+    let id = this.editorId + '_btnEditHeaderToggleSection';
     
     let sDisplay = "block";
     if(title === "panvol")
@@ -79,7 +83,7 @@ export const UIEditorHeader = observer(class UIEditorHeader extends Component {
     if(this.props.obj.track){
       let type = store.getObjTypeByIdTrack(this.props.obj.id, this.props.obj.track.id);
       if(type === "instrument" && title !== "NoiseSynth")
-        btnRand = <button id="btnSetRandom" onClick={this.props.funcRandom} style={{position:'absolute', height:'100%', right:'56px', zIndex:99}}>Rnd</button>
+        btnRand = <button id={this.editorId + "_btnSetRandom"} onClick={this.props.funcRandom} style={{position:'absolute', height:'100%', right:'56px', zIndex:99}}>Rnd</button>
     }
 
     let toggleSections = [];
@@ -100,7 +104,7 @@ export const UIEditorHeader = observer(class UIEditorHeader extends Component {
         <div style={{position:'absolute', backgroundColor: 'rgb(12, 11, 27)', width:'100%', height:'32px', top:top + 'px', zIndex:99}}>
           <button style={{float:'left', position:'relative', height:'100%', zIndex:1}} onClick={this.btnClickTitle}>{title}</button>
           { btnRand }
-          <div id="divEditorHdrSectionContainer">
+          <div className="divEditorHdrSectionContainer">
             {
               toggleSections.map((section, idx) => 
                 <button key={idx} id={id + '_' + section} onClick={this.selectSection} style={{height:'100%'}}>{section}</button>)
@@ -229,13 +233,15 @@ export const UICustomRangeControl = observer(class UICustomRangeControl extends 
   }
 
   render(){
+    const editorId = 'editor' + this.props.editorNum;
+
     if(this.props.child){
       this.obj = this.props.obj[this.props.child];
-      this.sliderId = 'slider_' + this.props.child + '_' + this.props.propName + '_' + this.props.obj.id;
+      this.sliderId = editorId + '_slider_' + this.props.child + '_' + this.props.propName + '_' + this.props.obj.id;
     }
     else{
       this.obj = this.props.obj;
-      this.sliderId = 'slider_' + this.props.propName + '_' + this.props.obj.id;
+      this.sliderId = editorId + '_slider_' + this.props.propName + '_' + this.props.obj.id;
     }
 
     if(!this.objType){
@@ -256,10 +262,11 @@ export const UICustomRangeControl = observer(class UICustomRangeControl extends 
 
 export const UITimeControl = observer(class UITimeControl extends Component {
   slider;
+  sliderId;
 
   componentDidMount(){
     let self = this;
-    this.slider = document.getElementById('slider_' + self.props.propName + '_' + self.props.obj.id);
+    this.slider = document.getElementById(this.sliderId);
 
     noUiSlider.create(this.slider, {
       start: self.props.obj[self.props.propName],
@@ -355,10 +362,13 @@ export const UITimeControl = observer(class UITimeControl extends Component {
   }
 
   render(){
+    const editorId = 'editor' + this.props.editorNum;
+    this.sliderId = editorId + '_slider_' + this.props.propName + '_' + this.props.obj.id;
+    
     return(
       <div className='divEditorSliderContainer'>
         <label>{this.props.propName}</label><br/>
-        <div id={'slider_' + this.props.propName + '_' + this.props.obj.id}></div>
+        <div id={this.sliderId}></div>
       </div>
     )
   }
@@ -367,15 +377,12 @@ export const UITimeControl = observer(class UITimeControl extends Component {
 export const UIWaveTypeControl = observer(class UIWaveTypeControl extends Component {
   slider;
   obj;
+  sliderId;
 
   componentDidMount(){
     let self = this;
     let props = this.props;
-    if(props.child)
-      this.slider = document.getElementById('slider_' + props.child + '_' + props.propName + '_' + props.obj.id);
-    else
-      this.slider = document.getElementById('slider_' + props.propName + '_' + props.obj.id);
-
+    this.slider = document.getElementById(this.sliderId);
 
     if(props.child)
       self.obj = props.obj[props.child]
@@ -476,14 +483,16 @@ export const UIWaveTypeControl = observer(class UIWaveTypeControl extends Compon
   }
 
   render(){
-    let id = 'slider_' + this.props.propName + '_' + this.props.obj.id;
+    const editorId = 'editor' + this.props.editorNum;
+
+    this.sliderId = editorId + '_slider_' + this.props.propName + '_' + this.props.obj.id;
     if(this.props.child)
-      id = 'slider_' + this.props.child + '_' + this.props.propName + '_' + this.props.obj.id
+      this.sliderId = editorId + '_slider_' + this.props.child + '_' + this.props.propName + '_' + this.props.obj.id
 
     return(
       <div className='divEditorSliderContainer'>
         <label>{this.props.propName}</label><br/>
-        <div id={id}></div>
+        <div id={this.sliderId}></div>
       </div>
     )
   }
@@ -492,14 +501,12 @@ export const UIWaveTypeControl = observer(class UIWaveTypeControl extends Compon
 export const UIFilterTypeControl = observer(class UIFilterTypeControl extends Component {
   slider;
   obj;
+  sliderId;
 
   componentDidMount(){
     let self = this;
     let props = this.props;
-    if(props.child)
-      this.slider = document.getElementById('slider_' + props.child + '_' + props.propName + '_' + props.obj.id);
-    else
-      this.slider = document.getElementById('slider_' + props.propName + '_' + props.obj.id);
+    this.slider = document.getElementById(this.sliderId);
 
     if(props.child)
       self.obj = props.obj[props.child]
@@ -616,14 +623,16 @@ export const UIFilterTypeControl = observer(class UIFilterTypeControl extends Co
   }
 
   render(){
-    let id = 'slider_' + this.props.propName + '_' + this.props.obj.id;
+    const editorId = 'editor' + this.props.editorNum;
+
+    this.sliderId = editorId + '_slider_' + this.props.propName + '_' + this.props.obj.id;
     if(this.props.child)
-      id = 'slider_' + this.props.child + '_' + this.props.propName + '_' + this.props.obj.id
+      this.sliderId = editorId + '_slider_' + this.props.child + '_' + this.props.propName + '_' + this.props.obj.id;
 
     return(
       <div className='divEditorSliderContainer'>
         <label>{this.props.propName}</label><br/>
-        <div id={id}></div>
+        <div id={this.sliderId}></div>
       </div>
     )
   }
@@ -632,15 +641,13 @@ export const UIFilterTypeControl = observer(class UIFilterTypeControl extends Co
 export const UICurveTypeControl = observer(class UICurveTypeControl extends Component {
   slider;
   obj;
+  sliderId;
 
   componentDidMount(){
     let self = this;
     let props = this.props;
-    if(props.child)
-      this.slider = document.getElementById('slider_' + props.child + '_' + props.propName + '_' + props.obj.id);
-    else
-      this.slider = document.getElementById('slider_' + props.propName + '_' + props.obj.id);
-
+    this.slider = document.getElementById(this.sliderId);
+    
     if(props.child)
       self.obj = props.obj[props.child]
     else
@@ -751,14 +758,16 @@ export const UICurveTypeControl = observer(class UICurveTypeControl extends Comp
   }
 
   render(){
-    let id = 'slider_' + this.props.propName + '_' + this.props.obj.id;
+    const editorId = 'editor' + this.props.editorNum;
+
+    this.sliderId = editorId + '_slider_' + this.props.propName + '_' + this.props.obj.id;
     if(this.props.child)
-      id = 'slider_' + this.props.child + '_' + this.props.propName + '_' + this.props.obj.id
+      this.sliderId = editorId + '_slider_' + this.props.child + '_' + this.props.propName + '_' + this.props.obj.id
 
     return(
       <div className='divEditorSliderContainer'>
         <label>{this.props.propName}</label><br/>
-        <div id={id}></div>
+        <div id={this.sliderId}></div>
       </div>
     )
   }
@@ -767,14 +776,12 @@ export const UICurveTypeControl = observer(class UICurveTypeControl extends Comp
 export const UIFilterRolloffControl = observer(class UIFilterRolloffControl extends Component {
   slider;
   obj;
+  sliderId;
 
   componentDidMount(){
     let self = this;
     let props = this.props;
-    if(props.child)
-      this.slider = document.getElementById('slider_' + props.child + '_' + props.propName + '_' + props.obj.id);
-    else
-      this.slider = document.getElementById('slider_' + props.propName + '_' + props.obj.id);
+    this.slider = document.getElementById(this.sliderId);
 
     if(props.child)
       self.obj = props.obj[props.child]
@@ -875,14 +882,16 @@ export const UIFilterRolloffControl = observer(class UIFilterRolloffControl exte
   }
 
   render(){
-    let id = 'slider_' + this.props.propName + '_' + this.props.obj.id;
+    const editorId = 'editor' + this.props.editorNum;
+
+    this.sliderId = editorId + '_slider_' + this.props.propName + '_' + this.props.obj.id;
     if(this.props.child)
-      id = 'slider_' + this.props.child + '_' + this.props.propName + '_' + this.props.obj.id
+      this.sliderId = editorId + '_slider_' + this.props.child + '_' + this.props.propName + '_' + this.props.obj.id
 
     return(
       <div className='divEditorSliderContainer'>
         <label>{this.props.propName}</label><br/>
-        <div id={id}></div>
+        <div id={this.sliderId}></div>
       </div>
     )
   }
@@ -892,15 +901,12 @@ export const UIFilterRolloffControl = observer(class UIFilterRolloffControl exte
 export const UINoiseTypeControl = observer(class UINoiseTypeControl extends Component {
   slider;
   obj;
+  sliderId;
 
   componentDidMount(){
     let self = this;
     let props = this.props;
-    if(props.child)
-      this.slider = document.getElementById('slider_' + props.child + '_' + props.propName + '_' + props.obj.id);
-    else
-      this.slider = document.getElementById('slider_' + props.propName + '_' + props.obj.id);
-
+    this.slider = document.getElementById(this.sliderId);
 
     if(props.child)
       self.obj = props.obj[props.child]
@@ -982,14 +988,16 @@ export const UINoiseTypeControl = observer(class UINoiseTypeControl extends Comp
   }
 
   render(){
-    let id = 'slider_' + this.props.propName + '_' + this.props.obj.id;
+    const editorId = 'editor' + this.props.editorNum;
+
+    this.sliderId = editorId + '_slider_' + this.props.propName + '_' + this.props.obj.id;
     if(this.props.child)
-      id = 'slider_' + this.props.child + '_' + this.props.propName + '_' + this.props.obj.id
+      this.sliderId = editorId + '_slider_' + this.props.child + '_' + this.props.propName + '_' + this.props.obj.id
 
     return(
       <div className='divEditorSliderContainer'>
         <label>{this.props.propName}</label><br/>
-        <div id={id}></div>
+        <div id={this.sliderId}></div>
       </div>
     )
   }
@@ -998,12 +1006,13 @@ export const UINoiseTypeControl = observer(class UINoiseTypeControl extends Comp
 export const UIOverSample = observer(class UIOverSample extends Component {
   obj;
   slider;
+  sliderId;
 
   componentDidMount(){
     let self = this;
     let props = this.props;
 
-    this.slider = document.getElementById('slider_' + props.propName + '_' + props.obj.id);
+    this.slider = document.getElementById(this.sliderId);
 
     noUiSlider.create(this.slider, {
       start: self.props.obj[props.propName],
@@ -1084,10 +1093,13 @@ export const UIOverSample = observer(class UIOverSample extends Component {
   }
 
   render(){
+    const editorId = 'editor' + this.props.editorNum;
+    this.sliderId = editorId + '_slider_' + this.props.propName + '_' + this.props.obj.id;
+
     return(
       <div className='divEditorSliderContainer'>
         <label>{this.props.propName}</label><br/>
-        <div id={'slider_' + this.props.propName + '_' + this.props.obj.id}></div>
+        <div id={this.sliderId}></div>
       </div>
     )
   }
@@ -1202,13 +1214,15 @@ export const UIOmniOscTypeControl = observer(class UIOmniOscTypeControl extends 
   }
 
   render(){
+    const editorId = 'editor' + this.props.editorNum;
+
     if(this.props.child){
       this.obj = this.props.obj[this.props.child];
-      this.sliderId = 'slider_' + this.props.child + '_' + this.props.propName + '_' + this.props.obj.id;
+      this.sliderId = editorId + '_slider_' + this.props.child + '_' + this.props.propName + '_' + this.props.obj.id;
     }
     else{
       this.obj = this.props.obj;
-      this.sliderId = 'slider_' + this.props.propName + '_' + this.props.obj.id;
+      this.sliderId = editorId + '_slider_' + this.props.propName + '_' + this.props.obj.id;
     }
 
     if(!this.oscType)
@@ -1220,7 +1234,7 @@ export const UIOmniOscTypeControl = observer(class UIOmniOscTypeControl extends 
           <label>{this.props.propName}</label><br/>
           <div id={this.sliderId}></div>
         </div>
-        <UIOmniOscWaveTypeControl obj={this.props.obj} child={this.props.child} oscType={this.oscType} random={this.props.random}/>
+        <UIOmniOscWaveTypeControl obj={this.props.obj} editorNum={this.props.editorNum} child={this.props.child} oscType={this.oscType} random={this.props.random}/>
       </div>
     )
   }
@@ -1356,13 +1370,15 @@ const UIOmniOscWaveTypeControl = observer(class UIOmniOscWaveTypeControl extends
   }
 
   render(){
+    const editorId = 'editor' + this.props.editorNum;
+
     if(this.props.child){
       this.obj = this.props.obj[this.props.child];
-      this.sliderId = 'slider_' + this.props.child + '_wavetype_' + this.props.obj.id;
+      this.sliderId = editorId + '_slider_' + this.props.child + '_wavetype_' + this.props.obj.id;
     }
     else{
       this.obj = this.props.obj;
-      this.sliderId = 'slider_wavetype_' + this.props.obj.id;
+      this.sliderId = editorId + '_slider_wavetype_' + this.props.obj.id;
     }
 
     return(

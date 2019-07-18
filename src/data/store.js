@@ -59,7 +59,9 @@ export const store = RootStore.create({
         },
         "action": undefined
       },
-      "edit" : {
+      "edit1" : {
+      },
+      "edit2" : {
       },
       "song" : {
       },

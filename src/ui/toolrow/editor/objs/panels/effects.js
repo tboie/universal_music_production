@@ -28,20 +28,20 @@ export const UIAutoFilter = observer(class UIAutoFilter extends Component {
 
     return (
       <div className='divToolRowEditorContainer'>
-        <UIEditorHeader obj={this.obj} sections={this.arrSections} selSection={this.selSection} type={this.props.type} selectSection={this.selectSection}/>
+        <UIEditorHeader obj={this.obj} editorNum={this.props.editorNum} sections={this.arrSections} selSection={this.selSection} type={this.props.type} selectSection={this.selectSection}/>
         <div style={{display:this.getDisplay('main')}}>
-          <UITimeControl obj={this.obj} propName="frequency"/>
-          <UIWaveTypeControl obj={this.obj} propName="type"/>
-          <UICustomRangeControl obj={this.obj} propName={'depth'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
-          <UICustomRangeControl obj={this.obj} propName='baseFrequency' min={20} max={1000} mode='range' step={null} density={1} numType={'float'} signal={false}/>
-          <UICustomRangeControl obj={this.obj} propName='octaves' min={0} max={10} mode={'range'} step={null} density={1} numType={'float'} signal={false}/>
-          <UICustomRangeControl obj={this.obj} propName={'wet'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
+          <UITimeControl obj={this.obj} editorNum={this.props.editorNum} propName="frequency"/>
+          <UIWaveTypeControl obj={this.obj} editorNum={this.props.editorNum} propName="type"/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName={'depth'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='baseFrequency' min={20} max={1000} mode='range' step={null} density={1} numType={'float'} signal={false}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='octaves' min={0} max={10} mode={'range'} step={null} density={1} numType={'float'} signal={false}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName={'wet'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
         </div>
         <div style={{display:this.getDisplay('filter')}}>
-          <UICustomRangeControl obj={this.obj} propName='Q' min={0} max={10} mode={'steps'} step={1} density={10} numType={'integer'} signal={true} child={'filter'}/>
-          <UIFilterTypeControl obj={this.obj} propName={"type"} child={'filter'}/>
-          <UIFilterRolloffControl obj={this.obj} propName={"rolloff"} child={'filter'}/>
-          <UICustomRangeControl obj={this.obj} propName='gain' min={-20} max={3} mode={'range'} step={null} density={1} numType={'float'} signal={true} child={'filter'}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='Q' min={0} max={10} mode={'steps'} step={1} density={10} numType={'integer'} signal={true} child={'filter'}/>
+          <UIFilterTypeControl obj={this.obj} editorNum={this.props.editorNum} propName={"type"} child={'filter'}/>
+          <UIFilterRolloffControl obj={this.obj} editorNum={this.props.editorNum} propName={"rolloff"} child={'filter'}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='gain' min={-20} max={3} mode={'range'} step={null} density={1} numType={'float'} signal={true} child={'filter'}/>
         </div>
       </div>
     )
@@ -55,11 +55,11 @@ export const UIAutoPanner = observer(class UIAutoPanner extends Component {
 
     return (
       <div className='divToolRowEditorContainer'>
-        <UIEditorHeader obj={this.obj} type={this.props.type}/>
-        <UICustomRangeControl obj={this.obj} propName={'depth'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
-        <UITimeControl obj={this.obj} propName="frequency"/>
-        <UIWaveTypeControl obj={this.obj} propName="type"/>
-        <UICustomRangeControl obj={this.obj} propName={'wet'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
+        <UIEditorHeader obj={this.obj} editorNum={this.props.editorNum} type={this.props.type}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName={'depth'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
+        <UITimeControl obj={this.obj} editorNum={this.props.editorNum} propName="frequency"/>
+        <UIWaveTypeControl obj={this.obj} editorNum={this.props.editorNum} propName="type"/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName={'wet'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
       </div>
     )
   }
@@ -73,13 +73,13 @@ export const UIAutoWah = observer(class UIAutoWah extends Component {
 
     return (
       <div className='divToolRowEditorContainer'>
-        <UIEditorHeader obj={this.obj} type={this.props.type}/>
-        <UICustomRangeControl obj={this.obj} propName='baseFrequency' min={20} max={1000} mode='range' step={null} density={1} numType={'float'} signal={false}/>
-        <UICustomRangeControl obj={this.obj} propName='octaves' min={0} max={10} mode={'steps'} step={1} density={10} numType={'integer'} signal={false}/>
-        <UICustomRangeControl obj={this.obj} propName='sensitivity' min={-40} max={0} mode={'range'} step={null} density={1} numType={'float'} signal={false}/>
-        <UICustomRangeControl obj={this.obj} propName='Q' min={0} max={10} mode={'steps'} step={1} density={10} numType={'integer'} signal={true}/>
-        <UICustomRangeControl obj={this.obj} propName='gain' min={-20} max={3} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
-        <UICustomRangeControl obj={this.obj} propName={'wet'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
+        <UIEditorHeader obj={this.obj} editorNum={this.props.editorNum} type={this.props.type}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='baseFrequency' min={20} max={1000} mode='range' step={null} density={1} numType={'float'} signal={false}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='octaves' min={0} max={10} mode={'steps'} step={1} density={10} numType={'integer'} signal={false}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='sensitivity' min={-40} max={0} mode={'range'} step={null} density={1} numType={'float'} signal={false}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='Q' min={0} max={10} mode={'steps'} step={1} density={10} numType={'integer'} signal={true}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='gain' min={-20} max={3} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName={'wet'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
       </div>
     )
   }
@@ -91,9 +91,9 @@ export const UIBitCrusher = observer(class UIBitCrusher extends Component {
 
     return (
       <div className='divToolRowEditorContainer'>
-        <UIEditorHeader obj={this.obj} type={this.props.type}/>
-        <UICustomRangeControl obj={this.obj} propName={'bits'} min={1} max={8} mode={'steps'} step={1} density={12.5} numType={'integer'} signal={false}/>
-        <UICustomRangeControl obj={this.obj} propName={'wet'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
+        <UIEditorHeader obj={this.obj} editorNum={this.props.editorNum} type={this.props.type}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName={'bits'} min={1} max={8} mode={'steps'} step={1} density={12.5} numType={'integer'} signal={false}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName={'wet'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
       </div>
     )
   }
@@ -106,10 +106,10 @@ export const UIChebyshev = observer(class UIChebyshev extends Component{
 
     return (
       <div className='divToolRowEditorContainer'>
-        <UIEditorHeader obj={this.obj} type={this.props.type}/>
-        <UICustomRangeControl obj={this.obj} propName={'order'} min={0} max={10} mode={'steps'} step={1} density={10} numType={'integer'} signal={false}/>
-        <UIOverSample obj={this.obj} propName={'oversample'} min={0} max={2} mode={'steps'} step={1} density={10} numType={'integer'} signal={false}/>
-        <UICustomRangeControl obj={this.obj} propName={'wet'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
+        <UIEditorHeader obj={this.obj} editorNum={this.props.editorNum} type={this.props.type}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName={'order'} min={0} max={10} mode={'steps'} step={1} density={10} numType={'integer'} signal={false}/>
+        <UIOverSample obj={this.obj} editorNum={this.props.editorNum} propName={'oversample'} min={0} max={2} mode={'steps'} step={1} density={10} numType={'integer'} signal={false}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName={'wet'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
       </div>
     )
   }
@@ -123,13 +123,13 @@ export const UIChorus = observer(class UIChorus extends Component {
 
     return (
       <div className='divToolRowEditorContainer'>
-        <UIEditorHeader obj={this.obj} type={this.props.type}/>
-        <UICustomRangeControl obj={this.obj} propName={'frequency'} min={0} max={20} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
-        <UICustomRangeControl obj={this.obj} propName={'delayTime'} min={0} max={25} mode={'range'} step={null} density={1} numType={'float'} signal={false}/>
-        <UICustomRangeControl obj={this.obj} propName={'depth'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={false}/>
-        <UIWaveTypeControl obj={this.obj} propName={"type"}/>
-        <UICustomRangeControl obj={this.obj} propName={'spread'} min={0} max={360} mode={'range'} step={null} density={1} numType={'float'} signal={false}/>
-        <UICustomRangeControl obj={this.obj} propName={'wet'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
+        <UIEditorHeader obj={this.obj} editorNum={this.props.editorNum} type={this.props.type}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName={'frequency'} min={0} max={20} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName={'delayTime'} min={0} max={25} mode={'range'} step={null} density={1} numType={'float'} signal={false}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName={'depth'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={false}/>
+        <UIWaveTypeControl obj={this.obj} editorNum={this.props.editorNum} propName={"type"}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName={'spread'} min={0} max={360} mode={'range'} step={null} density={1} numType={'float'} signal={false}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName={'wet'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
       </div>
     )
   }
@@ -149,10 +149,10 @@ export const UIDistortion = observer(class UIDistortion extends Component {
 
     return (
       <div className='divToolRowEditorContainer'>
-        <UIEditorHeader obj={this.obj} type={this.props.type}/>
-        <UICustomRangeControl obj={this.obj} propName={'distortion'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={false}/>
-        <UIOverSample obj={this.obj} propName={'oversample'} min={0} max={2} mode={'steps'} step={1} density={10} numType={'integer'} signal={false}/>
-        <UICustomRangeControl obj={this.obj} propName={'wet'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
+        <UIEditorHeader obj={this.obj} editorNum={this.props.editorNum} type={this.props.type}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName={'distortion'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={false}/>
+        <UIOverSample obj={this.obj} editorNum={this.props.editorNum} propName={'oversample'} min={0} max={2} mode={'steps'} step={1} density={10} numType={'integer'} signal={false}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName={'wet'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
       </div>
     )
   }
@@ -165,10 +165,10 @@ export const UIFeedbackDelay = observer(class UIFeedbackDelay extends Component 
 
     return (
       <div className='divToolRowEditorContainer'>
-        <UIEditorHeader obj={this.obj} type={this.props.type}/>
-        <UITimeControl obj={this.obj} propName='delayTime'/>
-        <UICustomRangeControl obj={this.obj} propName={'feedback'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
-        <UICustomRangeControl obj={this.obj} propName={'wet'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
+        <UIEditorHeader obj={this.obj} editorNum={this.props.editorNum} type={this.props.type}/>
+        <UITimeControl obj={this.obj} editorNum={this.props.editorNum} propName='delayTime'/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName={'feedback'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName={'wet'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
       </div>
     )
   }
@@ -180,10 +180,10 @@ export const UIFreeverb = observer(class UIFreeverb extends Component{
 
     return (
       <div className='divToolRowEditorContainer'>
-        <UIEditorHeader obj={this.obj} type={this.props.type}/>
-        <UICustomRangeControl obj={this.obj} propName={'roomSize'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
-        <UICustomRangeControl obj={this.obj} propName={'dampening'} min={0} max={15000} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
-        <UICustomRangeControl obj={this.obj} propName={'wet'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
+        <UIEditorHeader obj={this.obj} editorNum={this.props.editorNum} type={this.props.type}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName={'roomSize'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName={'dampening'} min={0} max={15000} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName={'wet'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
       </div>
     )
   }
@@ -195,9 +195,9 @@ export const UIJCReverb = observer(class UIJCReverb extends Component{
 
     return (
       <div className='divToolRowEditorContainer'>
-        <UIEditorHeader obj={this.obj} type={this.props.type}/>
-        <UICustomRangeControl obj={this.obj} propName={'roomSize'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
-        <UICustomRangeControl obj={this.obj} propName={'wet'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
+        <UIEditorHeader obj={this.obj} editorNum={this.props.editorNum} type={this.props.type}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName={'roomSize'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName={'wet'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
       </div>
     )
   }
@@ -210,13 +210,13 @@ export const UIPhaser = observer(class UIPhaser extends Component{
 
     return (
       <div className='divToolRowEditorContainer'>
-        <UIEditorHeader obj={this.obj} type={this.props.type}/>
-        <UICustomRangeControl obj={this.obj} propName='frequency' min={0} max={25} mode='range' step={null} density={1} numType={'float'} signal={true}/>
-        <UICustomRangeControl obj={this.obj} propName='octaves' min={0} max={10} mode={'steps'} step={1} density={10} numType={'integer'} signal={false}/>
-        <UICustomRangeControl obj={this.obj} propName='stages' min={0} max={20} mode={'steps'} step={1} density={1} numType={'integer'} signal={false}/>
-        <UICustomRangeControl obj={this.obj} propName='Q' min={0} max={10} mode={'steps'} step={1} density={10} numType={'integer'} signal={true}/>
-        <UICustomRangeControl obj={this.obj} propName='baseFrequency' min={20} max={1000} mode='range' step={null} density={1} numType={'float'} signal={false}/>
-        <UICustomRangeControl obj={this.obj} propName={'wet'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
+        <UIEditorHeader obj={this.obj} editorNum={this.props.editorNum} type={this.props.type}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='frequency' min={0} max={25} mode='range' step={null} density={1} numType={'float'} signal={true}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='octaves' min={0} max={10} mode={'steps'} step={1} density={10} numType={'integer'} signal={false}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='stages' min={0} max={20} mode={'steps'} step={1} density={1} numType={'integer'} signal={false}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='Q' min={0} max={10} mode={'steps'} step={1} density={10} numType={'integer'} signal={true}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='baseFrequency' min={20} max={1000} mode='range' step={null} density={1} numType={'float'} signal={false}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName={'wet'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
       </div>
     )
   }
@@ -229,10 +229,10 @@ export  const UIPingPongDelay = observer(class UIPingPongDelay extends Component
 
     return (
       <div className='divToolRowEditorContainer'>
-        <UIEditorHeader obj={this.obj} type={this.props.type}/>
-        <UITimeControl obj={this.obj} propName='delayTime'/>
-        <UICustomRangeControl obj={this.obj} propName={'feedback'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
-        <UICustomRangeControl obj={this.obj} propName={'wet'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
+        <UIEditorHeader obj={this.obj} editorNum={this.props.editorNum} type={this.props.type}/>
+        <UITimeControl obj={this.obj} editorNum={this.props.editorNum} propName='delayTime'/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName={'feedback'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName={'wet'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
       </div>
     )
   }
@@ -245,9 +245,9 @@ export const UIPitchShift = observer(class UIPitchShift extends Component{
 
     return (
       <div className='divToolRowEditorContainer'>
-        <UIEditorHeader obj={this.obj} type={this.props.type}/>
-        <UICustomRangeControl obj={this.obj} propName={'pitch'} min={-24} max={24} mode={'steps'} step={1} density={10} numType={'integer'} signal={false}/>
-        <UICustomRangeControl obj={this.obj} propName={'wet'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
+        <UIEditorHeader obj={this.obj} editorNum={this.props.editorNum} type={this.props.type}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName={'pitch'} min={-24} max={24} mode={'steps'} step={1} density={10} numType={'integer'} signal={false}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName={'wet'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
       </div>
     )
   }
@@ -259,10 +259,10 @@ export const UIReverb = observer(class UIReverb extends Component{
 
     return (
       <div className='divToolRowEditorContainer'>
-        <UIEditorHeader obj={this.obj} type={this.props.type}/>
-        <UICustomRangeControl obj={this.obj} propName={'decay'} min={0.1} max={4} mode={'range'} step={null} density={1} numType={'float'} signal={false}/>
-        <UICustomRangeControl obj={this.obj} propName={'preDelay'} min={0.01} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={false}/>
-        <UICustomRangeControl obj={this.obj} propName={'wet'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
+        <UIEditorHeader obj={this.obj} editorNum={this.props.editorNum} type={this.props.type}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName={'decay'} min={0.1} max={4} mode={'range'} step={null} density={1} numType={'float'} signal={false}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName={'preDelay'} min={0.01} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={false}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName={'wet'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
       </div>
     )
   }
@@ -274,9 +274,9 @@ export const UIStereoWidener = observer(class UIStereoWidener extends Component{
 
     return (
       <div className='divToolRowEditorContainer'>
-        <UIEditorHeader obj={this.obj} type={this.props.type}/>
-        <UICustomRangeControl obj={this.obj} propName='width' min={0} max={1} mode='range' step={null} density={1} numType={'float'} signal={true}/>
-        <UICustomRangeControl obj={this.obj} propName={'wet'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
+        <UIEditorHeader obj={this.obj} editorNum={this.props.editorNum} type={this.props.type}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='width' min={0} max={1} mode='range' step={null} density={1} numType={'float'} signal={true}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName={'wet'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
       </div>
     )
   }
@@ -288,12 +288,12 @@ export  const UITremolo = observer(class UITremolo extends Component{
 
     return (
       <div className='divToolRowEditorContainer'>
-        <UIEditorHeader obj={this.obj} type={this.props.type}/>
-        <UICustomRangeControl obj={this.obj} propName='frequency' min={0} max={50} mode='range' step={null} density={1} numType={'float'} signal={true}/>
-        <UIWaveTypeControl obj={this.obj} propName={"type"}/>
-        <UICustomRangeControl obj={this.obj} propName='depth' min={0} max={1} mode='range' step={null} density={1} numType={'float'} signal={true}/>
-        <UICustomRangeControl obj={this.obj} propName='spread' min={0} max={360} mode='range' step={null} density={1} numType={'float'} signal={false}/>
-        <UICustomRangeControl obj={this.obj} propName={'wet'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
+        <UIEditorHeader obj={this.obj} editorNum={this.props.editorNum} type={this.props.type}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='frequency' min={0} max={50} mode='range' step={null} density={1} numType={'float'} signal={true}/>
+        <UIWaveTypeControl obj={this.obj} editorNum={this.props.editorNum} propName={"type"}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='depth' min={0} max={1} mode='range' step={null} density={1} numType={'float'} signal={true}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='spread' min={0} max={360} mode='range' step={null} density={1} numType={'float'} signal={false}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName={'wet'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
       </div>
     )
   }
@@ -305,11 +305,11 @@ export const UIVibrato = observer(class UIVibrato extends Component{
 
     return (
       <div className='divToolRowEditorContainer'>
-        <UIEditorHeader obj={this.obj} type={this.props.type}/>
-        <UICustomRangeControl obj={this.obj} propName='frequency' min={0} max={50} mode='range' step={null} density={1} numType={'float'} signal={true}/>
-        <UICustomRangeControl obj={this.obj} propName='depth' min={0} max={1} mode='range' step={null} density={1} numType={'float'} signal={true}/>
-        <UIWaveTypeControl obj={this.obj} propName={"type"}/>
-        <UICustomRangeControl obj={this.obj} propName={'wet'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
+        <UIEditorHeader obj={this.obj} editorNum={this.props.editorNum} type={this.props.type}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='frequency' min={0} max={50} mode='range' step={null} density={1} numType={'float'} signal={true}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='depth' min={0} max={1} mode='range' step={null} density={1} numType={'float'} signal={true}/>
+        <UIWaveTypeControl obj={this.obj} editorNum={this.props.editorNum} propName={"type"}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName={'wet'} min={0} max={1} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
       </div>
     )
   }

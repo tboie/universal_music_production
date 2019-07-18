@@ -187,8 +187,8 @@ export const ToolRow = observer(class ToolRow extends Component {
           document.getElementById('btnToolSynth').click();
       }
       else if(node.type === "component" || node.type === "effect"){
-        if(this.activeTool !== 'btnToolEditor')
-          document.getElementById('btnToolEditor').click();
+        if(this.activeTool !== 'btnToolEditor1')
+          document.getElementById('btnToolEditor1').click();
       }
       else if(node.type === "sample"){
         if(node.name === "...Record"){
@@ -205,8 +205,8 @@ export const ToolRow = observer(class ToolRow extends Component {
           this.forceUpdate();
         }
   
-        if(this.activeTool !== 'btnToolEditor')
-          document.getElementById('btnToolEditor').click();
+        if(this.activeTool !== 'btnToolEditor1')
+          document.getElementById('btnToolEditor1').click();
       }
     }
 
@@ -256,16 +256,18 @@ export const ToolRow = observer(class ToolRow extends Component {
             </div>
             <ToolHome store={this.props.store}/>
             { toolBrowse }
-            <ToolEditor store={this.props.store} file={this.selectedFile} tracks={this.props.store.tracks} objId={this.props.store.ui.selectedObj}/>
-            <ToolSong store={this.props.store} bpm={this.props.store.settings.bpm} numTracks={this.props.store.getTracksByGroup(this.props.store.ui.selectedGroup).length}/>
+            <ToolEditor store={this.props.store} editorNum={1} file={this.selectedFile} tracks={this.props.store.tracks} objId={this.props.store.ui.selectedObj}/>
+            <ToolEditor store={this.props.store} editorNum={2} file={this.selectedFile} tracks={this.props.store.tracks} objId={this.props.store.ui.selectedObj}/>
+            { /* <ToolSong store={this.props.store} bpm={this.props.store.settings.bpm} numTracks={this.props.store.getTracksByGroup(this.props.store.ui.selectedGroup).length}/> */}
             <ToolSynth store={this.props.store} selectedTrack={this.props.store.ui.selectedTrack} height={this.toolRowHeight} 
                             scale={this.props.store.settings.scale} scaleKey={this.props.store.settings.key} chord={this.props.store.ui.selectedChord}/>
           </div>
           <div id="divToolRowNav">
             <button id="btnToolHome" className="btnToolRowNav" onClick={this.toggleTool}>Main</button>
             <button id="btnToolBrowse" className="btnToolRowNav" onClick={this.toggleTool}>Lib</button>
-            <button id="btnToolEditor" className="btnToolRowNav" onClick={this.toggleTool}>Edit</button>
-            <button id="btnToolSong" className="btnToolRowNav" onClick={this.toggleTool}>Song</button>
+            <button id="btnToolEditor1" className="btnToolRowNav" onClick={this.toggleTool}>Edt1</button>
+            <button id="btnToolEditor2" className="btnToolRowNav" onClick={this.toggleTool}>Edt2</button>
+            { /*<button id="btnToolSong" className="btnToolRowNav" onClick={this.toggleTool}>Song</button> */}
             <button id="btnToolSynth" className="btnToolRowNav" onClick={this.toggleTool}>Keys</button> 
           </div>
         </div>
