@@ -53,12 +53,13 @@ export const UIEditorHeader = observer(class UIEditorHeader extends Component {
   }
 
   btnClickTitle = (e) => {
-    if(store.ui.selectedTrack){
-      if(store.ui.views.edit.mode !== 'graph')
-        store.ui.views.edit.toggleMode();
-      
-      store.ui.toggleViewMode('edit');
-    }
+    if(this.props.obj.track.id !== store.ui.selectedTrack)
+      store.ui.selectTrack(this.props.obj.track.id);
+
+    if(store.ui.views.edit.mode !== 'graph')
+      store.ui.views.edit.toggleMode();
+    
+    store.ui.toggleViewMode('edit');
   }
 
   render() {
