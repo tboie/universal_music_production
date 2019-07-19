@@ -3993,15 +3993,6 @@ const UIToolbarEditor = types.model("UIToolbarEdit", {
     }
 }))
 
-/*
-const UIToolbarSong = types.model("UIToolbarSong", {
-}).views(self => ({
-
-})).actions(self => ({
-
-}))
-*/
-
 const UIToolbarKeys = types.model("UIToolbarKeys", {
 }).views(self => ({
 
@@ -4014,7 +4005,6 @@ const UIToolbar = types.model("UIToolbar", {
     browser: UIToolbarBrowser,
     editor1: UIToolbarEditor,
     editor2: UIToolbarEditor,
-    /* song: UIToolbarSong, */
     keys: UIToolbarKeys
 }).views(self => ({
 
@@ -4034,7 +4024,7 @@ const UI = types.model("UI", {
     viewLength: types.optional(types.string, "1:0:0"),
     windowHeight: types.optional(types.number, 0),
     windowWidth: types.optional(types.number, 0),
-    selectedToolbar: types.maybe(types.union(types.literal("home"), types.literal("browse"), types.literal("editor1"), types.literal("editor2"), types.literal("song"), types.literal("synth"))),
+    selectedToolbar: types.maybe(types.union(types.literal("home"), types.literal("browse"), types.literal("editor1"), types.literal("editor2"), types.literal("synth"))),
     selectedScene: types.maybe(types.reference(Scene)),
     selectedTrack: types.maybe(types.reference(Track)),
     selectedPattern: types.maybe(types.reference(Pattern)),

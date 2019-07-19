@@ -8,7 +8,6 @@ import { randomId } from "../../models/models.js";
 import { ListBrowser } from "./browse/browse.js";
 import { ToolHome } from "./home/home.js";
 import { ToolSynth } from "./synth/synth.js";
-import { ToolSong } from "./song/song.js";
 import { ToolEditor } from "./editor/editor.js";
 
 export const ToolRow = observer(class ToolRow extends Component {
@@ -258,7 +257,6 @@ export const ToolRow = observer(class ToolRow extends Component {
             { toolBrowse }
             <ToolEditor store={this.props.store} editorNum={1} file={this.selectedFile} tracks={this.props.store.tracks} objId={this.props.store.ui.toolbar.editor1.selectedObj}/>
             <ToolEditor store={this.props.store} editorNum={2} file={this.selectedFile} tracks={this.props.store.tracks} objId={this.props.store.ui.toolbar.editor2.selectedObj}/>
-            { /* <ToolSong store={this.props.store} bpm={this.props.store.settings.bpm} numTracks={this.props.store.getTracksByGroup(this.props.store.ui.selectedGroup).length}/> */}
             <ToolSynth store={this.props.store} selectedTrack={this.props.store.ui.selectedTrack} height={this.toolRowHeight} 
                             scale={this.props.store.settings.scale} scaleKey={this.props.store.settings.key} chord={this.props.store.ui.selectedChord}/>
           </div>
@@ -267,7 +265,6 @@ export const ToolRow = observer(class ToolRow extends Component {
             <button id="btnToolBrowse" className="btnToolRowNav" onClick={this.toggleTool}>Lib</button>
             <button id="btnToolEditor1" className="btnToolRowNav" onClick={this.toggleTool}>Edt1</button>
             <button id="btnToolEditor2" className="btnToolRowNav" onClick={this.toggleTool}>Edt2</button>
-            { /*<button id="btnToolSong" className="btnToolRowNav" onClick={this.toggleTool}>Song</button> */}
             <button id="btnToolSynth" className="btnToolRowNav" onClick={this.toggleTool}>Keys</button> 
           </div>
         </div>
