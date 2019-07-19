@@ -438,7 +438,7 @@ export const UITinySynth = observer(class UITinySynth extends Component {
       <div className='divToolRowEditorContainer'>
         <UIEditorHeader obj={this.obj} editorNum={this.props.editorNum} type={this.props.type} />
         {/*<UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='channel' min={0} max={15} mode={'steps'} step={1} density={1} numType={'integer'} signal={false}/>*/}
-        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} editorNum={this.props.editorNum} propName='instrument' min={0} max={127} mode={'steps'} step={1} density={10} numType={'integer'} signal={false}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='instrument' min={0} max={127} mode={'steps'} step={1} density={10} numType={'integer'} signal={false}/>
         <UICustomRangeControl obj={this.panvol} editorNum={this.props.editorNum} propName='volume' min={-100} max={10} mode={'range'} step={0.1} density={1} numType={'float'} signal={true}/>
       </div>
     )

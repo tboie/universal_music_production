@@ -95,18 +95,19 @@ const procBrowseItem = (item, browserId) => {
         store.addConnection('connection_' + randomId(), trackId, 'tinysynth_panvol_' + randId.split('_')[1], panvolId, 'component', 'component');
     }
 
+    store.ui.selectToolbar('synth');
+
     if(name === 'tinysynth')
       store.ui.selectObj('tinysynth_panvol_' + randId.split('_')[1]);
     else
       store.ui.selectObj(randId);
 
-    store.ui.selectToolbar('synth');
   }
   else if(type === 'effect' || type === 'component'){
     if(store.ui.selectedTrack){
       store[type + 's'].add(name, {id: randId, track: store.ui.selectedTrack.id})
+      store.ui.selectToolbar('editor1');
       store.ui.selectObj(randId);
-      store.ui.selectToolbar('editor')
     }
   }
   else if(type === 'sample'){
@@ -117,8 +118,8 @@ const procBrowseItem = (item, browserId) => {
       //document.getElementById('btnInputFolder_' + this.id).click();
     }
     else if(item.name === '...Record'){
+      store.ui.selectToolbar('editor1');
       store.ui.selectObj('record_' + randomId());
-      store.ui.selectToolbar('editor');
     }
     else if(item.dir.substr(0,8) === '/Samples'){
       if(item.name.split('_')[0] === 'region'){
@@ -133,17 +134,16 @@ const procBrowseItem = (item, browserId) => {
                 data: result.data
               }).then(() => {
                 store.addSample(newId, undefined, undefined, [], result.duration);
+                store.ui.selectToolbar('editor1');
                 store.ui.selectObj(newId);
-                store.ui.selectToolbar('editor');
               });
             }
           }
         })
       }
       else{
-        store.ui.selectObj(item.name);
-        store.ui.selectToolbar('editor');
-      }
+        store.ui.selectToolbar('editor1');
+        store.ui.selectObj(item.name);      }
     }
     else if(item.dir.substr(0,8) === '/Library'){
       let url = item.dir + '/' + item.name;
@@ -162,8 +162,8 @@ const procBrowseItem = (item, browserId) => {
                 if(!store.getSample(sampleId))
                   store.addSample(sampleId, url, buffer.length, [], buffer.duration);
                 
+                store.ui.selectToolbar('editor1');
                 store.ui.selectObj(sampleId);
-                store.ui.selectToolbar('editor');
 
                 buffer.dispose();
               });
@@ -174,8 +174,8 @@ const procBrowseItem = (item, browserId) => {
           if(!store.getSample(sampleId))
             store.addSample(sampleId, url, result.data.length, [], result.duration);
           
+          store.ui.selectToolbar('editor1');
           store.ui.selectObj(sampleId);
-          store.ui.selectToolbar('editor');
         }
       });
     }
