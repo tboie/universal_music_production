@@ -373,12 +373,12 @@ export const TrackRowView = observer(class TrackRowView extends Component {
               }
               else if(pattern.track.type === "instrument"){
                 //unselect and delete
-                if(this.props.selectedNote === note && this.props.selectedNote.getNote()[0]){  
+                if(this.props.selectedNote === note && this.props.selectedNote.getNote[0]){  
                   store.ui.selectNote(undefined);
                   note.getPattern.deleteNote(note);
                 }
                 //unselect (selectnote() will delete empty note)
-                else if(this.props.selectedNote === note && !this.props.selectedNote.getNote()[0]){  
+                else if(this.props.selectedNote === note && !this.props.selectedNote.getNote[0]){  
                   store.ui.selectNote(undefined);
                 }
                 else{

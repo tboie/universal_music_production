@@ -290,7 +290,7 @@ export async function renderSong(track, pattern){
 
           let part = offlineToneObjs.parts.find(objPart => objPart.id === p.id);
           p.notes.forEach(n => {
-              let event = part.obj.at(n.time, { "mute": n.mute, "note": n.getNote(), "duration": n.duration, "velocity": n.velocity, "offset": n.offset, "time": n.time});
+              let event = part.obj.at(n.time, { "mute": n.mute, "note": n.getNote, "duration": n.duration, "velocity": n.velocity, "offset": n.offset, "time": n.time});
               event.probability = n.probability;
               event.humanize = n.humanize;
           })

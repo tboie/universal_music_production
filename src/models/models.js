@@ -3249,7 +3249,7 @@ const Note = types.model("Note", {
     get getPattern(){
         return getParent(self, 2);
     },
-    getNote(){
+    get getNote(){
         if(self.note !== undefined)
             return self.note.map(n => n)
         else
@@ -3260,7 +3260,7 @@ const Note = types.model("Note", {
         for(const prop in srcNote){
             if(prop !== 'id' && prop !== 'time'){
                 if(prop === 'note')
-                    self[prop] = srcNote.getNote();
+                    self[prop] = srcNote.getNote;
                 else
                     self[prop] = srcNote[prop];
             }
@@ -3303,7 +3303,7 @@ const Note = types.model("Note", {
     },
     setPartNote(){
         let part = ToneObjs.parts.find(p => p.id === getParent(self, 2).id);
-        let event = part.obj.at(self.time, { "mute": self.mute, "note": self.getNote(), "duration": self.duration, "velocity": self.velocity, "offset": self.offset, "time": self.time});
+        let event = part.obj.at(self.time, { "mute": self.mute, "note": self.getNote, "duration": self.duration, "velocity": self.velocity, "offset": self.offset, "time": self.time});
         event.probability = self.probability;
         event.humanize = self.humanize;
     },
@@ -3425,7 +3425,7 @@ const Pattern = types.model("Pattern", {
                     id: 'note_' + randomId(),
                     time: note.time,
                     mute: note.mute,
-                    note: note.getNote(),
+                    note: note.getNote,
                     duration: note.duration,
                     velocity: note.velocity,
                     probability: note.probability,
@@ -3544,7 +3544,7 @@ const Pattern = types.model("Pattern", {
                             
                             let objContinue = checkPrevNoteDur();
                             if(objContinue){
-                                instrument.obj.frequency.setValueAtTime(objContinue.note.getNote()[0], time + Tone.Time(value.duration), Math.random()*0.5 + 0.5);
+                                instrument.obj.frequency.setValueAtTime(objContinue.note.getNote[0], time + Tone.Time(value.duration), Math.random()*0.5 + 0.5);
                                 instrument.obj.triggerAttackRelease(objContinue.deltaDur, time + Tone.Time(value.duration), objContinue.note.velocity);
                             }
                             
@@ -3556,7 +3556,7 @@ const Pattern = types.model("Pattern", {
                             
                             let objContinue = checkPrevNoteDur();
                             if(objContinue){
-                                instrument.obj.triggerAttackRelease(objContinue.note.getNote()[0], objContinue.deltaDur, time + Tone.Time(value.duration), objContinue.note.velocity);
+                                instrument.obj.triggerAttackRelease(objContinue.note.getNote[0], objContinue.deltaDur, time + Tone.Time(value.duration), objContinue.note.velocity);
                             }
                             
                         }
@@ -3568,7 +3568,7 @@ const Pattern = types.model("Pattern", {
                             
                             let objContinue = checkPrevNoteDur();
                             if(objContinue){
-                                instrument.obj.triggerAttackRelease(objContinue.note.getNote(), objContinue.deltaDur, time + Tone.Time(value.duration), objContinue.note.velocity);
+                                instrument.obj.triggerAttackRelease(objContinue.note.getNote, objContinue.deltaDur, time + Tone.Time(value.duration), objContinue.note.velocity);
                             }
                             
                         }
@@ -3615,7 +3615,7 @@ const Pattern = types.model("Pattern", {
                         
                         let objContinue = checkPrevNoteDur();
                         if(objContinue){
-                            component.obj.triggerAttackRelease(objContinue.note.getNote()[0], objContinue.deltaDur, time + Tone.Time(value.duration), objContinue.note.velocity);
+                            component.obj.triggerAttackRelease(objContinue.note.getNote[0], objContinue.deltaDur, time + Tone.Time(value.duration), objContinue.note.velocity);
                         }
                         
                     }
@@ -3637,7 +3637,7 @@ const Pattern = types.model("Pattern", {
                             
                             let objContinue = checkPrevNoteDur();
                             if(objContinue){
-                                objContinue.note.getNote().forEach(n => {
+                                objContinue.note.getNote.forEach(n => {
                                     let noteNum = Tone.Frequency(n).toMidi();
 
                                     //stop prev note for curr note
@@ -4339,7 +4339,7 @@ const UI = types.model("UI", {
         if(prevNote && !self.views.edit.multiNoteSelect){
             if(self.selectedNote !== prevNote){
                 if(prevNote.getPattern.track.type === 'instrument'){
-                    let noteVals = prevNote.getNote();
+                    let noteVals = prevNote.getNote;
                     if(noteVals){
                         if(noteVals[0] === ''){
                             let pattern = prevNote.getPattern;
