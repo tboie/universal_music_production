@@ -17,7 +17,7 @@ lots of circular dependencies here.  see MST types.late();
 
 export const randomId = () => Math.random().toString(36).substr(2, 5);
 
-export let ToneObjs = {
+export const ToneObjs = {
     instruments: [],
     effects: [],
     components: [],
