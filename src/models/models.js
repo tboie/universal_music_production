@@ -4075,7 +4075,7 @@ const UI = types.model("UI", {
     get getSelectedNoteOffset(){
         return self.selectedNote ? self.selectedNote.offset : undefined;
     },
-    getGridSizes(){
+    get getGridSizes(){
         if(self.selectedScene){
             let windowWidth = self.windowWidth;
             let viewLength = Tone.Time(self.viewLength);
@@ -4195,7 +4195,7 @@ const UI = types.model("UI", {
             }
         }
     },
-    getWindowSizes() {
+    get getWindowSizes() {
         return { width: self.windowWidth, height: self.windowHeight }
     }
 })).actions(self => {

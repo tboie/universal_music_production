@@ -97,7 +97,7 @@ export const SequencerView = observer(class SequencerView extends Component {
         tracks = this.props.store.getTracksByGroup(this.props.selectedGroup);
       }
   
-      let sizes = store.ui.getGridSizes();
+      let sizes = store.ui.getGridSizes;
       return (
         <div id="gridParent" style={{width: sizes.parent.width, left: sizes.parent.left}}>
           <div className="divBody" id="gridContainer" style={{width: sizes.container.width, left: sizes.container.left}}>

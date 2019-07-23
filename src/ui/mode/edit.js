@@ -150,7 +150,7 @@ const EditViewBars = observer(class EditViewBars extends Component {
         />)
     }
 
-    let sizes = store.ui.getGridSizes();
+    let sizes = store.ui.getGridSizes;
     return(
       <div style={{top:'40px', position:'relative'}}>
         { mixRow }
@@ -592,7 +592,7 @@ const EditViewGraph = observer(class EditViewGraph extends Component {
       let cssCursor = this.props.edit ? '' : 'cursorCrosshair';
       let cssTop = this.props.track.type === 'master' ? ' divEditViewBGMasterTop' : '';
 
-      let sizes = store.ui.getGridSizes();
+      let sizes = store.ui.getGridSizes;
       return (
         <div id="gridParent" style={{width: sizes.parent.width, left: sizes.parent.left}}>
           <div className="divBody" id="gridContainer" style={{width: sizes.container.width, left: sizes.container.left}}>

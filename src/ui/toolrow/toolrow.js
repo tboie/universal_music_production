@@ -100,7 +100,7 @@ export const ToolRow = observer(class ToolRow extends Component {
           handleBG[1].style.backgroundColor = "#19937a";
       }).on('resizemove', function (event) {
         if(event.rect){
-          if(event.rect.height < (store.ui.getWindowSizes().height - 140))
+          if(event.rect.height < (store.ui.getWindowSizes.height - 140))
             event.target.style.height = event.rect.height + 'px';
 
           handleBG[0].style.backgroundColor = "gray";

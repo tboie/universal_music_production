@@ -73,7 +73,7 @@ export const GridButtonView = observer(class ButtonView extends Component {
       }
   
       let tracks = this.props.store.tracks.filter(t => t.group === this.props.store.ui.selectedGroup && t.type !== "master");
-      let sizes = store.ui.getGridSizes();
+      let sizes = store.ui.getGridSizes;
       return (
         <div id="gridParent" style={{width: sizes.parent.width, left: sizes.parent.left}}>
           <div className="divBody" id="gridContainer" style={{width: sizes.container.width, left: sizes.container.left}}>
