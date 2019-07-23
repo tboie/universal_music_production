@@ -7,12 +7,11 @@ import { toneObjNames } from '../data/tonenames.js';
 import { ToneObjs } from '../models/models.js';
 import { select } from 'd3-selection';
 import { saveAs } from 'file-saver';
-import { Scale } from 'tonal';
+import { Scale, Chord } from 'tonal';
 import JSZip from 'jszip';
 import newfileTree from '../data/newfiletree.json';
 import { initMidi } from "../midi/midi.js";
 import * as debounce from 'lodash/debounce';
-
 
 
 export function hex_to_ascii(str1){
@@ -570,4 +569,19 @@ export const firstPageLoad = () => {
         console.log("Storage may be cleared by the UA under storage pressure.");
     });
   */
+}
+
+export const getRandomNote = () => {
+  const minOctave = 0, maxOctave = 7;
+  const arrayNotes = Scale.notes(store.settings.key, store.settings.scale)
+
+  const randOctave = Math.floor(Math.random() * (maxOctave - minOctave + 1) ) + minOctave;
+  const randNote = arrayNotes[Math.floor(Math.random() * (arrayNotes.length - 0))];
+
+  let noteVal = [randNote + randOctave];
+
+  if(store.ui.selectedChord !== undefined)
+      noteVal = Chord.notes(noteVal[0], store.ui.selectedChord);
+
+  return noteVal;
 }

@@ -3,11 +3,11 @@
 import { types, getParent, destroy, getMembers, applySnapshot, getSnapshot } from "mobx-state-tree";
 import Tone from 'tone';
 import idb from 'idb';
-import { Note as TonalNote, Chord, Scale } from "tonal";
+import { Note as TonalNote } from "tonal";
 import { store } from "../data/store.js";
 //import { UndoManager } from "mst-middlewares";
 import * as cloneDeep from 'lodash/cloneDeep';
-import { setToneObjs, renderSong } from '../ui/utils.js';
+import { setToneObjs, renderSong, getRandomNote } from '../ui/utils.js';
 import interact from 'interactjs';
 
 /*******************************************
@@ -3270,7 +3270,7 @@ const Note = types.model("Note", {
             self.setPartNote();
     },
     setRandomNote(){
-        self.note = self.getPattern.getRandomNote;
+        self.note = getRandomNote();
         self.setPartNote();
     },
     setNote(note){
@@ -3358,20 +3358,6 @@ const Pattern = types.model("Pattern", {
     },
     get getLength(){
         return store.getSceneLength(self.scene.id);
-    },
-    get getRandomNote(){
-        const minOctave = 0, maxOctave = 7;
-        const arrayNotes = Scale.notes(store.settings.key, store.settings.scale)
-
-        const randOctave = Math.floor(Math.random() * (maxOctave - minOctave + 1) ) + minOctave;
-        const randNote = arrayNotes[Math.floor(Math.random() * (arrayNotes.length - 0))];
-
-        let noteVal = [randNote + randOctave];
-
-        if(store.ui.selectedChord !== undefined)
-            noteVal = Chord.notes(noteVal[0], store.ui.selectedChord);
-
-        return noteVal;
     }
 })).actions(self => {
     function addNote(time, mute, val, dur, vel, prob, offset) {
@@ -3450,7 +3436,7 @@ const Pattern = types.model("Pattern", {
         for(let i=0; i<totalBars; i++){
             for(let k=0; k<totalNotes; k++){
                 const noteTime = Tone.Time(Tone.Time((i + startBar) + ':0:0') + (Tone.Time((self.resolution)) * k)).toBarsBeatsSixteenths();
-                self.addNote(noteTime, false, self.getRandomNote, self.resolution);
+                self.addNote(noteTime, false, getRandomNote(), self.resolution);
             }
         }
     }
