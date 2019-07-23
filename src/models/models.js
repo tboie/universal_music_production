@@ -3436,7 +3436,7 @@ const Pattern = types.model("Pattern", {
         })
     }
     function createRandomNotes(bar){
-        let timeStart = '0:0:0', timeEnd = Tone.Time(self.getLength.toBarsBeatsSixteenths();
+        let timeStart = '0:0:0', timeEnd = Tone.Time(self.getLength.toBarsBeatsSixteenths());
 
         if(bar){
             timeStart = (bar - 1) + ':0:0';
@@ -3896,7 +3896,7 @@ const UIEditView = types.model("UIEditView", {
             self.selectedBars.push(bar);
     },
     selectAllBars(){
-        let totalBars = parseInt(Tone.Time(store.ui.selectedPattern.getLength.toBarsBeatsSixteenths().split(':')[0], 10);
+        let totalBars = parseInt(Tone.Time(store.ui.selectedPattern.getLength).toBarsBeatsSixteenths().split(':')[0], 10);
         self.selectedBars = [...Array(totalBars).keys()].map(x => x+1);
     },
     copySelectedBars(){
