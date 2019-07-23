@@ -61,7 +61,7 @@ export const MixRowViewEdit = observer(class MixRowViewEdit extends Component{
           this.props.note.setDuration(parseFloat(e.target.value));
         }
         else{
-          let noteDelta = Tone.Time(this.props.note.getPattern().getLength()) - Tone.Time(this.props.note.time);
+          let noteDelta = Tone.Time(this.props.note.getPattern().getLength) - Tone.Time(this.props.note.time);
           let notation = Tone.Time(noteDelta * parseFloat(e.target.value)).toBarsBeatsSixteenths();
           let offsetTime = this.props.note.offset * Tone.Time(this.props.note.getPattern().resolution);
   
@@ -131,7 +131,7 @@ export const MixRowViewEdit = observer(class MixRowViewEdit extends Component{
             eleSlider = <input type="range" min="0.01" max="1" value={this.props.note.duration} className="trackMixSlider" step="0.01" id={"velSlider" + this.props.trackId} 
                             onChange={this.changeSlider} onInput={this.changeSlider} onMouseDown={this.onPressDown} onMouseUp={this.onPressUp} onTouchStart={this.onPressDown} onTouchEnd={this.onPressUp}/>;
           else{
-            let patternLen = Tone.Time(this.props.note.getPattern().getLength()).toBarsBeatsSixteenths();
+            let patternLen = Tone.Time(this.props.note.getPattern().getLength).toBarsBeatsSixteenths();
             let noteDelta = Tone.Time(patternLen) - Tone.Time(this.props.note.time);
             let stepLen = (1 / (Tone.Time(noteDelta) / Tone.Time("64n"))).toFixed(6);
             let currVal = (Tone.Time(this.props.note.duration) / Tone.Time(noteDelta)).toFixed(6);

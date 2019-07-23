@@ -447,7 +447,7 @@ export const TrackRowView = observer(class TrackRowView extends Component {
     viewSquares = parseInt(viewSquares.split(":")[0] * res, 10) + parseInt(viewSquares.split(":")[1] * (res/4), 10);
     let squareWidth = windowWidth / viewSquares;
 
-    let sorted = pattern.getSortedNotesAsc().filter(n => !n.mute);
+    let sorted = pattern.getSortedNotesAsc.filter(n => !n.mute);
 
     let currBar, nextBar;
     if(this.props.bar){
@@ -590,7 +590,7 @@ export const TrackRowView = observer(class TrackRowView extends Component {
   drawAudioNote = (img, buffer, duration, pattern, viewLength, squareWidth, imgWidth) => {
     let ctx = this.ctx;
     let height = this.canvasHeight;
-    let sorted = pattern.getSortedNotesAsc().filter(n => !n.mute);
+    let sorted = pattern.getSortedNotesAsc.filter(n => !n.mute);
 
     let currBar, nextBar;
     if(this.props.bar){

@@ -3210,7 +3210,7 @@ const Scene = types.model("Scene", {
     isGroupMuted(group){
         return self.muteGroups.find(g => g === group);
     },
-    getLength(){
+    get getLength(){
         return store.getSceneLength(self.id);
     }
 })).actions(self => ({
@@ -3270,7 +3270,7 @@ const Note = types.model("Note", {
             self.setPartNote();
     },
     setRandomNote(){
-        self.note = self.getPattern().getRandomNote();
+        self.note = self.getPattern().getRandomNote;
         self.setPartNote();
     },
     setNote(note){
@@ -3334,7 +3334,7 @@ const Pattern = types.model("Pattern", {
     getNotesByBar(bar){
         return self.notes.filter(n => Tone.Time(n.time) >= Tone.Time((bar - 1) + ':0:0') && Tone.Time(n.time) < Tone.Time(bar + ':0:0'))
     },
-    getSortedNotesAsc() {
+    get getSortedNotesAsc() {
         let sceneNotes = [];
         self.notes.forEach(function (note) {
             if (Tone.Time(note.time) < Tone.Time(store.getSceneLength(self.scene.id)))
@@ -3345,7 +3345,7 @@ const Pattern = types.model("Pattern", {
             return Tone.Time(a.time).toSeconds() - Tone.Time(b.time).toSeconds();
         });
     },
-    getSortedNotesDesc() {
+    get getSortedNotesDesc() {
         let sceneNotes = [];
         self.notes.forEach(function (note) {
             if (Tone.Time(note.time) < Tone.Time(store.getSceneLength(self.scene.id)))
@@ -3356,10 +3356,10 @@ const Pattern = types.model("Pattern", {
             return Tone.Time(b.time).toSeconds() - Tone.Time(a.time).toSeconds();
         });
     },
-    getLength(){
+    get getLength(){
         return store.getSceneLength(self.scene.id);
     },
-    getRandomNote(){
+    get getRandomNote(){
         const minOctave = 0, maxOctave = 7;
         const arrayNotes = Scale.notes(store.settings.key, store.settings.scale)
 
@@ -3397,7 +3397,7 @@ const Pattern = types.model("Pattern", {
         if(store.ui.selectedNote)
             store.ui.selectNote(undefined);
         
-        self.getSortedNotesAsc().forEach(note => {
+        self.getSortedNotesAsc.forEach(note => {
             destroy(note);
         })
     }
@@ -3436,7 +3436,7 @@ const Pattern = types.model("Pattern", {
         })
     }
     function createRandomNotes(bar){
-        let timeStart = '0:0:0', timeEnd = Tone.Time(self.getLength()).toBarsBeatsSixteenths();
+        let timeStart = '0:0:0', timeEnd = Tone.Time(self.getLength.toBarsBeatsSixteenths();
 
         if(bar){
             timeStart = (bar - 1) + ':0:0';
@@ -3450,7 +3450,7 @@ const Pattern = types.model("Pattern", {
         for(let i=0; i<totalBars; i++){
             for(let k=0; k<totalNotes; k++){
                 const noteTime = Tone.Time(Tone.Time((i + startBar) + ':0:0') + (Tone.Time((self.resolution)) * k)).toBarsBeatsSixteenths();
-                self.addNote(noteTime, false, self.getRandomNote(), self.resolution);
+                self.addNote(noteTime, false, self.getRandomNote, self.resolution);
             }
         }
     }
@@ -3500,7 +3500,7 @@ const Pattern = types.model("Pattern", {
             //get prev note if duration exceeds current note's
             function checkPrevNoteDur(){
                 let deltaDur, objNote;
-                let result = self.getSortedNotesDesc().filter(n => Tone.Time(n.time) < Tone.Time(value.time)).some(note => {
+                let result = self.getSortedNotesDesc.filter(n => Tone.Time(n.time) < Tone.Time(value.time)).some(note => {
                         if(note.note){
                             if(note.note[0]){
                                 //no need for offset
@@ -3896,7 +3896,7 @@ const UIEditView = types.model("UIEditView", {
             self.selectedBars.push(bar);
     },
     selectAllBars(){
-        let totalBars = parseInt(Tone.Time(store.ui.selectedPattern.getLength()).toBarsBeatsSixteenths().split(':')[0], 10);
+        let totalBars = parseInt(Tone.Time(store.ui.selectedPattern.getLength.toBarsBeatsSixteenths().split(':')[0], 10);
         self.selectedBars = [...Array(totalBars).keys()].map(x => x+1);
     },
     copySelectedBars(){
@@ -4049,10 +4049,10 @@ const UI = types.model("UI", {
         else if(prop === "notes"){
             if(track){
                 if(track.type !== 'master')
-                    return store.getPatternByTrackScene(track.id, self.selectedScene.id).getSortedNotesAsc().length;
+                    return store.getPatternByTrackScene(track.id, self.selectedScene.id).getSortedNotesAsc.length;
             }
             else if(self.selectedPattern)
-                return self.selectedPattern.getSortedNotesAsc();
+                return self.selectedPattern.getSortedNotesAsc;
             
             return undefined;
         }
@@ -4415,8 +4415,8 @@ const UI = types.model("UI", {
         }
 
         if(self.viewMode === 'button' || self.viewMode === 'sequencer' || (self.viewMode === 'edit' && self.views.edit.mode === 'graph')){
-            if(Tone.Time(self.viewLength) > Tone.Time(self.selectedScene.getLength()))
-                self.viewLength = Tone.Time(self.selectedScene.getLength()).toBarsBeatsSixteenths();
+            if(Tone.Time(self.viewLength) > Tone.Time(self.selectedScene.getLength))
+                self.viewLength = Tone.Time(self.selectedScene.getLength).toBarsBeatsSixteenths();
         }
     }
     function setDevice() {
@@ -4629,7 +4629,7 @@ export const RootStore = types.model("RootStore", {
             getNotesByTrack(trackId) {
                 let notes = [];
                 self.getPatternsByTrack(trackId).forEach(function (pattern) {
-                    notes = notes.concat(pattern.getSortedNotesAsc())
+                    notes = notes.concat(pattern.getSortedNotesAsc)
                 })
                 return notes;
             },
@@ -4719,7 +4719,7 @@ export const RootStore = types.model("RootStore", {
 
                     pattern.initPart();
 
-                    pattern.getSortedNotesAsc().forEach(function (note) {
+                    pattern.getSortedNotesAsc.forEach(function (note) {
                         note.setPartNote();
                     })
                 })
@@ -4757,7 +4757,7 @@ export const RootStore = types.model("RootStore", {
 
                     pattern.initPart();
 
-                    pattern.getSortedNotesAsc().forEach(function (note) {
+                    pattern.getSortedNotesAsc.forEach(function (note) {
                         note.setPartNote();
                     })
                 });
@@ -4774,7 +4774,7 @@ export const RootStore = types.model("RootStore", {
             self.getPatternsByScene(sceneId).forEach(function (pattern) {
                 let newPattern = self.getPatternByTrackScene(pattern.track.id, newId);
 
-                pattern.getSortedNotesAsc().forEach(function (note) {
+                pattern.getSortedNotesAsc.forEach(function (note) {
                     newPattern.addNote(note.time, note.mute, note.note, note.duration);
                 })
             })
@@ -5063,7 +5063,7 @@ export const RootStore = types.model("RootStore", {
                     //TODO: look into using afterCreate in model
                     //attach all patterns and notes
                     store.patterns.forEach(function(p){
-                        p.getSortedNotesAsc().forEach(function(n){})
+                        p.getSortedNotesAsc.forEach(function(n){})
                     })
                     //attach all connections manually
                     store.refreshConnections();
