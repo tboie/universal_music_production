@@ -288,11 +288,8 @@ const Region = types.model("Region", {
     start: types.maybe(types.number),
     end: types.maybe(types.number)
 }).views(self => ({
-    getRegions() {
+    get getRegions() {
         return { start: self.start, end: self.end }
-    },
-    getSample(){
-        return getParent(self, 2);
     }
 })).actions(self => ({
     setRegions(start, end) {
@@ -362,7 +359,7 @@ const Track = types.model("Track", {
     returnRegion(){
         let r = self.region;
         if(r)
-            r = self.region.getRegions();
+            r = self.region.getRegions;
 
         return r;
     },
