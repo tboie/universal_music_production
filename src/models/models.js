@@ -3721,7 +3721,7 @@ const Automation = types.model("Automation", {
     signal: types.maybe(types.string),
     params: types.array(AutomationValue)
 }).views(self => ({
-    getParams(){
+    get getParams(){
         return self.params.map(p => ({time: p.time, value: p.value}));
     }
 })).actions(self => ({
