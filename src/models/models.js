@@ -4538,19 +4538,19 @@ export const RootStore = types.model("RootStore", {
                 let t = Tone.Time(time);
                 return self.scenes.find(s => (t >= Tone.Time(s.start) && t < Tone.Time(s.end)))
             },
-            getScenesAsc() {
+            get getScenesAsc() {
                 return self.scenes.sort(function (a, b) {
                     return Tone.Time(a.start) - Tone.Time(b.start);
                 });
             },
-            getScenesDesc() {
+            get getScenesDesc() {
                 return self.scenes.sort(function (a, b) {
                     return Tone.Time(b.start) - Tone.Time(a.start);
                 });
             },
             getPrevScene(sceneId) {
                 let s = self.getScene(sceneId);
-                let sceneList = self.getScenesDesc();
+                let sceneList = self.getScenesDesc;
 
                 if (sceneList.length > 1) {
                     for (let i = 0; i < sceneList.length; i++) {
@@ -4562,7 +4562,7 @@ export const RootStore = types.model("RootStore", {
             },
             getNextScene(sceneId) {
                 let s = self.getScene(sceneId);
-                let sceneList = self.getScenesAsc();
+                let sceneList = self.getScenesAsc;
 
                 if (sceneList.length > 1) {
                     for (let i = 0; i < sceneList.length; i++) {
@@ -4575,10 +4575,10 @@ export const RootStore = types.model("RootStore", {
             getPattern(patternId) {
                 return self.patterns.find(p => p.id === patternId)
             },
-            getAllPatterns(){
+            get getAllPatterns(){
                 return self.patterns;
             },
-            getAllSamples(){
+            get getAllSamples(){
                 return self.samples;
             },
             get getNumTracks(){
@@ -4589,15 +4589,15 @@ export const RootStore = types.model("RootStore", {
                 return total;
             },
             get numSamples(){
-                return self.getAllSamples().length;
+                return self.getAllSamples.length;
             },
-            getAllRegions(){
+            get getAllRegions(){
                 let list = [];
-                self.getAllSamples().forEach(s => { list.push(...s.regions) });
+                self.getAllSamples.forEach(s => { list.push(...s.regions) });
                 return list;
             },
             get numRegions(){
-                return self.getAllRegions().length;
+                return self.getAllRegions.length;
             },
             getSample(sampleId) {
                 return self.samples.find(s => s.id === sampleId);
@@ -4637,20 +4637,21 @@ export const RootStore = types.model("RootStore", {
                 let scene = self.getScene(sceneId);
                 return Tone.Time(scene.end) - Tone.Time(scene.start)
             },
-            getSongLength() {
+            get getSongLength() {
                 let length = 0;
                 self.scenes.forEach(function (scene) {
                     length = Tone.Time(length) + Tone.Time(self.getSceneLength(scene.id));
                 });
                 return length;
             },
-            getLoopLength() {
+            get getLoopLength() {
                 return Tone.Time(self.settings.loopEnd) - Tone.Time(self.settings.loopStart);
             },
-            refreshConnections(){
-                self.connections.forEach(function(c){
+            get refreshConnections() {
+                self.connections.forEach(c => {
                     //console.log(c.id + ' track: ' + c.track.id + ' group: ' + c.track.group)
                 })
+                return undefined;
                 //return self.connections;
             }
         };
@@ -4698,7 +4699,7 @@ export const RootStore = types.model("RootStore", {
             }
         }
         function shiftSceneTimes(time, length, op) {
-            let sceneList = self.getScenesAsc().filter(s => Tone.Time(s.end) >= Tone.Time(time));
+            let sceneList = self.getScenesAsc.filter(s => Tone.Time(s.end) >= Tone.Time(time));
             sceneList.forEach(function (scene) {
                 if (op === "sub") {
                     if (scene !== sceneList[0])
@@ -4765,7 +4766,7 @@ export const RootStore = types.model("RootStore", {
         }
         function duplicateScene(sceneId) {
             //add to end of song
-            let start = Tone.Time(self.getSongLength()).toBarsBeatsSixteenths();
+            let start = Tone.Time(self.getSongLength).toBarsBeatsSixteenths();
             let end = Tone.Time(Tone.Time(start) + Tone.Time(self.getSceneLength(sceneId))).toBarsBeatsSixteenths();
 
             let newId = 'scene_' + randomId();
@@ -5066,7 +5067,7 @@ export const RootStore = types.model("RootStore", {
                         p.getSortedNotesAsc.forEach(function(n){})
                     })
                     //attach all connections manually
-                    store.refreshConnections();
+                    let conns = store.refreshConnections;
 
                     //attach all players manually;
                     store.instruments.players.forEach(() => {});

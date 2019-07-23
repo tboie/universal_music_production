@@ -130,7 +130,7 @@ export const ManagerViewTrack = observer(class ManagerViewTrack extends Componen
 
 export const ManagerViewScene = observer(class ManagerViewScene extends Component {
     componentDidMount(){
-        store.getScenesAsc().forEach(scene => {
+        store.getScenesAsc.forEach(scene => {
             ['A','B','C','D'].forEach(group => {
                 this.setGroupMuteButton(scene.id, group, scene.isGroupMuted(group));
             })
@@ -191,7 +191,7 @@ export const ManagerViewScene = observer(class ManagerViewScene extends Componen
                         </tr>
                         </thead>
                         <tbody>
-                        { store.getScenesAsc().map(s => 
+                        { store.getScenesAsc.map(s => 
                             <tr key={'table_row_' + s.id} onClick={this.rowClick} style={{backgroundColor: this.props.selectedScene.id === s.id ? 'blue' : 'transparent'}}>
                                 <td>{s.id}</td>
                                 <td>{Tone.Time(store.getSceneLength(s.id)).toBarsBeatsSixteenths().split(':')[0]}</td>

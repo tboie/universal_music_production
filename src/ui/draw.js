@@ -345,7 +345,7 @@ export const Draw = observer(class Draw extends Component {
   
       if(this.hdrPlayhead){
         if(Tone.Transport.state === 'started'){
-          this.hdrPos = Tone.Time(Tone.Transport.position) / store.getSongLength() * this.props.store.ui.windowWidth;
+          this.hdrPos = Tone.Time(Tone.Transport.position) / store.getSongLength * this.props.store.ui.windowWidth;
           this.hdrPlayhead.style.tansform = this.hdrPlayhead.style.webkitTransform  = 'translateX(' + this.hdrPos + 'px)';
         }
         else{

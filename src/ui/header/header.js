@@ -9,9 +9,9 @@ export const HeaderView = observer(class HeaderView extends Component{
     return (
       <div id="divHeader" className="divHeader" style={{width: this.props.windowWidth + 'px'}}>
         <div id="divHeaderTimeline">
-          <CanvasHeaderTimeline store={this.props.store} songLength={this.props.songLength} windowWidth={this.props.windowWidth} selectedScene={this.props.store.ui.selectedScene} scenes={store.getScenesAsc()}/>
+          <CanvasHeaderTimeline store={this.props.store} songLength={this.props.songLength} windowWidth={this.props.windowWidth} selectedScene={this.props.store.ui.selectedScene} scenes={store.getScenesAsc}/>
           <div id="hdrPlayhead" className="progressLine" style={{height:'40px', top:0}}></div>
-          <LoopTile settings={this.props.store.ui.settings} windowWidth={this.props.windowWidth} songLength={this.props.songLength} scenes={this.props.store.getScenesAsc()} bpm={this.props.store.settings.bpm}/>
+          <LoopTile settings={this.props.store.ui.settings} windowWidth={this.props.windowWidth} songLength={this.props.songLength} scenes={this.props.store.getScenesAsc} bpm={this.props.store.settings.bpm}/>
         </div>
       </div>
     )

@@ -229,7 +229,7 @@ export async function renderSong(track, pattern){
     tLength = store.getSceneLength(pattern.scene.id);
   }
   else{
-    tLength = store.getSongLength();
+    tLength = store.getSongLength;
   }
 
   await Tone.Offline(function(Transport){
@@ -277,7 +277,7 @@ export async function renderSong(track, pattern){
       }
       else{
         store.connections.forEach(c => c.addConnection(offlineToneObjs))
-        patterns = store.getAllPatterns();
+        patterns = store.getAllPatterns;
       }
       
       patterns.forEach(p => {
@@ -471,7 +471,7 @@ export const exportSong = () => {
   songFolder.file("song.json", JSON.stringify(store));
 
   let promiseArray = [];
-  store.getAllSamples().forEach(s => {
+  store.getAllSamples.forEach(s => {
       promiseArray.push(new Promise((resolve, reject) => { folderAddAudioFile(resolve, reject, s.id, songFolder) } ))
       
       s.regions.forEach(r => {

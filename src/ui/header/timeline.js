@@ -25,7 +25,7 @@ export const CanvasHeaderTimeline = observer(class CanvasHeaderTimeline extends 
     canvasTap = (tapX) => {
       let self = this;
   
-      store.getScenesAsc().some((s, idx) => {
+      store.getScenesAsc.some((s, idx) => {
         let x1 = Tone.Time(s.start) / self.props.songLength * store.ui.windowWidth;
         let x2 = Tone.Time(s.end) / self.props.songLength * store.ui.windowWidth;
   

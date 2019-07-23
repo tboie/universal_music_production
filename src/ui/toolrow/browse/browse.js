@@ -699,7 +699,7 @@ export const ListBrowser = observer(class ListBrowser extends Component {
 
     if(dir === '/Samples'){
       type = 'sample';
-      store.getAllSamples().forEach(s => {
+      store.getAllSamples.forEach(s => {
         this.list.push({name: s.id, type: type, folder: false, dir: dir, selected: false, tStart: undefined})
 
         s.regions.forEach(r => {

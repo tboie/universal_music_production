@@ -47,10 +47,10 @@ export const GridButtonView = observer(class ButtonView extends Component {
             store={this.props.store} sample={track.sample} 
             region={track.returnRegion} 
             patterns={this.props.store.getPatternsByTrack(track.id)} 
-            scenes={this.props.store.getScenesAsc()} 
+            scenes={this.props.store.getScenesAsc} 
             mixMode={this.props.store.ui.mixMode} 
             viewLength={this.props.store.ui.viewLength} 
-            songLength={this.props.store.getSongLength()} 
+            songLength={this.props.store.getSongLength} 
             bpm={this.props.store.settings.bpm} 
             /* notes={this.props.store.getNotesByTrack(track.id)} */ 
             selectedScene={this.props.store.ui.selectedScene} 

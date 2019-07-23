@@ -35,13 +35,13 @@ export const LoopTile = observer(class LoopTile extends Component{
       let divLoop = document.getElementById('divLoopTile');
   
       //set loop start position
-      let x = (Tone.Time(store.settings.loopStart) / store.getSongLength() * this.props.windowWidth);
+      let x = (Tone.Time(store.settings.loopStart) / store.getSongLength * this.props.windowWidth);
       divLoop.setAttribute('data-x', x);
       divLoop.style.webkitTransform = divLoop.style.transform ='translateX(' + x + 'px)';
   
       //set loop tile width
-      divLoop.textContent = Tone.Time(store.getLoopLength()).toBarsBeatsSixteenths();
-      divLoop.style.width = (store.getLoopLength() / store.getSongLength() * this.props.windowWidth) + 'px';
+      divLoop.textContent = Tone.Time(store.getLoopLength).toBarsBeatsSixteenths();
+      divLoop.style.width = (store.getLoopLength / store.getSongLength * this.props.windowWidth) + 'px';
       
       //setup loop tile snaps
       let arraySnap = [{x:0}];
@@ -87,7 +87,7 @@ export const LoopTile = observer(class LoopTile extends Component{
   
             if(Tone.Transport.loop){
               event.target.style.backgroundColor = 'rgba(25, 147, 122, 0.25)';
-              divLoop.textContent = Tone.Time(store.getLoopLength()).toBarsBeatsSixteenths();
+              divLoop.textContent = Tone.Time(store.getLoopLength).toBarsBeatsSixteenths();
             }
             else{
               event.target.style.backgroundColor = 'transparent';
@@ -138,7 +138,7 @@ export const LoopTile = observer(class LoopTile extends Component{
                 }
               }
   
-              //target.textContent = Tone.Time(store.getLoopLength()).toBarsBeatsSixteenths();
+              //target.textContent = Tone.Time(store.getLoopLength).toBarsBeatsSixteenths();
               target.textContent = Tone.Time(Tone.Time(self.loopEnd) - Tone.Time(self.loopStart)).toBarsBeatsSixteenths();
             }
           }).on('dragmove', function (event) {
@@ -149,7 +149,7 @@ export const LoopTile = observer(class LoopTile extends Component{
             event.target.setAttribute('data-x', x);
             
             let timeStart = (x / props.windowWidth) * Tone.Time(props.songLength);
-            let timeEnd = Tone.Time(timeStart) + Tone.Time(store.getLoopLength());
+            let timeEnd = Tone.Time(timeStart) + Tone.Time(store.getLoopLength);
   
             let loopStart = Tone.Time(timeStart).quantize("8n");
             let loopEnd = Tone.Time(timeEnd).quantize("8n");

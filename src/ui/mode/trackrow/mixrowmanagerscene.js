@@ -21,7 +21,7 @@ export const MixRowViewManagerScene = observer(class MixRowViewManagerScene exte
 
       switch(e.target.id.split('_')[1]){
         case 'New':
-          let start = store.getSongLength();
+          let start = store.getSongLength;
           let end = Tone.Time(start) + Tone.Time('1:0:0');
           store.addScene('scene_' + randomId(), Tone.Time(start).toBarsBeatsSixteenths(), Tone.Time(end).toBarsBeatsSixteenths());    
           break;
@@ -41,7 +41,7 @@ export const MixRowViewManagerScene = observer(class MixRowViewManagerScene exte
             store.swapScenes(store.getPrevScene(scene.id).id, scene.id);
           break;
         case 'Down':
-          if(scene.end !== Tone.Time(store.getSongLength()).toBarsBeatsSixteenths())
+          if(scene.end !== Tone.Time(store.getSongLength).toBarsBeatsSixteenths())
             store.swapScenes(scene.id, store.getSceneByTime(scene.end).id);
           break;
         case 'Del':
