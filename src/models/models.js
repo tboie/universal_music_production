@@ -2604,12 +2604,12 @@ const MonoSynth = types.model("MonoSynth", {
 
     ui: types.maybe(UIObj)
 }).views(self => ({
-    getParentId(){
+    get getParentId(){
         return getParent(self, 1).id;
     }
 })).actions(self => ({
     setPropVal(prop, val, signal, child) {
-        if(self.getParentId()){
+        if(self.getParentId){
             let parent = getParent(self, 1);
             if(parent.id.split('_')[0] === "duosynth"){
                 let voice = "voice0";

@@ -190,7 +190,7 @@ export const UICustomRangeControl = observer(class UICustomRangeControl extends 
         //polysynths
         if(this.objType === "instrument" && instName !== "noisesynth" && instName !== "player" && instName !== "plucksynth" && instName !== "membranesynth" && instName !== "metalsynth"){
           if(props.voice)
-            ToneObjs.setPropVal(props.obj.getParentId(), this.objType, props.propName, typedVal, props.signal, props.child, props.voice);
+            ToneObjs.setPropVal(props.obj.getParentId, this.objType, props.propName, typedVal, props.signal, props.child, props.voice);
           else
             ToneObjs.setPropVal(props.obj.id, this.objType, props.propName, typedVal, props.signal, props.child);
         }
