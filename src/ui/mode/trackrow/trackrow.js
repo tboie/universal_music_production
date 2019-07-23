@@ -135,7 +135,7 @@ export const TrackRowView = observer(class TrackRowView extends Component {
           //update previous/current track containing selectednote
           if(prevProps.selectedNote !== this.props.selectedNote){
             if(this.props.selectedNote){
-              if(this.props.selectedNote.getPattern().track.id === this.props.track.id){
+              if(this.props.selectedNote.getPattern.track.id === this.props.track.id){
                 this.bSelectedNote = true;
                 this.init();
                 return;
@@ -156,7 +156,7 @@ export const TrackRowView = observer(class TrackRowView extends Component {
           
           if(prevProps.selectedKey !== this.props.selectedKey){
             if(this.props.selectedNote){
-              if(this.props.selectedNote.getPattern().track.id === this.props.track.id){
+              if(this.props.selectedNote.getPattern.track.id === this.props.track.id){
                 this.init();
                 return;
               }
@@ -368,14 +368,14 @@ export const TrackRowView = observer(class TrackRowView extends Component {
                 }
                 else{
                   store.ui.selectNote(undefined);
-                  note.getPattern().deleteNote(note);
+                  note.getPattern.deleteNote(note);
                 }
               }
               else if(pattern.track.type === "instrument"){
                 //unselect and delete
                 if(this.props.selectedNote === note && this.props.selectedNote.getNote()[0]){  
                   store.ui.selectNote(undefined);
-                  note.getPattern().deleteNote(note);
+                  note.getPattern.deleteNote(note);
                 }
                 //unselect (selectnote() will delete empty note)
                 else if(this.props.selectedNote === note && !this.props.selectedNote.getNote()[0]){  
@@ -775,7 +775,7 @@ export const TrackRowView = observer(class TrackRowView extends Component {
     if((store.ui.viewMode === "edit" || store.ui.viewMode === 'button') && this.props.track.type !== "master"){
       if(store.ui.views.edit.mode === 'graph' || store.ui.viewMode === 'button'){
         if(this.props.selectedNote)
-          if(this.props.selectedNote.getPattern().track.id === this.props.track.id)
+          if(this.props.selectedNote.getPattern.track.id === this.props.track.id)
             mixView = <MixRowViewEdit trackId={this.props.track.id} store={this.props.store} track={this.props.track} note={this.props.selectedNote} selection={this.props.track.mixRow.editSelection} viewLength={this.props.viewLength}/>
           else
             mixView = <MixRowView store={this.props.store} track={this.props.track} selection={this.props.track.mixRow.mainSelection} viewLength={this.props.viewLength} playbackRate={this.props.playbackRate}/>

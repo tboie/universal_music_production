@@ -3246,7 +3246,7 @@ const Note = types.model("Note", {
     //humanize: types.optional(types.union(types.boolean, types.string, types.number), false),
     offset: types.optional(types.number, 0), // % of quantized position
 }).views(self => ({
-    getPattern(){
+    get getPattern(){
         return getParent(self, 2);
     },
     getNote(){
@@ -3270,7 +3270,7 @@ const Note = types.model("Note", {
             self.setPartNote();
     },
     setRandomNote(){
-        self.note = self.getPattern().getRandomNote;
+        self.note = self.getPattern.getRandomNote;
         self.setPartNote();
     },
     setNote(note){
@@ -3834,12 +3834,12 @@ const UIEditView = types.model("UIEditView", {
         
         if(store.ui.selectedTrack.type === 'instrument'){
             store.getNotesByTrack(store.ui.selectedTrack.id)
-                .filter(n => n.note[0] === '').forEach(note => note.getPattern().deleteNote(note));
+                .filter(n => n.note[0] === '').forEach(note => note.getPattern.deleteNote(note));
         }
         else if(store.ui.selectedTrack.type === 'audio'){
             self.selectedNotes.forEach(id => {
                 const note = store.getNotesByTrack(store.ui.selectedTrack.id).find(n => n.id === id)
-                note.getPattern().deleteNote(note, true);
+                note.getPattern.deleteNote(note, true);
             })
         }
         
@@ -4334,15 +4334,15 @@ const UI = types.model("UI", {
 
         self.selectedNote = note;
         if(note)
-            self.selectedTrack = note.getPattern().track;
+            self.selectedTrack = note.getPattern.track;
 
         if(prevNote && !self.views.edit.multiNoteSelect){
             if(self.selectedNote !== prevNote){
-                if(prevNote.getPattern().track.type === 'instrument'){
+                if(prevNote.getPattern.track.type === 'instrument'){
                     let noteVals = prevNote.getNote();
                     if(noteVals){
                         if(noteVals[0] === ''){
-                            let pattern = prevNote.getPattern();
+                            let pattern = prevNote.getPattern;
                             pattern.deleteNote(prevNote);
                         }
                     }
@@ -4362,7 +4362,7 @@ const UI = types.model("UI", {
             
             if (nextMode === 'button'){
                 if(self.selectedNote && self.selectedTrack){
-                    if(self.selectedNote.getPattern().track !== self.selectedTrack){
+                    if(self.selectedNote.getPattern.track !== self.selectedTrack){
                         self.selectNote(undefined);
                     }
                 }
@@ -4387,7 +4387,7 @@ const UI = types.model("UI", {
         }
         else if (mode === "edit") {
             if(self.selectedNote && self.selectedTrack){
-                if(self.selectedNote.getPattern().track !== self.selectedTrack){
+                if(self.selectedNote.getPattern.track !== self.selectedTrack){
                     self.selectNote(undefined);
                 }
             }
@@ -4786,7 +4786,7 @@ export const RootStore = types.model("RootStore", {
         }
         function delPattern(patternId) {
             if(self.ui.selectedNote){
-                if(self.ui.selectedNote.getPattern().id === patternId)
+                if(self.ui.selectedNote.getPattern.id === patternId)
                     self.ui.selectNote(undefined);
             }
 
@@ -4969,7 +4969,7 @@ export const RootStore = types.model("RootStore", {
                 }
             }
             if(store.ui.selectedNote){
-                if(store.ui.selectedNote.getPattern().track === track){
+                if(store.ui.selectedNote.getPattern.track === track){
                     store.ui.selectNote(undefined);
                 }
             }

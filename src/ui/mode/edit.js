@@ -89,7 +89,7 @@ const EditViewBars = observer(class EditViewBars extends Component {
         mixRow = <MixRowViewBars store={this.props.store} track={this.props.track} selectedScene={store.ui.selectedScene} numSelectedBars={store.ui.views.edit.getNumSelectedBars()} numCopiedBars={store.ui.views.edit.getNumCopiedBars()}/>
     }
     else if(this.props.selectedNote && !store.ui.views.edit.multiNoteSelect && !store.ui.editMode){
-      if(this.props.selectedNote.getPattern().track.id === this.props.track.id){
+      if(this.props.selectedNote.getPattern.track.id === this.props.track.id){
         mixRow = <MixRowViewEdit trackId={this.props.track.id} store={this.props.store} track={this.props.track} note={this.props.selectedNote} selection={this.props.track.mixRow.editSelection} viewLength={this.props.viewLength}/>
       }
     }
