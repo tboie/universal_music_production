@@ -3436,7 +3436,7 @@ const Pattern = types.model("Pattern", {
         })
     }
     function createRandomNotes(bar){
-        let timeStart = '0:0:0', timeEnd = Tone.Time(self.getLength.toBarsBeatsSixteenths());
+        let timeStart = '0:0:0', timeEnd = Tone.Time(self.getLength).toBarsBeatsSixteenths();
 
         if(bar){
             timeStart = (bar - 1) + ':0:0';
