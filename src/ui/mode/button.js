@@ -45,7 +45,7 @@ export const GridButtonView = observer(class ButtonView extends Component {
         if(track.group === this.props.store.ui.selectedGroup){
           trackRow = <TrackRowView key={track.id} keyValue={track.id} 
             store={this.props.store} sample={track.sample} 
-            region={track.returnRegion()} 
+            region={track.returnRegion} 
             patterns={this.props.store.getPatternsByTrack(track.id)} 
             scenes={this.props.store.getScenesAsc()} 
             mixMode={this.props.store.ui.mixMode} 
@@ -87,7 +87,7 @@ export const GridButtonView = observer(class ButtonView extends Component {
                   return <GridButtonAudio key={track.id} keyValue={track.id} 
                         store={this.props.store} 
                         sample={track.sample} 
-                        region={track.returnRegion(track.region)}
+                        region={track.returnRegion}
                         patterns={this.props.store.getPatternsByTrack(track.id)} 
                         scenes={this.props.store.scenes} 
                         rowIndex={index} 

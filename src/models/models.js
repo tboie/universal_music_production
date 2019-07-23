@@ -356,7 +356,7 @@ const Track = types.model("Track", {
     groupIndex: types.maybe(types.number),
     mixRow: MixRow
 }).views(self => ({
-    returnRegion(){
+    get returnRegion(){
         let r = self.region;
         if(r)
             r = self.region.getRegions;
@@ -374,7 +374,7 @@ const Track = types.model("Track", {
         else
           return 1;
     },
-    getPanVol(){
+    get getPanVol(){
         let panvol;
         if(self.type === "master" && self.group !== "M")
             panvol = store.components.getComponentByTypeId('panvol','panvol_' + self.group + '_out');
@@ -393,7 +393,7 @@ const Track = types.model("Track", {
         else
             self.mute = val;
 
-        let panvol = self.getPanVol();
+        let panvol = self.getPanVol;
         if(panvol)
             panvol.setPropVal('mute', self.mute);
     }
@@ -3466,7 +3466,7 @@ const Pattern = types.model("Pattern", {
         //check this when scene time changes
         if(!offline){
             if(!part.player)
-                part.player = new Tone.Player().connect(ToneObjs.components.find(c => c.id === self.track.getPanVol().id).obj);
+                part.player = new Tone.Player().connect(ToneObjs.components.find(c => c.id === self.track.getPanVol.id).obj);
 
             if(!part.playerPart)
                 part.playerPart = new Tone.Part((time, note) => { part.player.start(time); });

@@ -258,7 +258,7 @@ export async function renderSong(track, pattern){
           trackConns.filter(c => c.dest !== c.track.getPanVol.id).forEach(c => c.addConnection(offlineToneObjs));
 
           //trackObj -> master instead of track panvol
-          trackConns.filter(c => c.dest === c.track.getPanVol().id).forEach(c => {
+          trackConns.filter(c => c.dest === c.track.getPanVol.id).forEach(c => {
                                             offlineToneObjs[c.srcType + 's'].find(o => o.id === c.src).obj.connect(Tone.Master) 
                                           });
                                           

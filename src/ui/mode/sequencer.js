@@ -106,7 +106,7 @@ export const SequencerView = observer(class SequencerView extends Component {
               { tracks.map((track, index) => <TrackRowView key={track.id} keyValue={track.id} 
                   store={this.props.store} 
                   sample={track.sample} 
-                  region={track.returnRegion()} 
+                  region={track.returnRegion} 
                   patterns={this.props.store.getPatternsByTrack(track.id)} 
                   scenes={this.props.store.getScenesAsc()} 
                   rowIndex={index} 

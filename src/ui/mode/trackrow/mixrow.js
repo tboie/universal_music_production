@@ -33,7 +33,7 @@ export const MixRowView = observer(class MixRowView extends Component{
       this.player = store.instruments.getPlayerByTrack(this.props.track.id);
 
     if(!this.panvol)
-      this.panvol = this.props.track.getPanVol();
+      this.panvol = this.props.track.getPanVol;
     
     let firstButton = <MixRowButtonEdit track={this.props.track} />
     if(this.props.store.ui.viewMode === 'edit')
@@ -321,7 +321,7 @@ export const MixMeters = observer(class MixMeters extends Component{
       ToneObjs.components.find(o => o.id === idPanVol).obj.connect(this.split);
     }
     else{
-      ToneObjs.components.find(o => o.id === this.props.track.getPanVol().id).obj.connect(this.split);
+      ToneObjs.components.find(o => o.id === this.props.track.getPanVol.id).obj.connect(this.split);
     }
 
     this.split.connect(this.meterL, 0);

@@ -135,7 +135,7 @@ export const Draw = observer(class Draw extends Component {
       this.resetObjArray(this.objButtonCanvas);
 
       store.getTracksByGroup(store.ui.selectedGroup).filter(t => t.type === 'instrument').forEach(track => {
-        let rowPanVol = ToneObjs.components.find(c => c.id === track.getPanVol().id);
+        let rowPanVol = ToneObjs.components.find(c => c.id === track.getPanVol.id);
 
         if(rowPanVol){
           let ele = document.getElementById('canvasGridButton_' + track.id);

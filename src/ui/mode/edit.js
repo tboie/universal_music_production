@@ -115,7 +115,7 @@ const EditViewBars = observer(class EditViewBars extends Component {
       tracks.push(<TrackRowView key={track.id + '_' + i} 
           keyValue={track.id} store={this.props.store} 
           sample={track.sample} 
-          region={track.returnRegion()} 
+          region={track.returnRegion} 
           patterns={this.props.store.getPatternsByTrack(track.id)} 
           scenes={this.props.store.getScenesAsc()} 
           mixMode={this.props.store.ui.mixMode}
@@ -557,7 +557,7 @@ const EditViewGraph = observer(class EditViewGraph extends Component {
         trackRow = <TrackRowView key={track.id} 
           keyValue={track.id} store={this.props.store} 
           sample={track.sample} 
-          region={track.returnRegion()} 
+          region={track.returnRegion} 
           patterns={this.props.store.getPatternsByTrack(track.id)} 
           scenes={this.props.store.getScenesAsc()} 
           mixMode={this.props.store.ui.mixMode}
