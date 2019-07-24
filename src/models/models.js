@@ -4623,7 +4623,7 @@ export const RootStore = types.model("RootStore", {
                 let scene = self.getScene(sceneId);
                 return Tone.Time(scene.end) - Tone.Time(scene.start)
             },
-            get getSongLength() {
+            getSongLength() {
                 let length = 0;
                 self.scenes.forEach(function (scene) {
                     length = Tone.Time(length) + Tone.Time(self.getSceneLength(scene.id));
@@ -4752,7 +4752,7 @@ export const RootStore = types.model("RootStore", {
         }
         function duplicateScene(sceneId) {
             //add to end of song
-            let start = Tone.Time(self.getSongLength).toBarsBeatsSixteenths();
+            let start = Tone.Time(self.getSongLength()).toBarsBeatsSixteenths();
             let end = Tone.Time(Tone.Time(start) + Tone.Time(self.getSceneLength(sceneId))).toBarsBeatsSixteenths();
 
             let newId = 'scene_' + randomId();

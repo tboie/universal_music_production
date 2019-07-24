@@ -228,7 +228,7 @@ export async function renderSong(track, pattern){
     tLength = store.getSceneLength(pattern.scene.id);
   }
   else{
-    tLength = store.getSongLength;
+    tLength = store.getSongLength();
   }
 
   await Tone.Offline(function(Transport){

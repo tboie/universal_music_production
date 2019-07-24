@@ -111,7 +111,7 @@ const AppView = observer(class AppView extends Component {
       <div id="container" style={{ width: store.ui.windowWidth + 'px' }}>
         <HeaderView 
           store={this.props.store} 
-          songLength={this.props.store.getSongLength} 
+          songLength={this.props.store.getSongLength()} 
           windowWidth={this.props.store.ui.windowWidth} 
           />
         { viewWindow }

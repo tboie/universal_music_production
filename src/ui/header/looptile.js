@@ -35,13 +35,13 @@ export const LoopTile = observer(class LoopTile extends Component{
       let divLoop = document.getElementById('divLoopTile');
   
       //set loop start position
-      let x = (Tone.Time(store.settings.loopStart) / store.getSongLength * this.props.windowWidth);
+      let x = (Tone.Time(store.settings.loopStart) / props.songLength * this.props.windowWidth);
       divLoop.setAttribute('data-x', x);
       divLoop.style.webkitTransform = divLoop.style.transform ='translateX(' + x + 'px)';
   
       //set loop tile width
       divLoop.textContent = Tone.Time(store.getLoopLength).toBarsBeatsSixteenths();
-      divLoop.style.width = (store.getLoopLength / store.getSongLength * this.props.windowWidth) + 'px';
+      divLoop.style.width = (store.getLoopLength / props.songLength * this.props.windowWidth) + 'px';
       
       //setup loop tile snaps
       let arraySnap = [{x:0}];
