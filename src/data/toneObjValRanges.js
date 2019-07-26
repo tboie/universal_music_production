@@ -36,6 +36,43 @@ export const toneObjValRanges = {
             numType: 'float',
             signal: true,
             density: 1
+        },
+        modulationIndex: {
+            min: 0,
+            max: 40,
+            mode: 'range',
+            step: 0.1,
+            numType: 'float',
+            signal: true,
+            density: 1
+        },
+        //check this for diff min/maxes
+        resonance: {
+            min: 0,
+            max: 8000,
+            mode: 'range',
+            step: null,
+            numType: 'float',
+            signal: false,
+            density: 1
+        },
+        octaves: {
+            min: 0,
+            max: 4,
+            mode: 'steps',
+            step: 0.25,
+            numType: 'float',
+            signal: false,
+            density: 1
+        },
+        pitchDecay: {
+            min: 0,
+            max: 0.2,
+            mode: 'range',
+            step: 0.01,
+            numType: 'float',
+            signal: false,
+            density: 1
         }
     },
     env : {
