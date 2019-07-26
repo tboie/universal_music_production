@@ -127,10 +127,7 @@ export const UIMultibandCompressor = observer(class UIMultibandCompressor extend
   }
 
   getDisplay = (s) => {
-    if(s === this.selSection)
-      return 'block'
-    else
-      return 'none'
+    return s === this.selSection ? 'block' : 'none';
   }
 
   render() {
@@ -175,10 +172,7 @@ export const UIMidSideCompressor = observer(class UIMidSideCompressor extends Co
   }
 
   getDisplay = (s) => {
-    if(s === this.selSection)
-      return 'block'
-    else
-      return 'none'
+    return s === this.selSection ? 'block' : 'none';
   }
 
   render() {
@@ -278,10 +272,7 @@ export const UIMultibandSplit = observer(class UIMultibandSplit extends Componen
   }
 
   getDisplay = (s) => {
-    if(s === this.selSection)
-      return 'block'
-    else
-      return 'none'
+    return s === this.selSection ? 'block' : 'none';
   }
 
   render() {

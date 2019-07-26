@@ -17,10 +17,7 @@ export const UIAutoFilter = observer(class UIAutoFilter extends Component {
   }
 
   getDisplay = (s) => {
-    if(s === this.selSection)
-      return 'block'
-    else
-      return 'none'
+    return s === this.selSection ? 'block' : 'none';
   }
 
   render() {

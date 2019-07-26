@@ -18,10 +18,7 @@ export const UISynth = observer(class UISynth extends Component {
   }
 
   getDisplay = (s) => {
-    if(s === this.selSection)
-      return 'block'
-    else
-      return 'none'
+    return s === this.selSection ? 'block' : 'none';
   }
 
   setRandomVals = () => {
@@ -63,10 +60,7 @@ export const UIAMSynth = observer(class UIAMSynth extends Component {
   }
 
   getDisplay = (s) => {
-    if(s === this.selSection)
-      return 'block'
-    else
-      return 'none'
+    return s === this.selSection ? 'block' : 'none';
   }
 
   setRandomVals = () => {
@@ -116,10 +110,7 @@ export const UIFMSynth = observer(class UIFMSynth extends Component {
   }
 
   getDisplay = (s) => {
-    if(s === this.selSection)
-      return 'block'
-    else
-      return 'none'
+    return s === this.selSection ? 'block' : 'none';
   }
 
   setRandomVals = () => {
@@ -172,10 +163,7 @@ export const UIMonoSynth = observer(class UIMonoSynth extends Component {
   }
 
   getDisplay = (s) => {
-    if(s === this.selSection || !s)
-      return 'block'
-    else
-      return 'none'
+    return s === this.selSection || !s ? 'block' : 'none';
   }
 
   setRandomVals = () => {
@@ -207,10 +195,7 @@ export const UIMetalSynth = observer(class UIMetalSynth extends Component {
   }
 
   getDisplay = (s) => {
-    if(s === this.selSection)
-      return 'block'
-    else
-      return 'none'
+    return s === this.selSection ? 'block' : 'none';
   }
 
   setRandomVals = () => {
@@ -253,10 +238,7 @@ export const UIMembraneSynth = observer(class UIMembraneSynth extends Component 
   }
 
   getDisplay = (s) => {
-    if(s === this.selSection)
-      return 'block'
-    else
-      return 'none'
+    return s === this.selSection ? 'block' : 'none';
   }
 
   setRandomVals = () => {
@@ -358,10 +340,7 @@ export const UIDuoSynth = observer(class UIDuoSynth extends Component {
     if(child)
       selection = this.selChildSection;
 
-    if(s === selection)
-      return 'block'
-    else
-      return 'none'
+    return s === selection ? 'block' : 'none';
   }
 
   setRandomVals = () => {
