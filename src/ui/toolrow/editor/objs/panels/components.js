@@ -16,6 +16,7 @@ export const UIFilter = props => {
       <UIFilterTypeControl obj={obj} editorNum={props.editorNum} propName={"type"}/>
       <UICustomRangeControl obj={obj} editorNum={props.editorNum} propName='frequency' min={0} max={10000} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
       <UIFilterRolloffControl obj={obj} editorNum={props.editorNum} propName={"rolloff"}/>
+      <UICustomRangeControl obj={obj} editorNum={props.editorNum} propName='gain' min={-20} max={3} mode={'range'} step={null} density={1} numType={'float'} signal={true}/>
     </div>
   )
 }

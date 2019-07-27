@@ -382,8 +382,9 @@ const MonoSynthVoice = observer(props =>
     </div>
     <div style={{display: props.getDisplay('filter', true)}}>
       <UICustomRangeControl obj={props.obj} editorNum={props.editorNum} voice={props.voice} propName='Q' min={0} max={10} mode={'steps'} step={1} density={10} numType={'integer'} signal={true} child={'filter'} random={props.random}/>
-      <UIFilterTypeControl obj={props.obj} editorNum={props.editorNum} voice={props.voice} propName={"type"} child={'filter'} random={props.random}/>
-      <UIFilterRolloffControl obj={props.obj} editorNum={props.editorNum} voice={props.voice} propName={"rolloff"} child={'filter'} random={props.random}/>
+      <UICustomRangeControl obj={props.obj} editorNum={props.editorNum} voice={props.voice} propName='frequency' min={0} max={10000} mode={'range'} step={null} density={1} numType={'float'} signal={true} child={'filter'} random={props.random}/>
+      <UIFilterTypeControl obj={props.obj} editorNum={props.editorNum} voice={props.voice} propName='type' child={'filter'} random={props.random}/>
+      <UIFilterRolloffControl obj={props.obj} editorNum={props.editorNum} voice={props.voice} propName='rolloff' child={'filter'} random={props.random}/>
       <UICustomRangeControl obj={props.obj} editorNum={props.editorNum} voice={props.voice} propName='gain' min={-20} max={3} mode={'range'} step={null} density={1} numType={'float'} signal={true} child={'filter'} random={props.random}/>
     </div>
     <div style={{display: props.getDisplay('env1', true)}}>
