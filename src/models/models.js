@@ -3890,6 +3890,9 @@ const UIEditView = types.model("UIEditView", {
         self.copiedBars = [...self.selectedBars];
         self.selectedBars = [];
     },
+    setCopiedPatternId(id){
+        self.copiedPattern = id;
+    },
     pasteCopiedBars(){
         let firstSelectedBarNum = self.selectedBars.sort((a, b) =>  a - b)[0];
         let firstCopiedBarNum = self.copiedBars.sort((a, b) =>  a - b)[0];
@@ -4964,6 +4967,9 @@ export const RootStore = types.model("RootStore", {
                 if(store.getObjsByTrackObj(track).find(o => o.id === store.ui.selectedObj)){
                     store.ui.selectObj('');
                 }
+            }
+            if(store.ui.views.edit.copiedPattern && store.ui.views.edit.copiedPattern.track.id === id){
+                store.ui.views.edit.setCopiedPatternId(undefined);
             }
 
             self.components.getAllByTrack(id).forEach(function (component) {
