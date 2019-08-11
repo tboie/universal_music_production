@@ -3926,6 +3926,7 @@ const UIEditView = types.model("UIEditView", {
 const UIManagerView = types.model("UIEditView", {
     mode: types.optional(types.union(types.literal('scene'), types.literal('track')), 'scene'),
     copiedTrack: types.maybe(types.safeReference(Track)),
+    copySceneMode: types.optional(types.boolean, false)
 }).views(self => ({
     
 })).actions(self => ({
@@ -3934,6 +3935,9 @@ const UIManagerView = types.model("UIEditView", {
     },
     copyTrack(trackId){
         self.copiedTrack = store.getTrack(trackId);
+    },
+    toggleCopySceneMode(){
+        self.copySceneMode = !self.copySceneMode;
     }
 }))
 

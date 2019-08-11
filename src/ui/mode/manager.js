@@ -182,7 +182,7 @@ export const ManagerViewScene = observer(class ManagerViewScene extends Componen
     render() {
         return(
             <div id='divManager'>
-                <MixRowViewManagerScene store={this.props.store} selectedScene={this.props.selectedScene}/>
+                <MixRowViewManagerScene store={this.props.store} selectedScene={this.props.selectedScene} copySceneMode={store.ui.views.manager.copySceneMode}/>
                 <div id='divManagerTable' style={{height:(this.props.windowHeight - 160) + 'px', overflowY:'scroll'}}>
                     <table id='tableManager'>
                         <thead>

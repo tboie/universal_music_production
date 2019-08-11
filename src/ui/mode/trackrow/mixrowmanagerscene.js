@@ -5,7 +5,6 @@ import { store } from '../../../data/store.js';
 import { randomId } from '../../../models/models.js';
 
 
-
 export const MixRowViewManagerScene = observer(class MixRowViewManagerScene extends Component{
     componentDidMount(){}
 
@@ -21,16 +20,41 @@ export const MixRowViewManagerScene = observer(class MixRowViewManagerScene exte
 
       switch(e.target.id.split('_')[1]){
         case 'New':
-          let start = store.getSongLength();
-          let end = Tone.Time(start) + Tone.Time('1:0:0');
-          store.addScene('scene_' + randomId(), Tone.Time(start).toBarsBeatsSixteenths(), Tone.Time(end).toBarsBeatsSixteenths());    
+          if(!this.props.copySceneMode){
+            let start = store.getSongLength();
+            let end = Tone.Time(start) + Tone.Time('1:0:0');
+            store.addScene('scene_' + randomId(), Tone.Time(start).toBarsBeatsSixteenths(), Tone.Time(end).toBarsBeatsSixteenths());
+          }
+          else{
+            store.duplicateScene(this.props.selectedScene.id);
+          }    
           break;
         case 'Dup':
-          store.duplicateScene(scene.id);
+          store.ui.views.manager.toggleCopySceneMode();
           break;
         case 'LenAdd':
-          if(store.getSceneLength(scene.id) < Tone.Time('64:0:0'))
-            store.shiftSceneTimes(scene.end, Tone.Time('1:0:0'), 'add');
+          if(!this.props.copySceneMode){
+            if(store.getSceneLength(scene.id) < Tone.Time('64:0:0'))
+              store.shiftSceneTimes(scene.end, Tone.Time('1:0:0'), 'add');
+          }
+          else{
+            if(store.getSceneLength(scene.id) <= Tone.Time('32:0:0')){
+              store.shiftSceneTimes(scene.end, Tone.Time(store.getSceneLength(this.props.selectedScene.id)), 'add');
+              
+              const totalBars = Tone.Time(store.getSceneLength(this.props.selectedScene.id)).toBarsBeatsSixteenths().split(':')[0];
+              const halfTotalBars = totalBars / 2;
+
+              ['A','B','C','D'].forEach(g => {
+                store.getPatternsBySceneGroup(this.props.selectedScene.id, g).forEach(p => {
+                  for(let i = 1; i <= halfTotalBars; i++){
+                    const destBarNum = halfTotalBars + i;
+                    p.pasteNotesToBar(p.getNotesByBar(i), destBarNum)
+                  }
+                });
+              })
+              
+            }
+          }
           break;
         case 'LenSub':
           if(store.getSceneLength(scene.id) > Tone.Time('1:0:0'))
@@ -54,25 +78,25 @@ export const MixRowViewManagerScene = observer(class MixRowViewManagerScene exte
     render(){
       return (
         <div className={"track-rowmix"} id={'trackrowmixmanagerscene'} style={{width: + this.props.store.ui.windowWidth}}>
+          <button id="btnMixBar_Dup" className={"btn-mix-scene " + (this.props.copySceneMode ? ' itemSelected' : '')}  onClick={this.selectMixButton}>
+            <i className='material-icons i-btn-mix-scene'>file_copy</i>
+          </button>
           <button id="btnMixBar_New" className="btn-mix-scene" onClick={this.selectMixButton}>
             <i className='material-icons i-btn-mix-scene'>fiber_new</i>
-          </button>
-          <button id="btnMixBar_Dup" className="btn-mix-scene" onClick={this.selectMixButton}>
-            <i className='material-icons i-btn-mix-scene'>file_copy</i>
           </button>
           <button id="btnMixBar_LenAdd" className="btn-mix-scene" onClick={this.selectMixButton}>
             <i className='material-icons i-btn-mix-scene'>add</i>
           </button>
-          <button id="btnMixBar_LenSub" className="btn-mix-scene" onClick={this.selectMixButton}>
+          <button id="btnMixBar_LenSub" className="btn-mix-scene" onClick={this.selectMixButton} disabled={this.props.copySceneMode ? true : false}>
             <i className='material-icons i-btn-mix-scene'>remove</i>
           </button>
-          <button id="btnMixBar_Up" className="btn-mix-scene" onClick={this.selectMixButton}>
+          <button id="btnMixBar_Up" className="btn-mix-scene" onClick={this.selectMixButton} disabled={this.props.copySceneMode ? true : false}>
             <i className='material-icons i-btn-mix-scene'>arrow_back</i>
           </button>
-          <button id="btnMixBar_Down" className="btn-mix-scene" onClick={this.selectMixButton}>
+          <button id="btnMixBar_Down" className="btn-mix-scene" onClick={this.selectMixButton} disabled={this.props.copySceneMode ? true : false}>
             <i className='material-icons i-btn-mix-scene'>arrow_forward</i>
           </button>
-          <button id="btnMixBar_Del" className="btn-mix-scene" onClick={this.selectMixButton}>
+          <button id="btnMixBar_Del" className="btn-mix-scene" onClick={this.selectMixButton} disabled={this.props.copySceneMode ? true : false}>
             <i className='material-icons i-btn-mix-scene red'>delete</i>
           </button>
         </div>
