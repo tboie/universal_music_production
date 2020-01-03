@@ -813,9 +813,12 @@ img {
 }
 
 #modalSongList {
-  position:absolute;
-  width:100%;
-  overflow-y:auto;
+  position: absolute;
+  width: 100%;
+  overflow-y: auto;
+  margin-bottom: 40px;
+  bottom: 0;
+  top: 78px;
 }
 
 #tableSongs {
