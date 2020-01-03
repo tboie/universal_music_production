@@ -123,9 +123,15 @@ export const LoadSaveModal = observer(class LoadSaveModal extends Component {
             <div id="modalSongList">
               <table id='tableSongs'></table>
             </div>
-            <button id="modalBtnLoad" onClick={this.btnClickLoad} style={{bottom:0, width:'50%', height:'40px', position:'absolute', left:0}}>LOAD</button>
-            <button id="modalBtnSave" onClick={this.btnClickSave} style={{bottom:0, width:'50%', height:'40px', position:'absolute', right:0}}>SAVE</button>
-          </div>
+            { this.props.action && this.props.action.substr(0,4) === "Load" ? 
+              <button id="modalBtnLoad" onClick={this.btnClickLoad} style={{bottom:0, width:'100%', height:'40px', position:'absolute'}}>LOAD</button>
+              :
+                this.props.action && this.props.action.split('_')[0] !== 'undefined' ?
+                <button id="modalBtnSave" onClick={this.btnClickSave} style={{bottom:0, width:'100%', height:'40px', position:'absolute'}}>SAVE</button>
+                :
+                <button disabled style={{bottom:0, width:'100%', height:'40px', position:'absolute'}}>Waiting</button>
+            }
+            </div>
         </div>
       )
     }
