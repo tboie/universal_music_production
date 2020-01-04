@@ -4433,7 +4433,7 @@ const Settings = types.model("Settings", {
     loopEnd: types.optional(types.string, "1:0:0"),
     scale: types.optional(types.string, "major"),
     key: types.optional(types.string, "C"),
-    partRender: types.optional(types.boolean, true)
+    partRender: types.optional(types.boolean, false)
 }).actions(self => ({
     setScale(scale){
         self.scale = scale;
