@@ -7,7 +7,7 @@ import { Note as TonalNote } from "tonal";
 import { store } from "../data/store.js";
 //import { UndoManager } from "mst-middlewares";
 import * as cloneDeep from 'lodash/cloneDeep';
-import { setToneObjs, renderSong, getRandomNote } from '../ui/utils.js';
+import { setToneObjs, renderSong, getRandomNote, setTransport } from '../ui/utils.js';
 import interact from 'interactjs';
 
 /*******************************************
@@ -5042,7 +5042,7 @@ export const RootStore = types.model("RootStore", {
                     console.log('opened database. loading song...')
 
                     //setting transport first, tone obj times properties based on this value
-                    Tone.Transport.bpm.value = e.target.result.settings.bpm;     
+                    setTransport(e.target.result.settings); 
 
                     //we maunally load all toneobjs before applying snapshot...
                     //after attach is unreliable...

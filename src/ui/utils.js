@@ -497,13 +497,17 @@ export const saveSong = () => {
   })
 }
 
-export const setTransport = () => {
-  Tone.Transport.position = "0:0:0";
-  Tone.Transport.bpm.value = store.settings.bpm;
-  Tone.Transport.swing = store.settings.swing;
-  Tone.Transport.swingSubdivision = store.settings.swingSubdivision;
-  Tone.Transport.loopStart = store.settings.loopStart;
-  Tone.Transport.loopEnd = store.settings.loopEnd;
+export const setTransport = (settings) => {
+  if(!settings){
+    settings = store.settings;
+  }
+
+  Tone.Transport.position = settings.position;
+  Tone.Transport.bpm.value = settings.bpm;
+  Tone.Transport.swing = settings.swing;
+  Tone.Transport.swingSubdivision = settings.swingSubdivision;
+  Tone.Transport.loopStart = settings.loopStart;
+  Tone.Transport.loopEnd = settings.loopEnd;
 }
 
 

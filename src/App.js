@@ -28,7 +28,6 @@ import "nouislider/distribute/nouislider.min.css";
 
 const AppView = observer(class AppView extends Component {
   bFirstLoad = true;
-  bSongWasLoaded = false;
 
   componentDidMount() {
     Tone.start();
@@ -45,7 +44,6 @@ const AppView = observer(class AppView extends Component {
     if (loadSongId) {
       store.DBLoadStore(loadSongId);
       sessionStorage.removeItem("load_songId");
-      this.bSongWasLoaded = true;
     }
     else {
       if (!this.props.store.tracks.find(t => t.id === "track_master")) {
@@ -54,13 +52,7 @@ const AppView = observer(class AppView extends Component {
     }
   }
 
-  componentDidUpdate(prevProps) {
-    //called when a song was loaded from indexdb, fixes ui sizing issues
-    if (this.bSongWasLoaded) {
-      this.bSongWasLoaded = false;
-      setTransport();
-    }
-  }
+  componentDidUpdate(prevProps) {}
 
   render() {
     if (this.bFirstLoad){
