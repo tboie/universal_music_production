@@ -4,11 +4,17 @@ import { store } from "../../../data/store.js";
 import { randomId } from "../../../models/models.js";
 
 export const LoadSaveModal = observer(class LoadSaveModal extends Component {
-    selectedSongTitle;
-    selectedSongId;
+    selectedSongTitle = '';
+    selectedSongId = '';
+    bConfirm = false;
   
     componentDidMount(){
-      document.getElementById('modalClose').onclick = () => this.toggleWindow();
+      this.toggleIconOpacity(false);
+      document.getElementById('modalClose').onclick = () => { 
+        this.bConfirm = false; 
+        this.resetSelectedSong();
+        this.toggleWindow() 
+      };
     }
 
     rowClick = (e) => {
@@ -18,6 +24,8 @@ export const LoadSaveModal = observer(class LoadSaveModal extends Component {
       for(let i=0; i < rows.length; i++){
         if(rows[i].id === this.selectedSongId){
           rows[i].style.backgroundColor = 'rgb(19, 62, 131)';
+          this.selectedSongTitle = rows[i].children[0].textContent;
+          this.toggleIconOpacity(true);
         }
         else{
           rows[i].style.backgroundColor = 'transparent';
@@ -34,9 +42,18 @@ export const LoadSaveModal = observer(class LoadSaveModal extends Component {
     
       return day + ' ' + monthNames[monthIndex] + ' ' + year;
     }
+
+    toggleIconOpacity = (on) => {
+      const icon = document.getElementById('iconDeleteSong');
+      if(icon){
+        on ? icon.style.opacity = 1 : icon.style.opacity = 0.4;
+      }
+    }
   
     componentDidUpdate(prevProps){
-      if(this.props.action){        
+      this.toggleIconOpacity(false);
+
+      if(this.props.action && !this.bConfirm){        
         document.getElementById("inputSong").value = store.settings.title;
     
         store.DBGetAllSongs().then(list => {
@@ -99,7 +116,30 @@ export const LoadSaveModal = observer(class LoadSaveModal extends Component {
       store.DBSaveStore(true);
       this.forceUpdate();
     }
-  
+
+    btnClickDelete = (e) => {
+      if(this.selectedSongId){
+        this.bConfirm = true;
+        this.forceUpdate();
+      }
+    }
+
+    btnConfirmDelete = (yes) => {
+      if(yes){
+        store.DBDeleteSongById(this.selectedSongId);
+      }
+
+      this.bConfirm = false;
+      this.resetSelectedSong();
+      this.forceUpdate();
+      this.toggleWindow();
+    }
+
+    resetSelectedSong = () => {
+      this.selectedSongId = '';
+      this.selectedSongTitle = '';
+    }
+
     inputText = (e) => {
       if(e.target.value){
         document.getElementById('modalBtnSave').disabled = false;
@@ -116,23 +156,57 @@ export const LoadSaveModal = observer(class LoadSaveModal extends Component {
         <div id="myModal" className="modal">
           <div id="modalContent" className="modal-content">
             <div style={{width:'100%'}}>
+              { 
+                this.bConfirm ? null 
+                  : 
+                  <i id='iconDeleteSong' className="material-icons i-28 colorRed" style={{left:'4px', top: '4px', position:'relative', opacity:0.4}} onClick={this.btnClickDelete}>delete</i>
+              }
               <span id='modalClose' className='modalClose'>&times;</span>
-              <input id="inputSong" type="text" placeholder="song name" onInput={this.inputText}></input>
+              { 
+                this.bConfirm ? null 
+                  : 
+                  <input id="inputSong" type="text" placeholder="song name" onInput={this.inputText}></input> 
+              }
             </div>
             <br/>
-            <div id="modalSongList">
-              <table id='tableSongs'></table>
-            </div>
-            { this.props.action && this.props.action.substr(0,4) === "Load" ? 
-              <button id="modalBtnLoad" onClick={this.btnClickLoad} style={{bottom:0, width:'100%', height:'40px', position:'absolute'}}>LOAD</button>
+            { this.bConfirm ? <ConfirmDialog confirm={() => this.btnConfirmDelete(true)} cancel={() => this.btnConfirmDelete(false)} title={this.selectedSongTitle}/>
               :
-                this.props.action && this.props.action.split('_')[0] !== 'undefined' ?
-                <button id="modalBtnSave" onClick={this.btnClickSave} style={{bottom:0, width:'100%', height:'40px', position:'absolute'}}>SAVE</button>
-                :
-                <button disabled style={{bottom:0, width:'100%', height:'40px', position:'absolute'}}>Waiting</button>
+              <div>
+                <div id="modalSongList">
+                  <table id='tableSongs'></table>
+                </div>
+                <LoadSaveButton action={this.props.action} btnClickLoad={this.btnClickLoad} btnClickSave={this.btnClickSave}/>
+              </div>
             }
-            </div>
+            </div> 
         </div>
       )
     }
   })
+
+  const ConfirmDialog = props => {
+    return (
+      <div style={{top:'10%', position:'relative'}}>
+        <div style={{textAlign:'center', height:'40px'}}>
+          <label>Delete song {props.title}?</label>
+        </div>
+        <button onClick={props.confirm} style={{float:'left', width:'50%', height:'40px'}}>Yes</button>
+        <button onClick={props.cancel} style={{float:'right', width:'50%', height:'40px'}}>No</button>
+      </div>
+    )
+  }
+
+  const LoadSaveButton = props => {
+    return (
+      <div>
+        { props.action && props.action.substr(0,4) === "Load" ? 
+            <button id="modalBtnLoad" onClick={props.btnClickLoad} style={{bottom:0, width:'100%', height:'40px', position:'absolute'}}>LOAD</button>
+            :
+              props.action && props.action.split('_')[0] !== 'undefined' ?
+              <button id="modalBtnSave" onClick={props.btnClickSave} style={{bottom:0, width:'100%', height:'40px', position:'absolute'}}>SAVE</button>
+              :
+              <button style={{bottom:0, width:'100%', height:'40px', position:'absolute'}}>Waiting</button>
+        }
+      </div>
+    )
+  }

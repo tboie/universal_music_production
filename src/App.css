@@ -797,7 +797,7 @@ img {
 
 /* The Close Button */
 .modalClose {
-  color: red;
+  color: white;
   float: right;
   font-size: 28px;
   font-weight: bold;
@@ -807,7 +807,7 @@ img {
 }
 
 .modalClose:hover, .modalClose:focus {
-  color: darkred;
+  color: gray;
   text-decoration: none;
   cursor: pointer;
 }

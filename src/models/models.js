@@ -5103,6 +5103,15 @@ export const RootStore = types.model("RootStore", {
 
             db.close();
         }
+        async function DBDeleteSongById(id){
+            let db = await idb.open('propadb', 1, upgradeDB => upgradeDB.createObjectStore('songs', { keyPath: 'id' }));
+            let tx = db.transaction('songs', 'readwrite');
+            let objStore = tx.objectStore('songs');
+
+            objStore.delete(id);
+            await tx.complete;
+            db.close();
+        }
         async function DBGetAllSongs(){
             let db = await idb.open('propadb', 1, upgradeDB => upgradeDB.createObjectStore('songs', { keyPath: 'id' }));
             let tx = db.transaction('songs', 'readonly');
@@ -5189,7 +5198,7 @@ export const RootStore = types.model("RootStore", {
             //DBSaveStore(true);
             DBSaveStore(false);
         }
-        return { afterCreate, setSongId, DBGetAllSongs, DBSaveStore, DBLoadStore, DBSaveAudioFile, DBLoadAudioFile, DBDelete, addPattern, delPattern, addMasterTracks, addTrack, duplicateTrack, delTrack, addScene, delScene, shiftSceneTimes, swapScenes, duplicateScene, addConnection, delConnectionsByObj, delConnection, addSample, delSample };
+        return { afterCreate, setSongId, DBGetAllSongs, DBSaveStore, DBLoadStore, DBSaveAudioFile, DBLoadAudioFile, DBDeleteSongById, DBDelete, addPattern, delPattern, addMasterTracks, addTrack, duplicateTrack, delTrack, addScene, delScene, shiftSceneTimes, swapScenes, duplicateScene, addConnection, delConnectionsByObj, delConnection, addSample, delSample };
     });
 
 /*
