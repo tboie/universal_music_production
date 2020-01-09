@@ -26,6 +26,7 @@ export const LoadSaveModal = observer(class LoadSaveModal extends Component {
           rows[i].style.backgroundColor = 'rgb(19, 62, 131)';
           this.selectedSongTitle = rows[i].children[0].textContent;
           this.toggleIconOpacity(true);
+          this.enableBtnLoad();
         }
         else{
           rows[i].style.backgroundColor = 'transparent';
@@ -96,6 +97,14 @@ export const LoadSaveModal = observer(class LoadSaveModal extends Component {
         modal.style.display = "none";
         document.getElementById('divToolRowNav').style.zIndex = 2;
         document.getElementById('divFooter').style.zIndex = 3;
+      }
+    }
+
+    enableBtnLoad = () => {
+      const btnLoad = document.getElementById('modalBtnLoad');
+      if(btnLoad){
+        btnLoad.disabled = false;
+        btnLoad.onclick = () => this.btnClickLoad();
       }
     }
   
@@ -198,7 +207,7 @@ export const LoadSaveModal = observer(class LoadSaveModal extends Component {
     return (
       <div>
         { props.action && props.action.substr(0,4) === "Load" ? 
-            <button id="modalBtnLoad" onClick={props.btnClickLoad} style={{bottom:0, width:'100%', height:'40px', position:'absolute'}}>LOAD</button>
+            <button disabled id="modalBtnLoad" style={{bottom:0, width:'100%', height:'40px', position:'absolute'}}>LOAD</button>
             :
               props.action && props.action.split('_')[0] !== 'undefined' ?
               <button id="modalBtnSave" onClick={props.btnClickSave} style={{bottom:0, width:'100%', height:'40px', position:'absolute'}}>SAVE</button>
