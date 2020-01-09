@@ -102,10 +102,8 @@ export const LoadSaveModal = observer(class LoadSaveModal extends Component {
     btnClickLoad = (e) => {
       if(this.selectedSongId){
         store.ui.toolbar.browser.setAction(undefined);
-        document.getElementById('modalClose').click();
         sessionStorage.setItem("load_songId", this.selectedSongId);
         window.location.reload();
-        //store.DBLoadStore(this.selectedSongId);
       }
     }
     
