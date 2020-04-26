@@ -285,8 +285,8 @@ export const UIPluckSynth = observer(class UIPluckSynth extends Component {
       <div className='divToolRowEditorContainer'>
         <UIEditorHeader obj={this.obj} editorNum={this.props.editorNum} type={this.props.type} funcRandom={this.setRandomVals}/>
         <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='attackNoise' min={0.1} max={20} mode={'range'} step={0.01} density={1} numType={'float'} signal={false} random={this.random}/>
-        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='dampening' min={20} max={10000} mode='range' step={null} density={1} numType={'float'} signal={true} random={this.random}/>
-        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='resonance' min={0} max={1} mode='range' step={0.01} density={1} numType={'float'} signal={true} random={this.random}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='dampening' min={20} max={10000} mode='range' step={null} density={1} numType={'float'} signal={false} random={this.random}/>
+        <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='resonance' min={0} max={1} mode='range' step={0.01} density={1} numType={'float'} signal={false} random={this.random}/>
         <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='volume' min={-100} max={10} mode={'range'} step={0.1} density={1} numType={'float'} signal={true}/>
       </div>
     )
