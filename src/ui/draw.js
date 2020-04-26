@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import { observer } from "mobx-react";
-import Tone from 'tone';
+import * as Tone from "tone";
 import { store } from "../data/store.js";
 import { ToneObjs } from "../models/models.js";
 
@@ -271,8 +271,8 @@ export const Draw = observer(class Draw extends Component {
       this.objMeterCanvas.forEach(objMeter => {
         if(objMeter.meterL.obj && objMeter.meterR.obj){
           if(objMeter.meterL.obj._analyser && objMeter.meterR.obj._analyser){
-            let levelL = objMeter.meterL.obj.getLevel();
-            let levelR = objMeter.meterR.obj.getLevel();
+            let levelL = objMeter.meterL.obj.getValue();
+            let levelR = objMeter.meterR.obj.getValue();
             levelL = Tone.dbToGain(levelL); //scale it between 0 - 1
             levelR = Tone.dbToGain(levelR); //scale it between 0 - 1
         

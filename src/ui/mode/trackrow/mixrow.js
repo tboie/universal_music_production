@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import { store } from '../../../data/store.js';
-import Tone from 'tone';
+import * as Tone from "tone";
 import { ToneObjs } from '../../../models/models.js';
 
 export const MixRowView = observer(class MixRowView extends Component{

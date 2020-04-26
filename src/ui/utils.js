@@ -1,7 +1,7 @@
 
 import { store } from '../data/store.js';
 import interact from 'interactjs';
-import Tone from 'tone';
+import * as Tone from "tone";
 import Microphone from 'recorder-js/src/microphone.js';
 import { toneObjNames } from '../data/tonenames.js';
 import { ToneObjs } from '../models/models.js';
@@ -231,11 +231,11 @@ export async function renderSong(track, pattern){
     tLength = store.getSongLength();
   }
 
-  await Tone.Offline(function(Transport){
+  await Tone.Offline(({ transport }) => {
 
-      Transport.bpm.value = store.settings.bpm;
-      Transport.swing = store.settings.swing;
-      Transport.swingSubdivision = store.settings.swingSubdivision;
+      transport.bpm.value = store.settings.bpm;
+      transport.swing = store.settings.swing;
+      transport.swingSubdivision = store.settings.swingSubdivision;
 
       let offlineToneObjs = {
           instruments: [],
@@ -258,7 +258,7 @@ export async function renderSong(track, pattern){
 
           //trackObj -> master instead of track panvol
           trackConns.filter(c => c.dest === c.track.getPanVol.id).forEach(c => {
-                                            offlineToneObjs[c.srcType + 's'].find(o => o.id === c.src).obj.connect(Tone.Master) 
+                                            offlineToneObjs[c.srcType + 's'].find(o => o.id === c.src).obj.connect(Tone.Destination) 
                                           });
                                           
           patterns.push(pattern);
@@ -275,7 +275,7 @@ export async function renderSong(track, pattern){
         }
       }
       else{
-        store.connections.forEach(c => c.addConnection(offlineToneObjs))
+        store.connections.forEach(c => c.addConnection(offlineToneObjs, Tone.getContext().destination))
         patterns = store.getAllPatterns;
       }
       
@@ -301,10 +301,10 @@ export async function renderSong(track, pattern){
       });
 
       if(pattern){
-        Transport.start(undefined, pattern.scene.start);
+        transport.start(undefined, pattern.scene.start);
       }
       else
-        Transport.start()
+        transport.start()
       
   }, tLength).then(function(buffer){
       console.timeEnd('renderSong')
@@ -442,7 +442,7 @@ export const exportSong = () => {
           }
           else{
             let blobUrl = window.URL.createObjectURL(result.data);
-            buffer.load(blobUrl, () => {
+            buffer.load(blobUrl).then(() => {
               audioBufferToWav(buffer.get()).then(blob => {
                 songFolder.file(strName, blob);
           
@@ -524,7 +524,7 @@ export const firstPageLoad = () => {
 
   // not sure how reliable Tone.start() in mount is for all cases... so use this too
   document.documentElement.addEventListener('mousedown', () => {
-    if(Tone.initialized){
+    if(Tone.context._initialized){
       if(Tone.context.state !== 'running')
         Tone.start();
     }
@@ -588,4 +588,12 @@ export const getRandomNote = () => {
       noteVal = Chord.notes(noteVal[0], store.ui.selectedChord);
 
   return noteVal;
+}
+
+
+// convert string prop1.prop2.prop3 and value to object
+export const expand = (str, val = {}) => {
+  return str.split('.').reduceRight((acc, currentValue) => {
+    return { [currentValue]: acc }
+  }, val)
 }

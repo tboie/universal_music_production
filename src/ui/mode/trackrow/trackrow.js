@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { observer } from "mobx-react";
 import { isAlive } from "mobx-state-tree";
-import Tone from 'tone';
+import * as Tone from "tone";
 import interact from 'interactjs';
 import { ToneObjs } from '../../../models/models.js';
 import { store } from '../../../data/store.js';

@@ -361,7 +361,7 @@ export const UIDuoSynth = observer(class UIDuoSynth extends Component {
         { childHeader }
         <div style={{display:this.getDisplay('main')}}>
           <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='volume' min={-100} max={10} mode={'range'} step={0.1} density={1} numType={'float'} signal={true}/>
-          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='vibratoAmount' min={0} max={20} mode={'range'} step={0.1} density={1} numType={'float'} signal={true} random={this.random}/>
+          <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='vibratoAmount' min={0} max={1} mode={'range'} step={0.01} density={1} numType={'float'} signal={true} random={this.random}/>
           <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='vibratoRate' min={0} max={1000} mode={'range'} step={null} density={1} numType={'float'} signal={true} random={this.random}/>
           <UICustomRangeControl obj={this.obj} editorNum={this.props.editorNum} propName='harmonicity' min={0} max={10} mode={'range'} step={0.1} density={1} numType={'float'} signal={true} random={this.random}/>
         </div>

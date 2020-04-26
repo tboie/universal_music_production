@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { observer } from "mobx-react";
-import Tone from 'tone';
+import * as Tone from "tone";
 import { store } from "../../../data/store.js";
 
 export const GridTimeline = observer(class GridTimeline extends Component{

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
-import Tone from 'tone';
+import * as Tone from "tone";
 import { store } from '../../../data/store.js';
 import { randomId } from '../../../models/models.js';
 import { audioBufferToWav, exportSong, renderSong, saveSong, toggleFullScreen } from '../../utils.js';
@@ -14,7 +14,7 @@ import { shouldComponentUpdate } from 'react-window';
 
 
 let bBrowseMenuLoading = false;
-let browsePlayer = new Tone.Player().toMaster();
+let browsePlayer = new Tone.Player().toDestination();
 
 const browsePlayerStart = (item, eleAnim, eleLoadIcon) => {
   eleLoadIcon.querySelector('.divListItemLoadingIcon').style.display = 'none';
@@ -447,7 +447,7 @@ class Row extends Component {
               browsePlayerStart(item, eleAnim, e.target);
             }
             else{
-              browsePlayer.load(url, () => {
+              browsePlayer.load(url).then(() => {
                 if(url === store.ui.toolbar.browser[this.browserId].selectedFile)
                   browsePlayerStart(item, eleAnim, e.target);
               });
@@ -468,7 +468,7 @@ class Row extends Component {
                   if(result.data){
                     if(result.data instanceof Blob){
                       let blobUrl = window.URL.createObjectURL(result.data);
-                      browsePlayer.load(blobUrl, () => {
+                      browsePlayer.load(blobUrl).then(() => {
                         if(url === store.ui.toolbar.browser[this.browserId].selectedFile)
                           browsePlayerStart(item, eleAnim, e.target);
                         
@@ -493,7 +493,7 @@ class Row extends Component {
                   if(result.data){
                     if(result.data instanceof Blob){
                       let blobUrl = window.URL.createObjectURL(result.data);
-                      browsePlayer.load(blobUrl, () => {
+                      browsePlayer.load(blobUrl).then(() => {
                         if(url === store.ui.toolbar.browser[this.browserId].selectedFile)
                           browsePlayerStart(item, eleAnim, e.target);
 
@@ -508,7 +508,7 @@ class Row extends Component {
                   }
                 }
                 else{
-                  browsePlayer.load(url, () => {
+                  browsePlayer.load(url).then(() => {
                     //save as blob because toArray is empty during load above on FF
                     audioBufferToWav(browsePlayer.buffer.get()).then(blob => {
                       store.DBSaveAudioFile({

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { observer } from "mobx-react";
-import Tone from 'tone';
+import * as Tone from "tone";
 import { MixMeters } from './mixrow.js';
 import { mapVal } from '../../utils.js';
 

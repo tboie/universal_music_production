@@ -3,7 +3,7 @@ import { observer } from "mobx-react";
 import { store } from "../../data/store.js";
 import { toneObjNames } from "../../data/tonenames.js";
 import interact from 'interactjs';
-import Tone from 'tone';
+import * as Tone from "tone";
 import { ToneObjs, randomId } from '../../models/models.js';
 import { applyDraggableGrid } from '../utils.js';
 import { TrackRowView } from './trackrow/trackrow.js';

@@ -2,7 +2,7 @@
 
 import React, { Component } from 'react';
 import { observer } from "mobx-react";
-import Tone from 'tone';
+import * as Tone from "tone";
 import { store } from './data/store.js';
 
 import { FooterView } from "./ui/footer/footer.js";
@@ -19,7 +19,7 @@ import { LoadSaveModal } from './ui/toolrow/song/loadsave.js';
 import { ListBrowser } from "./ui/toolrow/browse/browse.js";
 
 import { ToneObjs } from './models/models.js';
-import { setTransport, firstPageLoad } from './ui/utils.js'
+import { firstPageLoad } from './ui/utils.js'
 
 import './App.css';
 import "nouislider/distribute/nouislider.min.css";

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { observer } from "mobx-react";
 import { store } from "../../data/store.js";
-import Tone from 'tone';
+import * as Tone from "tone";
 import { MixRowViewManagerScene } from './trackrow/mixrowmanagerscene.js';
 import { MixRowViewManagerTrack} from './trackrow/mixrowmanagertrack.js';
 

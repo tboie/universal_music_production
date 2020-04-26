@@ -1,13 +1,13 @@
 //Copyright 2018-2019 Timothy Boie
 
 import { types, getParent, destroy, getMembers, applySnapshot, getSnapshot } from "mobx-state-tree";
-import Tone from 'tone';
+import * as Tone from "tone";
 import idb from 'idb';
 import { Note as TonalNote } from "tonal";
 import { store } from "../data/store.js";
 //import { UndoManager } from "mst-middlewares";
 import * as cloneDeep from 'lodash/cloneDeep';
-import { setToneObjs, renderSong, getRandomNote, setTransport } from '../ui/utils.js';
+import { setToneObjs, renderSong, getRandomNote, setTransport, expand } from '../ui/utils.js';
 import interact from 'interactjs';
 
 /*******************************************
@@ -39,7 +39,7 @@ export const ToneObjs = {
                     sustain: 0.05,
                     release: 0.05,
                 }
-            }).toMaster();
+            }).toDestination();
 
             ToneObjs.metronome = new Tone.Loop(time => {
                 let beat = parseInt(Tone.Transport.position.split(':')[1], 10);
@@ -49,7 +49,11 @@ export const ToneObjs = {
                 else
                     noise.triggerAttackRelease('C5', '0.001s', time);
                 
-            }, '0:1').start(-1 * Tone.Time('1:0:0'));
+            }, '0:1');
+
+            // Tone throws an error if trying to schedule before timeline pos 0
+            ToneObjs.metronome.cancel(0);
+            ToneObjs.metronome.start(-1 * Tone.Time('1:0:0'));
 
             ToneObjs.metronome.mute = !store.ui.recordMode; 
         }
@@ -75,7 +79,7 @@ export const ToneObjs = {
 
         if(type === "instruments" && name !== "Player" && name !== "NoiseSynth" && name !== "PluckSynth" && name !== "MembraneSynth" && name !== "MetalSynth"){
             if(!ToneObjs[type].find(row => row.id === objSelf.id)){
-                ToneObjs[type].push({ id: objSelf.id, track: objSelf.track.id, obj: new Tone.PolySynth(8, Tone[name]).set(args) });
+                ToneObjs[type].push({ id: objSelf.id, track: objSelf.track.id, obj: new Tone.PolySynth(Tone[name]).set(args) });
             }
         }
         else{
@@ -135,22 +139,26 @@ export const ToneObjs = {
                     currVal = obj.get()[prop]
                     queryStr = prop;
                 }
-                
-                if(currVal !== val)
-                    obj.set(queryStr, val);
+
+                if(currVal !== val){
+                    obj.set(expand(queryStr, val));
+                }
             }
             //all other objs
             else{
-                if(child)
+                if(child){
                     obj = obj[child];
+                }
                 
                 if(signal){
-                    if(obj[prop].value !== val)
+                    if(obj[prop].value !== val){
                         obj[prop].value = val;
+                    }
                 }
                 else{
-                    if(obj[prop] !== val)
+                    if(obj[prop] !== val){
                         obj[prop] = val;
+                    }
                 }
             }
         }
@@ -495,7 +503,7 @@ const Connection = types.model("Connection", {
     numIn: types.optional(types.number, 0),
     signal: types.maybe(types.string)
 }).actions(self => ({
-    addConnection(offline) {
+    addConnection(offline, offlineDest) {
         let objSrc, objDest;
 
         if(self.src.split('_')[0] === 'tinysynth' && self.srcType !== 'component')
@@ -530,11 +538,21 @@ const Connection = types.model("Connection", {
         }
         else if(self.dest === "master") {
             objSrc = arraySrc.find(i => i.id === self.src).obj;
-            objSrc.connect(Tone.Master, self.numOut, self.numIn);
+            if(offline){
+                objSrc.connect(offlineDest, self.numOut, self.numIn);
+            }
+            else{
+                objSrc.connect(Tone.Destination, self.numOut, self.numIn);
+            }
         }
         else if(self.src === "master"){
             objDest = arrayDest.find(i => i.id === self.dest).obj;
-            Tone.Master.connect(objDest, self.numOut, self.numIn);
+            if(offline){
+                offlineDest.connect(objDest, self.numOut, self.numIn);
+            }
+            else{
+                Tone.Destination.connect(objDest, self.numOut, self.numIn);
+            }
         }
     },
     afterAttach() {
@@ -566,11 +584,11 @@ const Connection = types.model("Connection", {
         }
         else if(self.dest === "master") {
             objSrc = arraySrc.find(i => i.id === self.src).obj;
-            objSrc.disconnect(Tone.Master, self.numOut, self.numIn);
+            objSrc.disconnect(Tone.Destination, self.numOut, self.numIn);
         }
         else if(self.src === "master"){
             objDest = arrayDest.find(i => i.id === self.dest).obj;
-            Tone.Master.disconnect(objDest, self.numOut, self.numIn);
+            Tone.Destination.disconnect(objDest, self.numOut, self.numIn);
         }
     }
 }));
@@ -1214,7 +1232,7 @@ const Effects = types.model("Effects", {
         switch (type) {
             case "autofilter":
                 if(!args.oscillator){
-                    let defaultArgs = {...Tone.AutoFilter.defaults.filter};
+                    let defaultArgs = {...Tone.AutoFilter.getDefaults().filter};
                     defaultArgs.id = 'filter_' + randomId();
                     args.filter = Filter.create(defaultArgs);
                 }
@@ -2005,17 +2023,17 @@ const Components = types.model("Components", {
                 break;
             case "multibandcompressor":
                 if(!args.low){
-                    let defaultArgs = {...Tone.Compressor.defaults};
+                    let defaultArgs = {...Tone.Compressor.getDefaults()};
                     defaultArgs.id = 'compressor_' + randomId();
                     args.low = Compressor.create(defaultArgs);
                 }
                 if(!args.mid){
-                    let defaultArgs = {...Tone.Compressor.defaults};
+                    let defaultArgs = {...Tone.Compressor.getDefaults()};
                     defaultArgs.id = 'compressor_' + randomId();
                     args.mid = Compressor.create(defaultArgs);
                 }
                 if(!args.high){
-                    let defaultArgs = {...Tone.Compressor.defaults};
+                    let defaultArgs = {...Tone.Compressor.getDefaults()};
                     defaultArgs.id = 'compressor_' + randomId();
                     args.high = Compressor.create(defaultArgs);
                 }
@@ -2023,12 +2041,12 @@ const Components = types.model("Components", {
                 break;
             case "midsidecompressor":
                 if(!args.mid){
-                    let defaultArgs = {...Tone.Compressor.defaults};
+                    let defaultArgs = {...Tone.Compressor.getDefaults()};
                     defaultArgs.id = 'compressor_' + randomId();
                     args.mid = Compressor.create(defaultArgs);
                 }
                 if(!args.side){
-                    let defaultArgs = {...Tone.Compressor.defaults};
+                    let defaultArgs = {...Tone.Compressor.getDefaults()};
                     defaultArgs.id = 'compressor_' + randomId();
                     args.side = Compressor.create(defaultArgs);
                 }
@@ -2036,17 +2054,17 @@ const Components = types.model("Components", {
                 break;
             case "multibandsplit":
                 if(!args.low){
-                    let defaultArgs = {...Tone.Filter.defaults};
+                    let defaultArgs = {...Tone.Filter.getDefaults()};
                     defaultArgs.id = 'filter_' + randomId();
                     args.low = Filter.create(defaultArgs);
                 }
                 if(!args.mid){
-                    let defaultArgs = {...Tone.Filter.defaults};
+                    let defaultArgs = {...Tone.Filter.getDefaults()};
                     defaultArgs.id = 'filter_' + randomId();
                     args.mid = Filter.create(defaultArgs);
                 }
                 if(!args.high){
-                    let defaultArgs = {...Tone.Filter.defaults};
+                    let defaultArgs = {...Tone.Filter.getDefaults()};
                     defaultArgs.id = 'filter_' + randomId();
                     args.high = Filter.create(defaultArgs);
                 }
@@ -2542,7 +2560,7 @@ const Player = types.model("Player", {
                         }
                         else{
                             let blobUrl = window.URL.createObjectURL(result.data);
-                            player.load(blobUrl, function(){
+                            player.load(blobUrl).then(() => {
                                 window.URL.revokeObjectURL(blobUrl);
                             });
                         }
@@ -3014,12 +3032,12 @@ const Instruments = types.model("Instruments", {
                 break;
             case "synth":
                 if(!args.oscillator){
-                    let defaultArgs = {...Tone.Synth.defaults.oscillator};
+                    let defaultArgs = {...Tone.Synth.getDefaults().oscillator};
                     defaultArgs.id = 'omnioscillator_' + randomId();
                     args.oscillator = OmniOscillator.create(defaultArgs);
                 }
                 if(!args.envelope){
-                    let defaultArgs = {...Tone.Synth.defaults.envelope};
+                    let defaultArgs = {...Tone.Synth.getDefaults().envelope};
                     defaultArgs.id = 'amplitudeenvelope_' + randomId();
                     args.envelope = AmplitudeEnvelope.create(defaultArgs);
                 }
@@ -3027,22 +3045,22 @@ const Instruments = types.model("Instruments", {
                 break;
             case "amsynth":
                 if(!args.oscillator){
-                    let defaultArgs = {...Tone.AMSynth.defaults.oscillator};
+                    let defaultArgs = {...Tone.AMSynth.getDefaults().oscillator};
                     defaultArgs.id = 'omnioscillator_' + randomId();
                     args.oscillator = OmniOscillator.create(defaultArgs)
                 }
                 if(!args.envelope){
-                    let defaultArgs = {...Tone.AMSynth.defaults.envelope};
+                    let defaultArgs = {...Tone.AMSynth.getDefaults().envelope};
                     defaultArgs.id = 'amplitudeenvelope_' + randomId();
                     args.envelope = AmplitudeEnvelope.create(defaultArgs);
                 }
                 if(!args.modulation){
-                    let defaultArgs = {...Tone.AMSynth.defaults.modulation};
+                    let defaultArgs = {...Tone.AMSynth.getDefaults().modulation};
                     defaultArgs.id = 'omnioscillator_' + randomId();
                     args.modulation = OmniOscillator.create(defaultArgs);
                 }
                 if(!args.modulationEnvelope){
-                    let defaultArgs = {...Tone.AMSynth.defaults.modulationEnvelope};
+                    let defaultArgs = {...Tone.AMSynth.getDefaults().modulationEnvelope};
                     defaultArgs.id = 'amplitudeenvelope_' + randomId();
                     args.modulationEnvelope = AmplitudeEnvelope.create(defaultArgs);
                 }
@@ -3050,22 +3068,22 @@ const Instruments = types.model("Instruments", {
                 break;
             case "fmsynth":
                 if(!args.oscillator){
-                    let defaultArgs = {...Tone.FMSynth.defaults.oscillator};
+                    let defaultArgs = {...Tone.FMSynth.getDefaults().oscillator};
                     defaultArgs.id = 'omnioscillator_' + randomId();
                     args.oscillator = OmniOscillator.create(defaultArgs)
                 }
                 if(!args.envelope){
-                    let defaultArgs = {...Tone.FMSynth.defaults.envelope};
+                    let defaultArgs = {...Tone.FMSynth.getDefaults().envelope};
                     defaultArgs.id = 'amplitudeenvelope_' + randomId();
                     args.envelope = AmplitudeEnvelope.create(defaultArgs);
                 }
                 if(!args.modulation){
-                    let defaultArgs = {...Tone.FMSynth.defaults.modulation};
+                    let defaultArgs = {...Tone.FMSynth.getDefaults().modulation};
                     defaultArgs.id = 'omnioscillator_' + randomId();
                     args.modulation = OmniOscillator.create(defaultArgs);
                 }
                 if(!args.modulationEnvelope){
-                    let defaultArgs = {...Tone.FMSynth.defaults.modulationEnvelope};
+                    let defaultArgs = {...Tone.FMSynth.getDefaults().modulationEnvelope};
                     defaultArgs.id = 'amplitudeenvelope_' + randomId();
                     args.modulationEnvelope = AmplitudeEnvelope.create(defaultArgs);
                 }
@@ -3073,22 +3091,22 @@ const Instruments = types.model("Instruments", {
                 break;
             case "monosynth":
                 if(!args.oscillator){
-                    let defaultArgs = {...Tone.MonoSynth.defaults.oscillator};
+                    let defaultArgs = {...Tone.MonoSynth.getDefaults().oscillator};
                     defaultArgs.id = 'omnioscillator_' + randomId();
                     args.oscillator = OmniOscillator.create(defaultArgs)
                 }
                 if(!args.filter){
-                    let defaultArgs = {...Tone.MonoSynth.defaults.filter};
+                    let defaultArgs = {...Tone.MonoSynth.getDefaults().filter};
                     defaultArgs.id = 'filter_' + randomId();
                     args.filter = Filter.create(defaultArgs)
                 }
                 if(!args.envelope){
-                    let defaultArgs = {...Tone.MonoSynth.defaults.envelope};
+                    let defaultArgs = {...Tone.MonoSynth.getDefaults().envelope};
                     defaultArgs.id = 'amplitudeenvelope_' + randomId();
                     args.envelope = AmplitudeEnvelope.create(defaultArgs);
                 }
                 if(!args.filterEnvelope){
-                    let defaultArgs = {...Tone.MonoSynth.defaults.filterEnvelope};
+                    let defaultArgs = {...Tone.MonoSynth.getDefaults().filterEnvelope};
                     defaultArgs.id = 'frequencyenvelope_' + randomId();
                     args.filterEnvelope = FrequencyEnvelope.create(defaultArgs);
                 }
@@ -3096,7 +3114,7 @@ const Instruments = types.model("Instruments", {
                 break;
             case "metalsynth":
                 if(!args.envelope){
-                    let defaultArgs = {...Tone.MetalSynth.defaults.envelope};
+                    let defaultArgs = {...Tone.MetalSynth.getDefaults().envelope};
                     defaultArgs.id = 'amplitudeenvelope_' + randomId();
                     args.envelope = AmplitudeEnvelope.create(defaultArgs)
                 }
@@ -3104,12 +3122,12 @@ const Instruments = types.model("Instruments", {
                 break;
             case "membranesynth":
                 if(!args.oscillator){
-                    let defaultArgs = {...Tone.MembraneSynth.defaults.oscillator};
+                    let defaultArgs = {...Tone.MembraneSynth.getDefaults().oscillator};
                     defaultArgs.id = 'omnioscillator_' + randomId();
                     args.oscillator = OmniOscillator.create(defaultArgs)
                 }
                 if(!args.envelope){
-                    let defaultArgs = {...Tone.MembraneSynth.defaults.envelope};
+                    let defaultArgs = {...Tone.MembraneSynth.getDefaults().envelope};
                     defaultArgs.id = 'amplitudeenvelope_' + randomId();
                     args.envelope = AmplitudeEnvelope.create(defaultArgs)
                 }
@@ -3120,12 +3138,12 @@ const Instruments = types.model("Instruments", {
                 break;
             case "noisesynth":
                 if(!args.noise){
-                    let defaultArgs = {...Tone.NoiseSynth.defaults.noise};
+                    let defaultArgs = {...Tone.NoiseSynth.getDefaults().noise};
                     defaultArgs.id = 'noise_' + randomId();
                     args.noise = Noise.create(defaultArgs)
                 }
                 if(!args.envelope){
-                    let defaultArgs = {...Tone.NoiseSynth.defaults.envelope};
+                    let defaultArgs = {...Tone.NoiseSynth.getDefaults().envelope};
                     defaultArgs.id = 'amplitudeenvelope_' + randomId();
                     args.envelope = AmplitudeEnvelope.create(defaultArgs)
                 }
@@ -3136,7 +3154,7 @@ const Instruments = types.model("Instruments", {
                 break;
             case "duosynth":
                 if(!args.voice0){
-                    let defaultArgs = cloneDeep(Tone.DuoSynth.defaults.voice0);
+                    let defaultArgs = cloneDeep(Tone.DuoSynth.getDefaults().voice0);
                     defaultArgs.id = 'monosynth_' + randomId();
 
                     defaultArgs.oscillator.id = 'omnioscillator_' + randomId();
@@ -3144,7 +3162,7 @@ const Instruments = types.model("Instruments", {
 
                     //no filter defined in duosynth defaults
                     if(!defaultArgs.filter)
-                        defaultArgs.filter = {...Tone.MonoSynth.defaults.filter};
+                        defaultArgs.filter = {...Tone.MonoSynth.getDefaults().filter};
 
                     defaultArgs.filter.id = 'filter_' + randomId();
                     defaultArgs.filter = Filter.create(defaultArgs.filter)
@@ -3158,7 +3176,7 @@ const Instruments = types.model("Instruments", {
                     args.voice0 = MonoSynth.create(defaultArgs)
                 }
                 if(!args.voice1){
-                    let defaultArgs = cloneDeep(Tone.DuoSynth.defaults.voice1);
+                    let defaultArgs = cloneDeep(Tone.DuoSynth.getDefaults().voice1);
                     defaultArgs.id = 'monosynth_' + randomId();
 
                     defaultArgs.oscillator.id = 'omnioscillator_' + randomId();
@@ -3166,7 +3184,7 @@ const Instruments = types.model("Instruments", {
                     
                     //no filter in defaults quick fix
                     if(!defaultArgs.filter)
-                        defaultArgs.filter = {...Tone.MonoSynth.defaults.filter};
+                        defaultArgs.filter = {...Tone.MonoSynth.getDefaults().filter};
                     
                     defaultArgs.filter.id = 'filter_' + randomId();
                     defaultArgs.filter = Filter.create(defaultArgs.filter)
@@ -4233,7 +4251,9 @@ const UI = types.model("UI", {
     function toggleRecordMode() {
         self.recordMode = !self.recordMode;
 
-        ToneObjs.metronome.mute = !self.recordMode;
+        if(ToneObjs.metronome){
+            ToneObjs.metronome.mute = !self.recordMode;
+        }
     }
     function toggleSettings(bChangeView) {
         if(bChangeView)
