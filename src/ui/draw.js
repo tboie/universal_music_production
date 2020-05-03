@@ -167,7 +167,6 @@ export const Draw = observer(class Draw extends Component {
           let cL = document.getElementById('canvas-L-' + track.id);
           let cR = document.getElementById('canvas-R-' + track.id);
           
-          console.log('finding meters')
           if(cL && cR){
             console.log('found meters')
             let meterL = ToneObjs.components.find(c => c.id === ("mix_meter_L_" + track.id));
