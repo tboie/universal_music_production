@@ -426,17 +426,15 @@ export const exportSong = () => {
         if(result.data){
           let buffer = new Tone.Buffer();
       
-          let strName = id;
-          if(strName.split('_')[0] === "region" || strName.split('_')[0] === "sample")
+          let strName = id.replace("sample_/","");
+          if(["region", "sample"].includes(strName.split('_')[0]) && strName.split('.').pop() !== "wav")
             strName = id + '.wav';
               
           if (Array.isArray(result.data) || result.data instanceof Float32Array) {
             buffer.fromArray(result.data);
             audioBufferToWav(buffer.get()).then(blob => {
               songFolder.file(strName, blob);
-      
               buffer.dispose();
-      
               resolve(true);
             });
           }
@@ -445,10 +443,8 @@ export const exportSong = () => {
             buffer.load(blobUrl).then(() => {
               audioBufferToWav(buffer.get()).then(blob => {
                 songFolder.file(strName, blob);
-          
                 window.URL.revokeObjectURL(blobUrl);
                 buffer.dispose();
-
                 resolve(true);
               });
             });
