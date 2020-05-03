@@ -34,7 +34,7 @@ export const Draw = observer(class Draw extends Component {
         // edit view bar mode (no selected notes)
         || (!this.props.editMode && prevProps.editMode && this.props.editViewMode === 'bar')
         // edit view graph mode
-        || this.props.viewMode === "edit" && (this.props.editViewMode === "graph" && prevProps.editViewMode !== "graph")){
+        || (this.props.viewMode === "edit" && (this.props.editViewMode === "graph" && prevProps.editViewMode !== "graph"))){
         this.initMeters();
       }
       
@@ -168,7 +168,6 @@ export const Draw = observer(class Draw extends Component {
           let cR = document.getElementById('canvas-R-' + track.id);
           
           if(cL && cR){
-            console.log('found meters')
             let meterL = ToneObjs.components.find(c => c.id === ("mix_meter_L_" + track.id));
             let meterR = ToneObjs.components.find(c => c.id === ("mix_meter_R_" + track.id));
             
