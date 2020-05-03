@@ -265,7 +265,7 @@ export const ToneObjs = {
             if(row.obj){ 
                 let ch = store.instruments.getInstrumentByTypeId("tinysynth", row.id).channel;
     
-                if(!this.selectedChord){
+                if(!store.ui.selectedChord){
                     let noteNum = TonalNote.midi(notes[0]); //C4 is 60
                     row.obj.send([0x80 + ch, noteNum, 0], Tone.context.currentTime)
                 }
