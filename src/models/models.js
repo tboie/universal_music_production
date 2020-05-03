@@ -168,14 +168,10 @@ export const ToneObjs = {
             if(row.obj){
                 let type = row.id.split('_')[0];
         
-                if(type === 'metalsynth'){
-                    row.obj.frequency.setValueAtTime(notes[0], undefined, Math.random()*0.5 + 0.5);
-                    row.obj.triggerAttack(undefined, 1);
-                }
-                else if(type === 'noisesynth'){
+                if(type === 'noisesynth'){
                     row.obj.triggerAttack();
                 }
-                else if(type === 'plucksynth' || type === 'membranesynth'){
+                else if(type === 'plucksynth' || type === 'membranesynth' || type === 'metalsynth'){
                     row.obj.triggerAttack(TonalNote.freq(notes[0]));
                 }
                 else if(type !== 'player'){
@@ -3541,46 +3537,36 @@ const Pattern = types.model("Pattern", {
                             instrument.obj.stop(time + computedDur)
                         }
                     }
-                    else if(type === 'metalsynth'){
+                    // monosynth
+                    else if(['metalsynth', 'plucksynth', 'membranesynth'].includes(type)){
                         if(value.note !== undefined){
-                            instrument.obj.frequency.setValueAtTime(value.note[0], time + offset, Math.random()*0.5 + 0.5);
-                            instrument.obj.triggerAttackRelease(Tone.Time(value.duration), time + offset, value.velocity);
+                            instrument.obj.triggerAttack(value.note[0], time + offset, value.velocity);
+                            instrument.obj.triggerRelease(time + Tone.Time(value.duration));
                             
+                            // check if previous note overlaps and play it after current note ends
                             let objContinue = checkPrevNoteDur();
                             if(objContinue){
-                                instrument.obj.frequency.setValueAtTime(objContinue.note.getNote[0], time + Tone.Time(value.duration), Math.random()*0.5 + 0.5);
-                                instrument.obj.triggerAttackRelease(objContinue.deltaDur, time + Tone.Time(value.duration), objContinue.note.velocity);
+                                instrument.obj.triggerAttack(objContinue.note.getNote[0], time + Tone.Time(value.duration), objContinue.note.velocity);
+                                instrument.obj.triggerRelease(time + Tone.Time(value.duration) + objContinue.deltaDur);
                             }
-                            
                         }
                     }
+                    // polysynth
+                    else if(["synth", "monosynth", "amsynth", "fmsynth", "duosynth"].includes(type)){
+                        if(value.note !== undefined){
+                            instrument.obj.triggerAttackRelease(value.note, Tone.Time(value.duration), time + offset, value.velocity);
+                        }
+                    }
+                    // noisesynth
                     else if(type === "noisesynth"){
                         if(value.note !== undefined){
                             instrument.obj.triggerAttackRelease(Tone.Time(value.duration), time + offset, value.velocity);
                             
                             let objContinue = checkPrevNoteDur();
                             if(objContinue){
-                                instrument.obj.triggerAttackRelease(objContinue.note.getNote[0], objContinue.deltaDur, time + Tone.Time(value.duration), objContinue.note.velocity);
+                                instrument.obj.triggerAttackRelease(objContinue.deltaDur, time + Tone.Time(value.duration), objContinue.note.velocity);
                             }
                             
-                        }
-                    }
-                    else if(type === "synth" || type === "monosynth" || type === "amsynth" || type === "fmsynth" || type === "duosynth"){
-                        if(value.note !== undefined){
-                            //instrument.obj.releaseAll(time + offset);
-                            instrument.obj.triggerAttackRelease(value.note, Tone.Time(value.duration), time + offset, value.velocity);
-                            
-                            let objContinue = checkPrevNoteDur();
-                            if(objContinue){
-                                instrument.obj.triggerAttackRelease(objContinue.note.getNote, objContinue.deltaDur, time + Tone.Time(value.duration), objContinue.note.velocity);
-                            }
-                            
-                        }
-                    }
-                    //TODO: deal with prev note duration continue as above?
-                    else if(type === "plucksynth" || type === "membranesynth"){
-                        if(value.note !== undefined){
-                            instrument.obj.triggerAttackRelease(value.note[0], Tone.Time(value.duration), time + offset, value.velocity);
                         }
                     }
                 }
@@ -3590,15 +3576,15 @@ const Pattern = types.model("Pattern", {
                 let type = source.id.split('_')[0];
                 if (!value.mute){
                     if(value.note !== undefined){
-                        //prevent notes playing forever when toolsynth played simultanesouly
-                        //source.obj.stop(time + offset);
+                        // fix start time error when multiple consecutive notes over lap a sustained note
+                        source.obj.stop(time + offset);
 
                         if(type !== 'noise')
                             source.obj.frequency.setValueAtTime(value.note[0], time + offset);
 
                         let timeStop = time + Tone.Time(value.duration);
 
-                        //if connected to amplitude envelope, stop note at end of longest envelope release
+                        // if connected to amplitude envelope, stop note at end of longest envelope release
                         let connectionsEnv = store.getConnectionsByObjId(source.id).filter(c => c.dest.split('_')[0] === 'amplitudeenvelope')               
                         if(connectionsEnv.length > 0){
                             let envs = [];
@@ -3608,6 +3594,14 @@ const Pattern = types.model("Pattern", {
 
                         source.obj.start(time + offset);
                         source.obj.stop(timeStop);
+
+                        // check if previous note overlaps and play it after current note ends
+                        let objContinue = checkPrevNoteDur();
+                        if(objContinue){
+                            source.obj.frequency.setValueAtTime(objContinue.note.getNote[0], time + Tone.Time(value.duration));
+                            source.obj.start(time + Tone.Time(value.duration));
+                            source.obj.stop(time + Tone.Time(value.duration) + objContinue.deltaDur);
+                        }
                     }
                 }
             })
@@ -3615,13 +3609,8 @@ const Pattern = types.model("Pattern", {
             tObjs.components.filter(src => src.track === part.track && src.id.split('_')[0] === 'amplitudeenvelope').forEach(function (component) {
                 if (!value.mute){
                     if(value.note !== undefined){
+                        // TODO: how should this work for multiple notes/scenarious (overlapping, consecutive etc.)
                         component.obj.triggerAttackRelease(Tone.Time(value.duration), time + offset, value.velocity);
-                        
-                        let objContinue = checkPrevNoteDur();
-                        if(objContinue){
-                            component.obj.triggerAttackRelease(objContinue.note.getNote[0], objContinue.deltaDur, time + Tone.Time(value.duration), objContinue.note.velocity);
-                        }
-                        
                     }
                 }
             })
