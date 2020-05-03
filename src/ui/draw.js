@@ -31,7 +31,10 @@ export const Draw = observer(class Draw extends Component {
 
       if((!prevProps.mixMode && this.props.mixMode) || prevProps.viewMode !== this.props.viewMode 
         || prevProps.selectedTrack !== this.props.selectedTrack || prevProps.numTracks !== this.props.numTracks
-        || (!this.props.editMode && prevProps.editMode && this.props.editViewMode === 'bar')){
+        // edit view bar mode (no selected notes)
+        || (!this.props.editMode && prevProps.editMode && this.props.editViewMode === 'bar')
+        // edit view graph mode
+        || this.props.viewMode === "edit" && (this.props.editViewMode === "graph" && prevProps.editViewMode !== "graph")){
         this.initMeters();
       }
       
@@ -163,8 +166,10 @@ export const Draw = observer(class Draw extends Component {
         if(this.props.selectedTrack === track || this.props.store.ui.viewMode === "sequencer"){
           let cL = document.getElementById('canvas-L-' + track.id);
           let cR = document.getElementById('canvas-R-' + track.id);
-   
+          
+          console.log('finding meters')
           if(cL && cR){
+            console.log('found meters')
             let meterL = ToneObjs.components.find(c => c.id === ("mix_meter_L_" + track.id));
             let meterR = ToneObjs.components.find(c => c.id === ("mix_meter_R_" + track.id));
             
