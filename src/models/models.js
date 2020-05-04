@@ -2,7 +2,7 @@
 
 import { types, getParent, destroy, getMembers, applySnapshot, getSnapshot } from "mobx-state-tree";
 import * as Tone from "tone";
-import idb from 'idb';
+import * as idb from 'idb';
 import { Note as TonalNote } from "tonal";
 import { store } from "../data/store.js";
 //import { UndoManager } from "mst-middlewares";
@@ -5091,7 +5091,7 @@ export const RootStore = types.model("RootStore", {
             };
         }
         async function DBLoadAudioFile(id) {
-            let db = await idb.open('propadb', 1, upgradeDB => upgradeDB.createObjectStore('audio', { keyPath: 'id' }));
+            let db = await idb.openDB('propadb', 1, upgradeDB => upgradeDB.createObjectStore('audio', { keyPath: 'id' }));
             let tx = db.transaction('audio', 'readwrite');
             let objStore = tx.objectStore('audio');
 
@@ -5103,7 +5103,7 @@ export const RootStore = types.model("RootStore", {
             return obj;
         }
         async function DBSaveAudioFile(obj) {
-            let db = await idb.open('propadb', 1, upgradeDB => upgradeDB.createObjectStore('audio', { keyPath: 'id' }));
+            let db = await idb.openDB('propadb', 1, upgradeDB => upgradeDB.createObjectStore('audio', { keyPath: 'id' }));
             let tx = db.transaction('audio', 'readwrite');
             let objStore = tx.objectStore('audio');
 
@@ -5113,7 +5113,7 @@ export const RootStore = types.model("RootStore", {
             db.close();
         }
         async function DBDeleteSongById(id){
-            let db = await idb.open('propadb', 1, upgradeDB => upgradeDB.createObjectStore('songs', { keyPath: 'id' }));
+            let db = await idb.openDB('propadb', 1, upgradeDB => upgradeDB.createObjectStore('songs', { keyPath: 'id' }));
             let tx = db.transaction('songs', 'readwrite');
             let objStore = tx.objectStore('songs');
 
@@ -5122,7 +5122,7 @@ export const RootStore = types.model("RootStore", {
             db.close();
         }
         async function DBGetAllSongs(){
-            let db = await idb.open('propadb', 1, upgradeDB => upgradeDB.createObjectStore('songs', { keyPath: 'id' }));
+            let db = await idb.openDB('propadb', 1, upgradeDB => upgradeDB.createObjectStore('songs', { keyPath: 'id' }));
             let tx = db.transaction('songs', 'readonly');
             let objStore = tx.objectStore('songs');
 
