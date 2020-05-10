@@ -56,14 +56,12 @@ export const LoopTile = observer(class LoopTile extends Component{
       if(!interact.isSet('#divLoopTile')){
         interact('#divLoopTile')
           .draggable({
-            snap: {
-            // targets: arraySnap,
-            // range: 50,
-            },
-            restrict: {
-              restriction: 'parent',
-              elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
-            },
+            modifiers: [
+              interact.modifiers.restrictRect({
+                restriction: 'parent',
+                elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
+              })
+            ]
           })
           .resizable({
             edges: { left: true, right: true, bottom: false, top: false},
@@ -100,46 +98,52 @@ export const LoopTile = observer(class LoopTile extends Component{
           }).on('resizemove', function (event) {
             let target = event.target, x = (parseFloat(target.getAttribute('data-x')) || 0);
             let offset = 0, timeEnd, timeStart;
-            
-            //left handle (loop start)
-            if(event.pageX >= 0 && event.pageX <= props.windowWidth){
-              if(event.edges.left && event.pageX < rHandleX){
-                if(!event.snap.locked)
-                  x = event.pageX;
-                else 
-                  x = event.snap.x;
-  
-                timeStart = (x / props.windowWidth) * Tone.Time(props.songLength);
-                let loopStart = Tone.Time(timeStart).quantize("8n");
-                self.loopStart = Tone.Time(loopStart).toBarsBeatsSixteenths();
-                Tone.Transport.loopStart = self.loopStart;
-              
-                target.style.width = (rHandleX - x) + 'px';
-                target.style.webkitTransform = target.style.transform ='translateX(' + x + 'px)';
-                target.setAttribute('data-x', x);
-              }
-              //right handle (loop end)
-              if(event.edges.right && event.pageX >= x){
-                if(!event.snap.locked)
-                  timeEnd = (event.pageX / props.windowWidth) * props.songLength;
-                else
-                  timeEnd = (event.snap.x / props.windowWidth) * props.songLength;  
+
+            if(event.modifiers[0]){
+              const snapped = event.modifiers[0].inRange;
+              const snapX = event.modifiers[0].target.x;
+
+              //left handle (loop start)
+              if(event.pageX >= 0 && event.pageX <= props.windowWidth){
+                if(event.edges.left && event.pageX < rHandleX){
+                  if(!snapped)
+                    x = event.pageX;
+                  else 
+                    x = snapX;
+    
+                  timeStart = (x / props.windowWidth) * Tone.Time(props.songLength);
+                  let loopStart = Tone.Time(timeStart).quantize("8n");
+                  self.loopStart = Tone.Time(loopStart).toBarsBeatsSixteenths();
+                  Tone.Transport.loopStart = self.loopStart;
                 
-                let loopEnd = Tone.Time(timeEnd).quantize("8n");
-                self.loopEnd = Tone.Time(loopEnd).toBarsBeatsSixteenths();
-                Tone.Transport.loopEnd = self.loopEnd;
-  
-                if(event.snap.locked){
-                  target.style.width = (event.snap.x - x) + 'px';
+                  target.style.width = (rHandleX - x) + 'px';
+                  target.style.webkitTransform = target.style.transform ='translateX(' + x + 'px)';
+                  target.setAttribute('data-x', x);
                 }
-                else{
-                  offset = (x + event.rect.width) - event.pageX;
-                  target.style.width = (event.rect.width - offset) + 'px';
+                //right handle (loop end)
+                if(event.edges.right && event.pageX >= x){
+                  if(!snapped){
+                    timeEnd = (event.pageX / props.windowWidth) * props.songLength;
+                  }
+                  else{
+                    timeEnd = (snapX / props.windowWidth) * props.songLength;  
+                  }
+                  
+                  let loopEnd = Tone.Time(timeEnd).quantize("8n");
+                  self.loopEnd = Tone.Time(loopEnd).toBarsBeatsSixteenths();
+                  Tone.Transport.loopEnd = self.loopEnd;
+    
+                  if(snapped){
+                    target.style.width = (snapX - x) + 'px';
+                  }
+                  else{
+                    offset = (x + event.rect.width) - event.pageX;
+                    target.style.width = (event.rect.width - offset) + 'px';
+                  }
                 }
+    
+                target.textContent = Tone.Time(Tone.Time(self.loopEnd) - Tone.Time(self.loopStart)).toBarsBeatsSixteenths();
               }
-  
-              //target.textContent = Tone.Time(store.getLoopLength).toBarsBeatsSixteenths();
-              target.textContent = Tone.Time(Tone.Time(self.loopEnd) - Tone.Time(self.loopStart)).toBarsBeatsSixteenths();
             }
           }).on('dragmove', function (event) {
             x = (parseFloat(event.target.getAttribute('data-x')) || 0);
