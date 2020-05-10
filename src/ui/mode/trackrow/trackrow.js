@@ -41,12 +41,6 @@ export const TrackRowView = observer(class TrackRowView extends Component {
 
     //update waveforms on zoom in out
     document.getElementById("gridContainer").addEventListener("transitionend", this.initRenderWaveform);
-
-    interact("#canvas" + this.id).on('hold', event => {
-      this.mouseHold = true;
-      event.preventDefault();
-      store.ui.selectNote(undefined);
-    });
   }
 
   ensureBufferIsLoaded = (buffer) => {
