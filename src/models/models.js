@@ -3691,7 +3691,7 @@ const Pattern = types.model("Pattern", {
         }
     }
     function beforeDestroy() {
-        ToneObjs.parts.find(p => p.id === self.id).obj.removeAll();
+        ToneObjs.parts.find(p => p.id === self.id).obj.clear();
         ToneObjs.parts.find(p => p.id === self.id).obj.dispose();
         ToneObjs.parts.splice(ToneObjs.parts.findIndex(p => p.id === self.id), 1);
 
