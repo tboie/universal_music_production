@@ -4541,12 +4541,12 @@ export const RootStore = types.model("RootStore", {
                 return self.scenes.find(s => (t >= Tone.Time(s.start) && t < Tone.Time(s.end)))
             },
             get getScenesAsc() {
-                return self.scenes.sort(function (a, b) {
+                return self.scenes.slice().sort(function (a, b) {
                     return Tone.Time(a.start) - Tone.Time(b.start);
                 });
             },
             get getScenesDesc() {
-                return self.scenes.sort(function (a, b) {
+                return self.scenes.slice().sort(function (a, b) {
                     return Tone.Time(b.start) - Tone.Time(a.start);
                 });
             },
