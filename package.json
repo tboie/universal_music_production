@@ -8,7 +8,7 @@
     "idb": "^5.0.2",
     "interactjs": "^1.9.10",
     "jszip": "^3.4.0",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.21",
     "mobx": "^5.15.4",
     "mobx-react": "^6.2.2",
     "mobx-state-tree": "^3.16.0",
